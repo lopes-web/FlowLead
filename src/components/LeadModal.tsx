@@ -202,18 +202,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="exemplo@email.com"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="whatsapp">WhatsApp</Label>
                 <Input
                   ref={whatsappRef}
@@ -223,6 +211,18 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   onChange={handleWhatsAppChange}
                   placeholder="(00) 00000-0000"
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="exemplo@email.com"
                 />
               </div>
 
