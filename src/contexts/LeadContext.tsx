@@ -62,7 +62,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       if (isOffline) {
         const tempId = `temp_${Date.now()}`;
         const newLead = { ...lead, id: tempId };
-        setLeads(prev => [newLead, ...prev]);
+        setLeads((prev: Lead[]) => [newLead, ...prev]);
         offlineStorage.saveLeads([newLead, ...leads]);
         offlineStorage.addPendingAction({
           type: 'add',
@@ -76,8 +76,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const dbLead = {
         ...restLead,
-        createdat: new Date().toISOString(),
-        updatedat: new Date().toISOString(),
+        createdat: created_at || new Date().toISOString(),
+        updatedat: updated_at || new Date().toISOString(),
         tipoprojeto: tipo_projeto,
         ultimocontato: ultimo_contato,
       };
@@ -100,7 +100,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         ultimo_contato: data[0].ultimocontato,
       };
 
-      setLeads(prevLeads => [formattedLead, ...prevLeads]);
+      setLeads((prevLeads: Lead[]) => [formattedLead, ...prevLeads]);
       offlineStorage.saveLeads([formattedLead, ...leads]);
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
@@ -110,8 +110,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   async function updateLead(id: string, lead: Partial<Lead>) {
     try {
       if (isOffline) {
-        setLeads(prev => prev.map(l => l.id === id ? { ...l, ...lead } : l));
-        const updatedLeads = leads.map(l => l.id === id ? { ...l, ...lead } : l);
+        setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
+        const updatedLeads = leads.map((l: Lead) => l.id === id ? { ...l, ...lead } : l);
         offlineStorage.saveLeads(updatedLeads);
         offlineStorage.addPendingAction({
           type: 'update',
@@ -125,7 +125,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const updates = {
         ...restLead,
-        updatedat: new Date().toISOString(),
+        updatedat: updated_at || new Date().toISOString(),
         ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
         ...(ultimo_contato && { ultimocontato: ultimo_contato }),
       };
@@ -140,10 +140,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setLeads(prevLeads =>
-        prevLeads.map(l => (l.id === id ? { ...l, ...lead } : l))
-      );
-      offlineStorage.saveLeads(leads.map(l => l.id === id ? { ...l, ...lead } : l));
+      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
+      offlineStorage.saveLeads(leads.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
     }
@@ -152,8 +150,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   async function deleteLead(id: string) {
     try {
       if (isOffline) {
-        setLeads(prev => prev.filter(lead => lead.id !== id));
-        const filteredLeads = leads.filter(lead => lead.id !== id);
+        setLeads((prev: Lead[]) => prev.filter((lead: Lead) => lead.id !== id));
+        const filteredLeads = leads.filter((lead: Lead) => lead.id !== id);
         offlineStorage.saveLeads(filteredLeads);
         offlineStorage.addPendingAction({
           type: 'delete',
@@ -170,8 +168,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setLeads(prevLeads => prevLeads.filter(lead => lead.id !== id));
-      offlineStorage.saveLeads(leads.filter(lead => lead.id !== id));
+      setLeads((prevLeads: Lead[]) => prevLeads.filter((lead: Lead) => lead.id !== id));
+      offlineStorage.saveLeads(leads.filter((lead: Lead) => lead.id !== id));
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
     }

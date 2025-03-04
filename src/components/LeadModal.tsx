@@ -21,6 +21,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
+import { FileUpload } from "@/components/FileUpload";
 
 type LeadFormData = Omit<Lead, "id">;
 
@@ -380,6 +381,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 ))}
               </div>
             </div>
+
+            {leadId && (
+              <div className="space-y-2">
+                <Label>Arquivos</Label>
+                <FileUpload leadId={leadId} />
+              </div>
+            )}
 
             <div className="sticky bottom-0 bg-background pt-4 border-t">
               <div className="flex gap-2">
