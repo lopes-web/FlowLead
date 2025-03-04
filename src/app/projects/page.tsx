@@ -5,12 +5,16 @@ import {
   KanbanSquare,
   Timer,
   Zap,
-  FolderKanban
+  FolderKanban,
+  PlusCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { LeadModal } from "@/components/LeadModal";
+import { useState } from "react";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const [showLeadModal, setShowLeadModal] = useState(false);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -37,7 +41,7 @@ export default function ProjectsPage() {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/leads")}
                 className="gap-2"
                 size="sm"
               >
@@ -54,7 +58,7 @@ export default function ProjectsPage() {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/tempo")}
                 className="gap-2"
                 size="sm"
               >
@@ -62,6 +66,14 @@ export default function ProjectsPage() {
                 Tempo
               </Button>
             </div>
+            <Button
+              onClick={() => setShowLeadModal(true)}
+              className="gap-2"
+              size="sm"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Novo Lead
+            </Button>
           </div>
         </div>
 
@@ -76,6 +88,7 @@ export default function ProjectsPage() {
           </div>
         </main>
       </div>
+      <LeadModal open={showLeadModal} onOpenChange={setShowLeadModal} />
     </div>
   );
 } 

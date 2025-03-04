@@ -33,7 +33,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .order("createdat", { ascending: false });
+        .order("updatedat", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar leads:", error);
@@ -102,6 +102,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       setLeads((prevLeads: Lead[]) => [formattedLead, ...prevLeads]);
       offlineStorage.saveLeads([formattedLead, ...leads]);
+      await fetchLeads(); // Recarrega os leads após adicionar
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
     }
@@ -125,7 +126,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const updates = {
         ...restLead,
-        updatedat: updated_at || new Date().toISOString(),
+        updatedat: new Date().toISOString(), // Sempre atualiza o updatedat
         ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
         ...(ultimo_contato && { ultimocontato: ultimo_contato }),
       };
@@ -140,8 +141,9 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
-      offlineStorage.saveLeads(leads.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
+      // Atualiza o estado local e recarrega os leads para garantir sincronização
+      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead, updated_at: new Date().toISOString() } : l));
+      await fetchLeads();
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
     }

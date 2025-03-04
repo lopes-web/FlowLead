@@ -25,15 +25,24 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   // Monitora leads fechados e cria projetos automaticamente
   useEffect(() => {
-    const closedLeadsWithoutProjects = leads.filter(lead => {
-      const hasProject = projects.some(project => project.leadId === lead.id);
-      return lead.status === "fechado" && !hasProject;
-    });
+    const handleClosedLeads = async () => {
+      const closedLeadsWithoutProjects = leads.filter(lead => {
+        const hasProject = projects.some(project => project.leadId === lead.id);
+        return lead.status === "fechado" && !hasProject;
+      });
 
-    closedLeadsWithoutProjects.forEach(lead => {
-      createProjectFromLead(lead);
-    });
-  }, [leads, projects]);
+      for (const lead of closedLeadsWithoutProjects) {
+        try {
+          await createProjectFromLead(lead);
+          console.log(`Projeto criado automaticamente para o lead: ${lead.nome}`);
+        } catch (error) {
+          console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
+        }
+      }
+    };
+
+    handleClosedLeads();
+  }, [leads]);
 
   async function fetchProjects() {
     try {
@@ -54,13 +63,20 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function createProjectFromLead(lead: Lead) {
+    if (!lead.id) {
+      console.error("Lead sem ID não pode ser convertido em projeto");
+      return;
+    }
+
     const project: Omit<Project, "id"> = {
       leadId: lead.id,
       nome: lead.nome,
       cliente: lead.nome,
-      tipo_projeto: lead.tipo_projeto,
+      tipo_projeto: lead.tipo_projeto || "",
       status: "solicitar_arquivos",
-      valor: lead.orcamento,
+      valor: lead.orcamento || 0,
+      descricao: lead.necessidades || "",
+      observacoes: lead.observacoes || "",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -82,6 +98,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         setProjects((prev) => [data[0], ...prev]);
+        await fetchProjects(); // Recarrega os projetos para garantir sincronização
       }
     } catch (error) {
       console.error("Erro ao adicionar projeto:", error);
