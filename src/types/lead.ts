@@ -1,3 +1,4 @@
+// Definição dos tipos para o sistema de leads
 export type LeadStatus =
   | "nao_contatado"
   | "primeiro_contato"
@@ -16,6 +17,7 @@ export type LeadQualityTag =
   | "decisor"
   | "influenciador";
 
+// Interface principal do Lead
 export interface Lead {
   id: string;
   nome: string;
