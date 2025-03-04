@@ -71,6 +71,53 @@ export interface Database {
           updatedat?: string
         }
       }
+      projects: {
+        Row: {
+          id: string
+          lead_id: string
+          nome: string
+          cliente: string
+          tipo_projeto: string
+          status: string
+          descricao: string | null
+          prazo_entrega: string | null
+          valor: number
+          arquivos_recebidos: Json | null
+          observacoes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          nome: string
+          cliente: string
+          tipo_projeto: string
+          status: string
+          descricao?: string | null
+          prazo_entrega?: string | null
+          valor: number
+          arquivos_recebidos?: Json | null
+          observacoes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          nome?: string
+          cliente?: string
+          tipo_projeto?: string
+          status?: string
+          descricao?: string | null
+          prazo_entrega?: string | null
+          valor?: number
+          arquivos_recebidos?: Json | null
+          observacoes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       time_tracking: {
         Row: {
           id: string

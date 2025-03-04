@@ -65,7 +65,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setProjects(data || []);
+      const formattedProjects = data?.map(project => ({
+        ...project,
+        leadId: project.lead_id,
+        tipo_projeto: project.tipo_projeto,
+        prazo_entrega: project.prazo_entrega,
+        arquivos_recebidos: project.arquivos_recebidos,
+        created_at: project.created_at,
+        updated_at: project.updated_at
+      })) || [];
+
+      setProjects(formattedProjects);
     } catch (error) {
       console.error("Erro ao buscar projetos:", error);
     }
@@ -84,8 +94,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const project: Omit<Project, "id"> = {
-      leadId: lead.id,
+    const project = {
+      lead_id: lead.id,
       nome: lead.nome,
       cliente: lead.nome,
       tipo_projeto: lead.tipo_projeto || "",
@@ -109,8 +119,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        console.log(`Projeto criado com sucesso: ${data[0].nome}`);
-        setProjects(prev => [data[0], ...prev]);
+        const formattedProject = {
+          ...data[0],
+          leadId: data[0].lead_id,
+          tipo_projeto: data[0].tipo_projeto,
+          prazo_entrega: data[0].prazo_entrega,
+          arquivos_recebidos: data[0].arquivos_recebidos,
+          created_at: data[0].created_at,
+          updated_at: data[0].updated_at
+        };
+        console.log(`Projeto criado com sucesso: ${formattedProject.nome}`);
+        setProjects(prev => [formattedProject, ...prev]);
       }
     } catch (error) {
       console.error("Erro ao adicionar projeto:", error);
@@ -120,9 +139,24 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   async function addProject(project: Omit<Project, "id">) {
     try {
+      const dbProject = {
+        lead_id: project.leadId,
+        nome: project.nome,
+        cliente: project.cliente,
+        tipo_projeto: project.tipo_projeto,
+        status: project.status,
+        valor: project.valor,
+        descricao: project.descricao || null,
+        observacoes: project.observacoes || null,
+        prazo_entrega: project.prazo_entrega || null,
+        arquivos_recebidos: project.arquivos_recebidos || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from("projects")
-        .insert([project])
+        .insert([dbProject])
         .select();
 
       if (error) {
@@ -131,7 +165,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        setProjects((prev) => [data[0], ...prev]);
+        const formattedProject = {
+          ...data[0],
+          leadId: data[0].lead_id,
+          tipo_projeto: data[0].tipo_projeto,
+          prazo_entrega: data[0].prazo_entrega,
+          arquivos_recebidos: data[0].arquivos_recebidos,
+          created_at: data[0].created_at,
+          updated_at: data[0].updated_at
+        };
+        setProjects(prev => [formattedProject, ...prev]);
       }
     } catch (error) {
       console.error("Erro ao adicionar projeto:", error);
@@ -140,9 +183,23 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   async function updateProject(id: string, project: Partial<Project>) {
     try {
+      const dbProject = {
+        ...(project.leadId && { lead_id: project.leadId }),
+        ...(project.nome && { nome: project.nome }),
+        ...(project.cliente && { cliente: project.cliente }),
+        ...(project.tipo_projeto && { tipo_projeto: project.tipo_projeto }),
+        ...(project.status && { status: project.status }),
+        ...(project.valor && { valor: project.valor }),
+        ...(project.descricao && { descricao: project.descricao }),
+        ...(project.observacoes && { observacoes: project.observacoes }),
+        ...(project.prazo_entrega && { prazo_entrega: project.prazo_entrega }),
+        ...(project.arquivos_recebidos && { arquivos_recebidos: project.arquivos_recebidos }),
+        updated_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
         .from("projects")
-        .update(project)
+        .update(dbProject)
         .eq("id", id);
 
       if (error) {
@@ -150,8 +207,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setProjects((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...project } : p))
+      setProjects(prev =>
+        prev.map(p => p.id === id ? { ...p, ...project } : p)
       );
     } catch (error) {
       console.error("Erro ao atualizar projeto:", error);
@@ -167,7 +224,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setProjects((prev) => prev.filter((p) => p.id !== id));
+      setProjects(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error("Erro ao deletar projeto:", error);
     }
