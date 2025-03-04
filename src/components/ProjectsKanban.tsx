@@ -21,10 +21,6 @@ import {
   GripHorizontal
 } from "lucide-react";
 
-interface KanbanProps {
-  onEditProject?: (projectId: string) => void;
-}
-
 const statusConfig: Record<ProjectStatus, { label: string; color: string; icon: React.ReactNode }> = {
   solicitar_arquivos: {
     label: "Solicitar Arquivos",
@@ -68,7 +64,7 @@ const statusConfig: Record<ProjectStatus, { label: string; color: string; icon: 
   }
 };
 
-export function ProjectsKanban({ onEditProject }: KanbanProps) {
+export function ProjectsKanban() {
   const { projects, updateProject, deleteProject } = useProjects();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; nome: string } | null>(null);
