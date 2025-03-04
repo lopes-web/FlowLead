@@ -101,9 +101,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === "orcamento") {
+      // Remove formatação e converte para número
+      const numericValue = Number(value.replace(/\D/g, '')) / 100;
       setFormData(prev => ({
         ...prev,
-        [name]: Number(value)
+        [name]: numericValue
       }));
     } else {
       setFormData(prev => ({
@@ -174,6 +176,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       ...prev,
       whatsapp: formatted
     }));
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value).replace('R$', '').trim();
   };
 
   return (
@@ -284,9 +293,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 <Input
                   id="orcamento"
                   name="orcamento"
-                  type="number"
-                  value={formData.orcamento}
+                  type="text"
+                  value={formatCurrency(formData.orcamento)}
                   onChange={handleChange}
+                  placeholder="R$ 0,00"
                   required
                 />
               </div>
