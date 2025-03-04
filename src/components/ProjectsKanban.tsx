@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Project, ProjectStatus } from "@/types/project";
 import { DeleteProjectDialog } from "./DeleteProjectDialog";
+import { LeadModal } from "./LeadModal";
 import {
   Files,
   Server,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 
 interface KanbanProps {
-  onEditProject: (projectId: string) => void;
+  onEditProject?: (projectId: string) => void;
 }
 
 const statusConfig: Record<ProjectStatus, { label: string; color: string; icon: React.ReactNode }> = {
@@ -72,6 +73,8 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<ProjectStatus | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingLeadId, setEditingLeadId] = useState<string>();
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, projectId: string, status: ProjectStatus) => {
     e.dataTransfer.setData("text/plain", projectId);
@@ -114,6 +117,11 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
       setDeleteDialogOpen(false);
       setProjectToDelete(null);
     }
+  };
+
+  const handleEditClick = (project: Project) => {
+    setEditingLeadId(project.leadId);
+    setEditModalOpen(true);
   };
 
   return (
@@ -186,7 +194,7 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                            onClick={() => onEditProject(project.id)}
+                            onClick={() => handleEditClick(project)}
                           >
                             <PenLine className="h-4 w-4" />
                           </Button>
@@ -213,6 +221,12 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
         onOpenChange={setDeleteDialogOpen}
         projectName={projectToDelete?.nome || ""}
         onConfirm={handleConfirmDelete}
+      />
+
+      <LeadModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        leadId={editingLeadId}
       />
     </>
   );

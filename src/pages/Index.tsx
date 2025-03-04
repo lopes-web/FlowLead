@@ -97,14 +97,7 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
           <main className="flex-1 overflow-hidden">
             {view === "dashboard" && <Dashboard />}
             {view === "leads" && <Kanban onEditLead={handleOpenModal} />}
-            {view === "projects" && (
-              <ProjectsKanban
-                onEditProject={(projectId) => {
-                  // TODO: Implementar modal de edição
-                  console.log("Editar projeto:", projectId);
-                }}
-              />
-            )}
+            {view === "projects" && <ProjectsKanban />}
             {view === "timetracking" && <TimeTracking />}
           </main>
         </div>
