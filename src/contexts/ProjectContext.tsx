@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { Project, ProjectStatus } from "@/types/project";
 import { supabase } from "@/lib/supabase";
 import { useLeads } from "./LeadContext";
+import { Lead } from "@/types/lead";
 
 interface ProjectContextType {
   projects: Project[];
@@ -9,6 +10,7 @@ interface ProjectContextType {
   updateProject: (id: string, project: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   moveProject: (id: string, newStatus: ProjectStatus) => Promise<void>;
+  createProjectFromLead: (lead: Lead) => Promise<void>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -20,6 +22,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  // Monitora leads fechados e cria projetos automaticamente
+  useEffect(() => {
+    const closedLeadsWithoutProjects = leads.filter(lead => {
+      const hasProject = projects.some(project => project.leadId === lead.id);
+      return lead.status === "fechado" && !hasProject;
+    });
+
+    closedLeadsWithoutProjects.forEach(lead => {
+      createProjectFromLead(lead);
+    });
+  }, [leads, projects]);
 
   async function fetchProjects() {
     try {
@@ -37,6 +51,21 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro ao buscar projetos:", error);
     }
+  }
+
+  async function createProjectFromLead(lead: Lead) {
+    const project: Omit<Project, "id"> = {
+      leadId: lead.id,
+      nome: lead.nome,
+      cliente: lead.nome,
+      tipo_projeto: lead.tipo_projeto,
+      status: "solicitar_arquivos",
+      valor: lead.orcamento,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    await addProject(project);
   }
 
   async function addProject(project: Omit<Project, "id">) {
@@ -100,7 +129,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProjectContext.Provider
-      value={{ projects, addProject, updateProject, deleteProject, moveProject }}
+      value={{ 
+        projects, 
+        addProject, 
+        updateProject, 
+        deleteProject, 
+        moveProject,
+        createProjectFromLead 
+      }}
     >
       {children}
     </ProjectContext.Provider>

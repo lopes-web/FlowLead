@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLeads } from "@/contexts/LeadContext";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,7 @@ interface LeadModalProps {
 
 export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const { leads, addLead, updateLead } = useLeads();
+  const { createProjectFromLead } = useProjects();
   const whatsappRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<LeadFormData>({
@@ -127,26 +129,26 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const now = new Date().toISOString();
     
-    // Garante que o último contato tenha o formato correto para o banco de dados
-    const formattedData = {
-      ...formData,
-      ultimo_contato: formData.ultimo_contato ? new Date(formData.ultimo_contato).toISOString() : now,
-      updated_at: now
-    };
-
-    if (leadId) {
-      updateLead(leadId, formattedData);
-    } else {
-      addLead({
-        ...formattedData,
-        created_at: now,
-      });
+    try {
+      if (leadId) {
+        const oldLead = leads.find(lead => lead.id === leadId);
+        await updateLead(leadId, formData);
+        
+        // Se o status mudou para fechado, cria um projeto
+        if (oldLead?.status !== "fechado" && formData.status === "fechado") {
+          const updatedLead = { ...oldLead, ...formData, id: leadId };
+          await createProjectFromLead(updatedLead);
+        }
+      } else {
+        await addLead(formData);
+      }
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Erro ao salvar lead:", error);
     }
-    onOpenChange(false);
   };
 
   const formatWhatsApp = (value: string) => {

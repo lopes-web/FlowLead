@@ -11,9 +11,9 @@ export type ProjectStatus =
 export interface Project {
   id: string;
   leadId: string;
-  nome: string; // Nome do projeto (herdado do lead)
-  cliente: string; // Nome do cliente (herdado do lead)
-  tipo_projeto: string; // Tipo do projeto (herdado do lead)
+  nome: string;
+  cliente: string;
+  tipo_projeto: string;
   status: ProjectStatus;
   descricao?: string;
   prazo_entrega?: string;
