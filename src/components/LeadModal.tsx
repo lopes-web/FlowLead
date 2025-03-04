@@ -329,7 +329,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 name="anotacoes"
                 value={formData.anotacoes}
                 onChange={handleChange}
-                className="min-h-[100px]"
+                className="min-h-[400px]"
               />
             </div>
 
