@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dashboard } from "@/components/Dashboard";
 import { Kanban } from "@/components/Kanban";
 import { LeadModal } from "@/components/LeadModal";
@@ -14,9 +14,13 @@ import {
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
 import TimeTracking from "./TimeTracking";
 import { useNavigate } from "react-router-dom";
+import { ProjectsKanban } from "@/components/ProjectsKanban";
 
-const Index = () => {
-  const [view, setView] = useState<"dashboard" | "leads" | "timetracking">("dashboard");
+interface IndexProps {
+  view?: "dashboard" | "leads" | "projects" | "timetracking";
+}
+
+const Index = ({ view = "dashboard" }: IndexProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState<string | undefined>();
   const navigate = useNavigate();
@@ -43,7 +47,7 @@ const Index = () => {
               <div className="flex items-center gap-2 bg-accent/50 rounded-lg p-1">
                 <Button
                   variant={view === "dashboard" ? "secondary" : "ghost"}
-                  onClick={() => setView("dashboard")}
+                  onClick={() => navigate("/")}
                   className="gap-2"
                   size="sm"
                 >
@@ -52,7 +56,7 @@ const Index = () => {
                 </Button>
                 <Button
                   variant={view === "leads" ? "secondary" : "ghost"}
-                  onClick={() => setView("leads")}
+                  onClick={() => navigate("/leads")}
                   className="gap-2"
                   size="sm"
                 >
@@ -60,7 +64,7 @@ const Index = () => {
                   Leads
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant={view === "projects" ? "secondary" : "ghost"}
                   onClick={() => navigate("/projects")}
                   className="gap-2"
                   size="sm"
@@ -70,7 +74,7 @@ const Index = () => {
                 </Button>
                 <Button
                   variant={view === "timetracking" ? "secondary" : "ghost"}
-                  onClick={() => setView("timetracking")}
+                  onClick={() => navigate("/time")}
                   className="gap-2"
                   size="sm"
                 >
@@ -90,9 +94,19 @@ const Index = () => {
             </div>
           </div>
 
-          {view === "dashboard" && <Dashboard />}
-          {view === "leads" && <Kanban onEditLead={handleOpenModal} />}
-          {view === "timetracking" && <TimeTracking />}
+          <main className="flex-1 overflow-hidden">
+            {view === "dashboard" && <Dashboard />}
+            {view === "leads" && <Kanban onEditLead={handleOpenModal} />}
+            {view === "projects" && (
+              <ProjectsKanban
+                onEditProject={(projectId) => {
+                  // TODO: Implementar modal de edição
+                  console.log("Editar projeto:", projectId);
+                }}
+              />
+            )}
+            {view === "timetracking" && <TimeTracking />}
+          </main>
         </div>
 
         {modalOpen && (

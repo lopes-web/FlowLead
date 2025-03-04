@@ -26,15 +26,24 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   // Monitora leads fechados e cria projetos automaticamente
   useEffect(() => {
     const handleClosedLeads = async () => {
+      console.log("Verificando leads fechados...");
+      console.log("Total de leads:", leads.length);
+      console.log("Total de projetos:", projects.length);
+
       const closedLeadsWithoutProjects = leads.filter(lead => {
         const hasProject = projects.some(project => project.leadId === lead.id);
-        return lead.status === "fechado" && !hasProject;
+        const isClosed = lead.status === "fechado";
+        console.log(`Lead ${lead.nome}: fechado=${isClosed}, tem projeto=${hasProject}`);
+        return isClosed && !hasProject;
       });
+
+      console.log("Leads fechados sem projetos:", closedLeadsWithoutProjects.length);
 
       for (const lead of closedLeadsWithoutProjects) {
         try {
+          console.log(`Criando projeto para o lead: ${lead.nome}`);
           await createProjectFromLead(lead);
-          console.log(`Projeto criado automaticamente para o lead: ${lead.nome}`);
+          console.log(`Projeto criado com sucesso para o lead: ${lead.nome}`);
         } catch (error) {
           console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
         }
@@ -42,7 +51,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     };
 
     handleClosedLeads();
-  }, [leads]);
+  }, [leads, projects]);
 
   async function fetchProjects() {
     try {
@@ -68,6 +77,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Verifica se já existe um projeto para este lead
+    const existingProject = projects.find(p => p.leadId === lead.id);
+    if (existingProject) {
+      console.log(`Projeto já existe para o lead ${lead.nome}`);
+      return;
+    }
+
     const project: Omit<Project, "id"> = {
       leadId: lead.id,
       nome: lead.nome,
@@ -81,7 +97,25 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString()
     };
 
-    await addProject(project);
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .insert([project])
+        .select();
+
+      if (error) {
+        console.error("Erro ao adicionar projeto:", error);
+        throw error;
+      }
+
+      if (data) {
+        console.log(`Projeto criado com sucesso: ${data[0].nome}`);
+        setProjects(prev => [data[0], ...prev]);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar projeto:", error);
+      throw error;
+    }
   }
 
   async function addProject(project: Omit<Project, "id">) {
@@ -98,7 +132,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         setProjects((prev) => [data[0], ...prev]);
-        await fetchProjects(); // Recarrega os projetos para garantir sincronização
       }
     } catch (error) {
       console.error("Erro ao adicionar projeto:", error);
