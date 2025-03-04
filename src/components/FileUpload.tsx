@@ -28,9 +28,19 @@ export function FileUpload({ leadId }: FileUploadProps) {
   async function loadFiles() {
     try {
       const fileList = await listFiles(leadId);
-      setFiles(fileList || []);
+      if (fileList) {
+        // Garantir que cada arquivo tenha o path correto
+        const filesWithPath = fileList.map(file => ({
+          ...file,
+          path: `${leadId}/${file.name}`
+        }));
+        setFiles(filesWithPath);
+      } else {
+        setFiles([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar arquivos:', error);
+      setFiles([]);
     } finally {
       setLoading(false);
     }
@@ -51,8 +61,10 @@ export function FileUpload({ leadId }: FileUploadProps) {
     }
   }
 
-  async function handleDownload(path: string, fileName: string) {
+  async function handleDownload(path: string, fileName: string, e: React.MouseEvent) {
+    e.stopPropagation(); // Impedir propagação do evento
     try {
+      console.log('Tentando baixar arquivo:', path); // Debug
       const url = await getFileUrl(path);
       if (url) {
         const link = document.createElement('a');
@@ -67,8 +79,10 @@ export function FileUpload({ leadId }: FileUploadProps) {
     }
   }
 
-  async function handleDelete(path: string) {
+  async function handleDelete(path: string, e: React.MouseEvent) {
+    e.stopPropagation(); // Impedir propagação do evento
     try {
+      console.log('Tentando deletar arquivo:', path); // Debug
       await deleteFile(path);
       await loadFiles();
     } catch (error) {
@@ -114,14 +128,14 @@ export function FileUpload({ leadId }: FileUploadProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDownload(file.path, file.name)}
+                  onClick={(e) => handleDownload(file.path, file.name, e)}
                 >
                   <DownloadIcon className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(file.path)}
+                  onClick={(e) => handleDelete(file.path, e)}
                 >
                   <Trash2Icon className="h-4 w-4 text-red-500" />
                 </Button>

@@ -16,12 +16,14 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 // Função para fazer upload de arquivo
 export async function uploadFile(file: File, leadId: string) {
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${leadId}/${Date.now()}.${fileExt}`;
+    const fileName = `${leadId}/${file.name}`;
 
     const { data, error } = await supabase.storage
       .from('lead-files')
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true // Sobrescrever se já existir
+      });
 
     if (error) throw error;
     return data;
