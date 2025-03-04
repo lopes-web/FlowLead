@@ -13,13 +13,13 @@ import {
 } from "lucide-react";
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
 import TimeTracking from "./TimeTracking";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [view, setView] = useState<"dashboard" | "leads" | "timetracking">("dashboard");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState<string | undefined>();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleOpenModal = (leadId?: string) => {
     setEditingLeadId(leadId);
@@ -61,7 +61,7 @@ const Index = () => {
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => router.push("/projects")}
+                  onClick={() => navigate("/projects")}
                   className="gap-2"
                   size="sm"
                 >

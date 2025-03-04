@@ -1,19 +1,14 @@
 import { ProjectsKanban } from "@/components/ProjectsKanban";
-import { useProjects } from "@/contexts/ProjectContext";
 
 export default function ProjectsPage() {
-  const { projects, updateProject, deleteProject } = useProjects();
-
   return (
     <main className="flex-1 overflow-hidden">
       <div className="h-full">
         <ProjectsKanban
-          projects={projects}
-          onEditProject={(project) => {
+          onEditProject={(projectId) => {
             // TODO: Implementar modal de edição
-            console.log("Editar projeto:", project);
+            console.log("Editar projeto:", projectId);
           }}
-          onDeleteProject={deleteProject}
         />
       </div>
     </main>
