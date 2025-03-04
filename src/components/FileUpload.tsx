@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, MouseEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -61,10 +61,13 @@ export function FileUpload({ leadId }: FileUploadProps) {
     }
   }
 
-  async function handleDownload(path: string, fileName: string, e: React.MouseEvent) {
-    e.stopPropagation(); // Impedir propagação do evento
+  async function handleDownload(path: string, fileName: string, e: MouseEvent<HTMLButtonElement>) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     try {
-      console.log('Tentando baixar arquivo:', path); // Debug
+      console.log('Tentando baixar arquivo:', { path, fileName });
       const url = await getFileUrl(path);
       if (url) {
         const link = document.createElement('a');
@@ -79,10 +82,13 @@ export function FileUpload({ leadId }: FileUploadProps) {
     }
   }
 
-  async function handleDelete(path: string, e: React.MouseEvent) {
-    e.stopPropagation(); // Impedir propagação do evento
+  async function handleDelete(path: string, e: MouseEvent<HTMLButtonElement>) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     try {
-      console.log('Tentando deletar arquivo:', path); // Debug
+      console.log('Tentando deletar arquivo:', path);
       await deleteFile(path);
       await loadFiles();
     } catch (error) {
@@ -92,14 +98,14 @@ export function FileUpload({ leadId }: FileUploadProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center p-4" onClick={e => e.stopPropagation()}>
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={e => e.stopPropagation()}>
       <div className="flex items-end gap-4">
         <div className="flex-1">
           <Label htmlFor="file">Anexar arquivo</Label>
@@ -119,6 +125,7 @@ export function FileUpload({ leadId }: FileUploadProps) {
             <div
               key={file.id}
               className="flex items-center justify-between p-2 border rounded-lg"
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center gap-2">
                 <FileIcon className="h-5 w-5 text-blue-500" />
@@ -126,6 +133,7 @@ export function FileUpload({ leadId }: FileUploadProps) {
               </div>
               <div className="flex items-center gap-2">
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDownload(file.path, file.name, e)}
@@ -133,6 +141,7 @@ export function FileUpload({ leadId }: FileUploadProps) {
                   <DownloadIcon className="h-4 w-4" />
                 </Button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDelete(file.path, e)}

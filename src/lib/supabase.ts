@@ -51,10 +51,19 @@ export async function listFiles(leadId: string) {
 // Função para gerar URL de download
 export async function getFileUrl(path: string) {
   try {
-    const { data } = await supabase.storage
+    if (!path) {
+      throw new Error('Path is required');
+    }
+
+    console.log('Gerando URL para:', path); // Debug
+
+    const { data, error } = await supabase.storage
       .from('lead-files')
       .createSignedUrl(path, 60); // URL válida por 60 segundos
 
+    if (error) throw error;
+    
+    console.log('URL gerada:', data?.signedUrl); // Debug
     return data?.signedUrl;
   } catch (error) {
     console.error('Erro ao gerar URL:', error);
