@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Project, ProjectStatus } from "@/types/project";
 import { supabase } from "@/lib/supabase";
 import { useLeads } from "./LeadContext";
@@ -19,41 +19,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const { leads } = useLeads();
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  // Monitora leads fechados e cria projetos automaticamente
-  useEffect(() => {
-    const handleClosedLeads = async () => {
-      console.log("Verificando leads fechados...");
-      console.log("Total de leads:", leads.length);
-      console.log("Total de projetos:", projects.length);
-
-      const closedLeadsWithoutProjects = leads.filter(lead => {
-        const hasProject = projects.some(project => project.leadId === lead.id);
-        const isClosed = lead.status === "fechado";
-        console.log(`Lead ${lead.nome}: fechado=${isClosed}, tem projeto=${hasProject}`);
-        return isClosed && !hasProject;
-      });
-
-      console.log("Leads fechados sem projetos:", closedLeadsWithoutProjects.length);
-
-      for (const lead of closedLeadsWithoutProjects) {
-        try {
-          console.log(`Criando projeto para o lead: ${lead.nome}`);
-          await createProjectFromLead(lead);
-          console.log(`Projeto criado com sucesso para o lead: ${lead.nome}`);
-        } catch (error) {
-          console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
-        }
-      }
-    };
-
-    handleClosedLeads();
-  }, [leads, projects]);
-
-  async function fetchProjects() {
+  const fetchProjects = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -79,7 +45,62 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro ao buscar projetos:", error);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Monitora leads fechados e cria projetos automaticamente
+  useEffect(() => {
+    const handleClosedLeads = async () => {
+      console.log("Verificando leads fechados...");
+      console.log("Total de leads:", leads.length);
+      console.log("Total de projetos:", projects.length);
+
+      // Busca todos os projetos do Supabase para ter certeza que temos a lista mais atualizada
+      const { data: currentProjects } = await supabase
+        .from("projects")
+        .select("lead_id");
+
+      const projectLeadIds = new Set(currentProjects?.map(p => p.lead_id) || []);
+
+      const closedLeadsWithoutProjects = leads.filter(lead => {
+        const hasProject = projectLeadIds.has(lead.id);
+        const isClosed = lead.status === "fechado";
+        console.log(`Lead ${lead.nome}: fechado=${isClosed}, tem projeto=${hasProject}`);
+        return isClosed && !hasProject;
+      });
+
+      console.log("Leads fechados sem projetos:", closedLeadsWithoutProjects.length);
+
+      for (const lead of closedLeadsWithoutProjects) {
+        try {
+          // Verifica novamente antes de criar
+          const { data: existingProject } = await supabase
+            .from("projects")
+            .select("id")
+            .eq("lead_id", lead.id)
+            .single();
+
+          if (!existingProject) {
+            console.log(`Criando projeto para o lead: ${lead.nome}`);
+            await createProjectFromLead(lead);
+            console.log(`Projeto criado com sucesso para o lead: ${lead.nome}`);
+          } else {
+            console.log(`Projeto já existe para o lead: ${lead.nome}`);
+          }
+        } catch (error) {
+          console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
+        }
+      }
+
+      // Atualiza a lista de projetos
+      await fetchProjects();
+    };
+
+    handleClosedLeads();
+  }, [leads, fetchProjects]);
 
   async function createProjectFromLead(lead: Lead) {
     if (!lead.id) {
