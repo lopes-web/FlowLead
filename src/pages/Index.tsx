@@ -8,15 +8,18 @@ import {
   LayoutDashboard, 
   KanbanSquare,
   Timer,
-  Zap
+  Zap,
+  FolderKanban
 } from "lucide-react";
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
 import TimeTracking from "./TimeTracking";
+import { useRouter } from "next/navigation";
 
 const Index = () => {
-  const [view, setView] = useState<"dashboard" | "kanban" | "timetracking">("dashboard");
+  const [view, setView] = useState<"dashboard" | "leads" | "timetracking">("dashboard");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState<string | undefined>();
+  const router = useRouter();
 
   const handleOpenModal = (leadId?: string) => {
     setEditingLeadId(leadId);
@@ -48,13 +51,22 @@ const Index = () => {
                   Dashboard
                 </Button>
                 <Button
-                  variant={view === "kanban" ? "secondary" : "ghost"}
-                  onClick={() => setView("kanban")}
+                  variant={view === "leads" ? "secondary" : "ghost"}
+                  onClick={() => setView("leads")}
                   className="gap-2"
                   size="sm"
                 >
                   <KanbanSquare className="h-4 w-4" />
-                  Kanban
+                  Leads
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push("/projects")}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <FolderKanban className="h-4 w-4" />
+                  Projetos
                 </Button>
                 <Button
                   variant={view === "timetracking" ? "secondary" : "ghost"}
@@ -79,7 +91,7 @@ const Index = () => {
           </div>
 
           {view === "dashboard" && <Dashboard />}
-          {view === "kanban" && <Kanban onEditLead={handleOpenModal} />}
+          {view === "leads" && <Kanban onEditLead={handleOpenModal} />}
           {view === "timetracking" && <TimeTracking />}
         </div>
 

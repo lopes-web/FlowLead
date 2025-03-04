@@ -3,7 +3,7 @@ import { useProjects } from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ProjectStatus } from "@/types/project";
+import { Project, ProjectStatus } from "@/types/project";
 import { DeleteProjectDialog } from "./DeleteProjectDialog";
 import {
   Files,
@@ -73,21 +73,21 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<ProjectStatus | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, projectId: string, status: ProjectStatus) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, projectId: string, status: ProjectStatus) => {
     e.dataTransfer.setData("text/plain", projectId);
     setDraggedStatus(status);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.classList.add('bg-[#1c2132]');
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.currentTarget.classList.remove('bg-[#1c2132]');
   };
 
-  const handleDrop = async (e: React.DragEvent, newStatus: ProjectStatus) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, newStatus: ProjectStatus) => {
     e.preventDefault();
     e.currentTarget.classList.remove('bg-[#1c2132]');
     const projectId = e.dataTransfer.getData("text/plain");
@@ -134,15 +134,15 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
               <h3 className="font-medium truncate">
                 {config.label}
               </h3>
-              <Badge variant="secondary" className="ml-auto shrink-0 bg-[#1c2132] text-white border-[#2e3446]">
-                {projects.filter((project) => project.status === status).length}
+              <Badge className="ml-auto shrink-0 bg-[#1c2132] text-white border-[#2e3446]">
+                {projects.filter((project: Project) => project.status === status).length}
               </Badge>
             </div>
 
             <div className="space-y-3 min-h-[200px]">
               {projects
-                .filter((project) => project.status === status)
-                .map((project) => (
+                .filter((project: Project) => project.status === status)
+                .map((project: Project) => (
                   <Card
                     key={project.id}
                     className="group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] hover:border-[#9b87f5] hover:shadow-md transition-all duration-200"
@@ -216,4 +216,4 @@ export function ProjectsKanban({ onEditProject }: KanbanProps) {
       />
     </>
   );
-} 
+}
