@@ -334,33 +334,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="necessidades">Necessidades</Label>
-              <Textarea
-                id="necessidades"
-                name="necessidades"
-                value={formData.necessidades}
-                onChange={handleChange}
-                className="min-h-[100px]"
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="observacoes">Observações</Label>
               <Textarea
                 id="observacoes"
                 name="observacoes"
                 value={formData.observacoes}
-                onChange={handleChange}
-                className="min-h-[100px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ideias">Ideias Iniciais</Label>
-              <Textarea
-                id="ideias"
-                name="ideias"
-                value={formData.ideias}
                 onChange={handleChange}
                 className="min-h-[100px]"
               />
