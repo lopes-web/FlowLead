@@ -23,7 +23,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type LeadFormData = Omit<Lead, "id">;
 
@@ -186,122 +185,20 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     }).format(value).replace('R$', '').trim();
   };
 
-  const renderTable = () => {
-    const data = [
-      {
-        cod: 1,
-        categoria: "Imovel Casa",
-        administradora: "Bradesco",
-        credito: "1234.51",
-        entrada: "2.39",
-        parcelas: "123",
-        vlrParcela: "10.02",
-        taxa: "21.34",
-        status: "disponivel"
-      },
-      {
-        cod: 2,
-        categoria: "Imovel Casa",
-        administradora: "Bradesco",
-        credito: "12309120.39",
-        entrada: "1234.12",
-        parcelas: "122",
-        vlrParcela: "100884.31",
-        taxa: "0.00",
-        status: "disponivel"
-      },
-      {
-        cod: 3,
-        categoria: "veiculo casad",
-        administradora: "Porto Seguro",
-        credito: "13516.23",
-        entrada: "1231.45",
-        parcelas: "12",
-        vlrParcela: "1023.73",
-        taxa: "0.00",
-        status: "disponivel"
-      },
-      {
-        cod: 4,
-        categoria: "veiculo",
-        administradora: "Porto Seguro",
-        credito: "134",
-        entrada: "20.00",
-        parcelas: "0.20",
-        vlrParcela: "12",
-        taxa: "1.65",
-        status: "disponivel"
-      }
-    ];
-
-    return (
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">Cod.</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Administradora</TableHead>
-              <TableHead className="text-right">Crédito</TableHead>
-              <TableHead className="text-right">Entrada</TableHead>
-              <TableHead className="text-center">Nº Parcelas</TableHead>
-              <TableHead className="text-right">Vlr Parcela</TableHead>
-              <TableHead className="text-right">Taxa</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.cod}>
-                <TableCell>{row.cod}</TableCell>
-                <TableCell>{row.categoria}</TableCell>
-                <TableCell>{row.administradora}</TableCell>
-                <TableCell className="text-right">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(Number(row.credito))}
-                </TableCell>
-                <TableCell className="text-right">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(Number(row.entrada))}
-                </TableCell>
-                <TableCell className="text-center">{row.parcelas}</TableCell>
-                <TableCell className="text-right">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(Number(row.vlrParcela))}
-                </TableCell>
-                <TableCell className="text-right">{row.taxa}%</TableCell>
-                <TableCell>{row.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-4">
-          <DialogTitle>
-            {leadId ? "Editar Lead" : "Novo Lead"}
-          </DialogTitle>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
           <DialogDescription>
-            {leadId 
-              ? "Edite as informações do lead conforme necessário." 
-              : "Preencha as informações do novo lead."
-            }
+            {leadId
+              ? "Edite as informações do lead conforme necessário."
+              : "Preencha as informações do novo lead."}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[calc(90vh-8rem)]">
-          <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ScrollArea className="flex-1">
+          <form onSubmit={handleSubmit} className="space-y-6 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome</Label>
                 <Input
@@ -309,19 +206,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="nome"
                   value={formData.nome}
                   onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp">WhatsApp</Label>
-                <Input
-                  ref={whatsappRef}
-                  id="whatsapp"
-                  name="whatsapp"
-                  value={formData.whatsapp}
-                  onChange={handleWhatsAppChange}
-                  placeholder="(00) 00000-0000"
+                  placeholder="Nome do lead"
                   required
                 />
               </div>
@@ -334,7 +219,18 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="exemplo@email.com"
+                  placeholder="Email do lead"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">WhatsApp</Label>
+                <Input
+                  id="whatsapp"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleChange}
+                  placeholder="WhatsApp do lead"
                 />
               </div>
 
@@ -345,7 +241,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="instagram"
                   value={formData.instagram}
                   onChange={handleChange}
-                  placeholder="@usuario ou URL completa"
+                  placeholder="Instagram do lead"
                 />
               </div>
 
@@ -356,7 +252,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="website"
                   value={formData.website}
                   onChange={handleChange}
-                  placeholder="https://exemplo.com"
+                  placeholder="Website do lead"
                 />
               </div>
 
@@ -367,25 +263,19 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="origem"
                   value={formData.origem}
                   onChange={handleChange}
-                  required
+                  placeholder="Origem do lead"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
-                <Select
+                <Input
+                  id="tipo_projeto"
+                  name="tipo_projeto"
                   value={formData.tipo_projeto}
-                  onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de projeto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="site">Site</SelectItem>
-                    <SelectItem value="landing_page">Landing Page</SelectItem>
-                    <SelectItem value="criativos">Criativos</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={handleChange}
+                  placeholder="Tipo de projeto"
+                />
               </div>
 
               <div className="space-y-2">
@@ -435,31 +325,9 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="anotacoes">Anotações</Label>
-              <Textarea
-                id="anotacoes"
-                name="anotacoes"
-                value={formData.anotacoes}
-                onChange={handleChange}
-                className="min-h-[400px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                name="observacoes"
-                value={formData.observacoes}
-                onChange={handleChange}
-                className="min-h-[100px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tags de Qualidade</Label>
+              <Label>Tags</Label>
               <div className="flex flex-wrap gap-2">
-                {availableTags.map(tag => (
+                {availableTags.map((tag) => (
                   <Badge
                     key={tag}
                     variant={formData.tags.includes(tag) ? "default" : "outline"}
@@ -472,15 +340,48 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
             </div>
 
-            {leadId && (
-              <div className="space-y-2">
-                <Label>Arquivos</Label>
-                <FileUpload leadId={leadId} />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="anotacoes">Anotações</Label>
+              <Textarea
+                id="anotacoes"
+                name="anotacoes"
+                value={formData.anotacoes}
+                onChange={handleChange}
+                placeholder="Anotações sobre o lead"
+              />
+            </div>
 
-            <div className="space-y-4">
-              {renderTable()}
+            <div className="space-y-2">
+              <Label htmlFor="necessidades">Necessidades</Label>
+              <Textarea
+                id="necessidades"
+                name="necessidades"
+                value={formData.necessidades}
+                onChange={handleChange}
+                placeholder="Necessidades do lead"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="observacoes">Observações</Label>
+              <Textarea
+                id="observacoes"
+                name="observacoes"
+                value={formData.observacoes}
+                onChange={handleChange}
+                placeholder="Observações gerais"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ideias">Ideias</Label>
+              <Textarea
+                id="ideias"
+                name="ideias"
+                value={formData.ideias}
+                onChange={handleChange}
+                placeholder="Ideias para o projeto"
+              />
             </div>
 
             <div className="sticky bottom-0 bg-background pt-4 border-t">
