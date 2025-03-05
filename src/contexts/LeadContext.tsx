@@ -126,9 +126,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const updates = {
         ...restLead,
-        updatedat: new Date().toISOString(), // Sempre atualiza o updatedat
         ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
-        ...(ultimo_contato && { ultimocontato: ultimo_contato }),
+        ...(ultimo_contato && { ultimocontato: ultimo_contato })
       };
 
       const { error } = await supabase
@@ -142,7 +141,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Atualiza o estado local e recarrega os leads para garantir sincronização
-      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead, updated_at: new Date().toISOString() } : l));
+      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
       await fetchLeads();
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
