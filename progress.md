@@ -114,6 +114,44 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Layout responsivo em grid
 - Cartões informativos com métricas
 
+### Gestão de Projetos
+- Conversão automática de leads fechados em projetos
+- Projetos independentes após conversão (sem vínculo com lead)
+- Campos detalhados para projetos:
+  - Nome
+  - Cliente
+  - Tipo de Projeto
+  - Status
+  - Valor
+  - Descrição
+  - Observações
+  - Prazo de Entrega
+  - Arquivos Recebidos
+- Status de projetos:
+  - Solicitar Arquivos
+  - Em Andamento
+  - Em Revisão
+  - Concluído
+- Interface Kanban para visualização
+- Drag and drop para mudança de status
+- Atualização em tempo real
+
+### Melhorias Recentes
+- Unificação do sistema de navegação
+  - Navegação consistente entre todas as páginas
+  - Uso de rotas para melhor experiência do usuário
+  - Histórico de navegação preservado
+- Otimização da conversão de leads em projetos
+  - Verificação de duplicidade por nome
+  - Remoção do vínculo lead-projeto
+  - Logs detalhados para debugging
+  - Tratamento de erros aprimorado
+- Atualização do favicon com identidade visual
+- Correção de problemas de interface
+  - Alinhamento de colunas nas tabelas
+  - Formatação de valores monetários em BRL
+  - Melhorias na responsividade
+
 ## Estrutura do Banco de Dados
 
 ### Tabela: leads
@@ -145,12 +183,30 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - created_at (timestamp with time zone)
 - updated_at (timestamp with time zone)
 
+### Tabela: projects
+- id (UUID)
+- nome (text)
+- cliente (text)
+- tipo_projeto (text)
+- status (text)
+- valor (numeric)
+- descricao (text)
+- observacoes (text)
+- prazo_entrega (timestamp)
+- arquivos_recebidos (text[])
+- created_at (timestamp)
+- updated_at (timestamp)
+
 ## Próximos Passos
 
 - [x] Implementar sistema de filtros
 - [x] Adicionar relatórios e dashboards
 - [x] Implementar metas de prospecção
 - [x] Adicionar gráficos de produtividade
+- [x] Implementar conversão automática de leads em projetos
+- [x] Unificar sistema de navegação
+- [x] Melhorar tratamento de erros
+- [x] Atualizar identidade visual
 - [ ] Implementar sistema de notificações
 - [ ] Adicionar histórico de alterações
 - [ ] Melhorar sistema de tags

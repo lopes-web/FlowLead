@@ -92,6 +92,7 @@ export function TimeTrackingProvider({ children }: TimeTrackingProviderProps) {
       .update({
         end_time: endTime.toISOString(),
         duration,
+        updated_at: endTime.toISOString()
       })
       .eq("id", currentActivity.id);
 
