@@ -33,7 +33,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .order("updatedat", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar leads:", error);
@@ -42,8 +42,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const formattedLeads = data.map(lead => ({
         ...lead,
-        created_at: lead.createdat,
-        updated_at: lead.updatedat,
+        created_at: lead.created_at,
+        updated_at: lead.updated_at,
         tipo_projeto: lead.tipoprojeto,
         ultimo_contato: lead.ultimocontato,
       }));
@@ -76,8 +76,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const dbLead = {
         ...restLead,
-        createdat: created_at || new Date().toISOString(),
-        updatedat: updated_at || new Date().toISOString(),
+        created_at: created_at || new Date().toISOString(),
+        updated_at: updated_at || new Date().toISOString(),
         tipoprojeto: tipo_projeto,
         ultimocontato: ultimo_contato,
       };
@@ -94,8 +94,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const formattedLead = {
         ...data[0],
-        created_at: data[0].createdat,
-        updated_at: data[0].updatedat,
+        created_at: data[0].created_at,
+        updated_at: data[0].updated_at,
         tipo_projeto: data[0].tipoprojeto,
         ultimo_contato: data[0].ultimocontato,
       };
