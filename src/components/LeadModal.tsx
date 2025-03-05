@@ -66,6 +66,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     "prioridade_baixa",
     "decisor",
     "influenciador",
+    "redesign"
   ];
 
   useEffect(() => {
@@ -187,8 +188,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="px-6 py-4">
           <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
           <DialogDescription>
             {leadId
@@ -196,8 +197,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               : "Preencha as informações do novo lead."}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1">
-          <form onSubmit={handleSubmit} className="space-y-6 p-6">
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome</Label>
