@@ -55,10 +55,12 @@ export function TimeTrackingProvider({ children }: TimeTrackingProviderProps) {
       return;
     }
 
+    const now = new Date().toISOString();
     const newActivity = {
       activity_type,
       notes,
-      start_time: new Date().toISOString(),
+      start_time: now,
+      created_at: now
     };
 
     const { data, error } = await supabase
@@ -93,7 +95,9 @@ export function TimeTrackingProvider({ children }: TimeTrackingProviderProps) {
         end_time: endTime.toISOString(),
         duration
       })
-      .eq("id", currentActivity.id);
+      .eq("id", currentActivity.id)
+      .select()
+      .single();
 
     if (error) {
       console.error("Erro ao parar tracking:", error);
