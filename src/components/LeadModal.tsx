@@ -50,8 +50,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     ultimo_contato: new Date().toISOString(),
     anotacoes: "",
     tags: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    createdat: new Date().toISOString(),
+    updatedat: new Date().toISOString(),
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -87,8 +87,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         ultimo_contato: new Date().toISOString(),
         anotacoes: "",
         tags: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        createdat: new Date().toISOString(),
+        updatedat: new Date().toISOString(),
       });
     }
   }, [leadId, leads]);
