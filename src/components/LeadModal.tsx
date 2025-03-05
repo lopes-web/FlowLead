@@ -182,7 +182,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="px-6 py-4">
           <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
           <DialogDescription>
@@ -191,7 +191,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               : "Preencha as informações do novo lead."}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -201,7 +201,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="nome"
                   value={formData.nome}
                   onChange={handleChange}
-                  placeholder="Nome do lead"
+                  placeholder="Ex: João Silva"
                   required
                 />
               </div>
@@ -214,7 +214,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email do lead"
+                  placeholder="Ex: joao.silva@email.com"
                 />
               </div>
 
@@ -224,8 +224,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   id="whatsapp"
                   name="whatsapp"
                   value={formData.whatsapp}
-                  onChange={handleChange}
-                  placeholder="WhatsApp do lead"
+                  onChange={handleWhatsAppChange}
+                  placeholder="Ex: (11) 98765-4321"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="instagram"
                   value={formData.instagram}
                   onChange={handleChange}
-                  placeholder="Instagram do lead"
+                  placeholder="Ex: @joaosilva"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="website"
                   value={formData.website}
                   onChange={handleChange}
-                  placeholder="Website do lead"
+                  placeholder="Ex: www.joaosilva.com.br"
                 />
               </div>
 
@@ -258,7 +258,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="origem"
                   value={formData.origem}
                   onChange={handleChange}
-                  placeholder="Origem do lead"
+                  placeholder="Ex: Instagram Ads"
                 />
               </div>
 
@@ -269,7 +269,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   name="tipo_projeto"
                   value={formData.tipo_projeto}
                   onChange={handleChange}
-                  placeholder="Tipo de projeto"
+                  placeholder="Ex: Redesign de Site"
                 />
               </div>
 
@@ -281,7 +281,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   type="text"
                   value={formatCurrency(formData.orcamento)}
                   onChange={handleChange}
-                  placeholder="R$ 0,00"
+                  placeholder="Ex: 5.000,00"
                   required
                 />
               </div>
@@ -342,7 +342,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 name="anotacoes"
                 value={formData.anotacoes}
                 onChange={handleChange}
-                placeholder="Anotações sobre o lead"
+                placeholder="Registre aqui todas as informações importantes sobre o lead, como detalhes das conversas, requisitos específicos, feedbacks, etc."
                 className="min-h-[400px] resize-y"
               />
             </div>
