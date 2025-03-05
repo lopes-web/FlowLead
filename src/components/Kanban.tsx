@@ -194,15 +194,16 @@ export function Kanban({ onEditLead }: KanbanProps) {
                               {(() => {
                                 try {
                                   if (!lead.ultimocontato) return "Não definido";
-                                  const date = new Date(lead.ultimocontato);
-                                  if (isNaN(date.getTime())) return "Data inválida";
-                                  return date.toLocaleDateString("pt-BR", {
+                                  const utcDate = new Date(lead.ultimocontato);
+                                  const localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
+                                  if (isNaN(localDate.getTime())) return "Data inválida";
+                                  return localDate.toLocaleDateString("pt-BR", {
                                     day: "2-digit",
                                     month: "2-digit",
                                     year: "numeric"
                                   });
                                 } catch (error) {
-                                  console.error("Erro ao formatar data:", error);
+                                  console.error("Erro ao formatar data:", error, lead.ultimocontato);
                                   return "Data inválida";
                                 }
                               })()}
