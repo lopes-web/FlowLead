@@ -32,9 +32,6 @@ export interface Lead {
   status: LeadStatus;
   ultimo_contato: string;
   anotacoes: string;
-  necessidades: string;
-  observacoes: string;
-  ideias: string;
   tags: LeadQualityTag[];
   created_at: string;
   updated_at: string;

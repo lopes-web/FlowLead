@@ -49,9 +49,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     status: "nao_contatado",
     ultimo_contato: new Date().toISOString(),
     anotacoes: "",
-    necessidades: "",
-    observacoes: "",
-    ideias: "",
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -89,9 +86,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         status: "nao_contatado",
         ultimo_contato: new Date().toISOString(),
         anotacoes: "",
-        necessidades: "",
-        observacoes: "",
-        ideias: "",
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -188,7 +182,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader className="px-6 py-4">
           <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
           <DialogDescription>
@@ -197,7 +191,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               : "Preencha as informações do novo lead."}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -349,39 +343,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 value={formData.anotacoes}
                 onChange={handleChange}
                 placeholder="Anotações sobre o lead"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="necessidades">Necessidades</Label>
-              <Textarea
-                id="necessidades"
-                name="necessidades"
-                value={formData.necessidades}
-                onChange={handleChange}
-                placeholder="Necessidades do lead"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                name="observacoes"
-                value={formData.observacoes}
-                onChange={handleChange}
-                placeholder="Observações gerais"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ideias">Ideias</Label>
-              <Textarea
-                id="ideias"
-                name="ideias"
-                value={formData.ideias}
-                onChange={handleChange}
-                placeholder="Ideias para o projeto"
+                className="min-h-[400px] resize-y"
               />
             </div>
 
