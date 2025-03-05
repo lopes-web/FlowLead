@@ -17,6 +17,7 @@ const LeadContext = createContext<LeadContextType | undefined>(undefined);
 
 export function LeadProvider({ children }: { children: React.ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const isOffline = useOffline();
 
   useEffect(() => {
@@ -30,23 +31,26 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   }, [isOffline]);
 
   async function fetchLeads() {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("leads")
-        .select("*")
-        .order("updatedat", { ascending: false });
+        .select("id, nome, email, whatsapp, instagram, website, origem, tipoprojeto, orcamento, status, ultimocontato, anotacoes, tags, created_at, updated_at")
+        .order("updated_at", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar leads:", error);
         return;
       }
 
-      setLeads(data);
-      offlineStorage.saveLeads(data);
+      setLeads(data || []);
+      offlineStorage.saveLeads(data || []);
     } catch (error) {
       console.error("Erro ao buscar leads:", error);
       const offlineLeads = offlineStorage.getLeads();
       setLeads(offlineLeads);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -65,12 +69,13 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { createdat, updatedat, ...restLead } = lead;
+      const now = new Date().toISOString();
+      const { id: _, created_at, updated_at, ...restLead } = lead as any;
 
       const dbLead = {
         ...restLead,
-        createdat: createdat || new Date().toISOString(),
-        updatedat: updatedat || new Date().toISOString(),
+        created_at: now,
+        updated_at: now
       };
 
       const { data, error } = await supabase
@@ -85,7 +90,6 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       setLeads((prevLeads: Lead[]) => [data[0], ...prevLeads]);
       offlineStorage.saveLeads([data[0], ...leads]);
-      await fetchLeads(); // Recarrega os leads após adicionar
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
     }
@@ -105,29 +109,52 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { createdat, updatedat, ...restLead } = lead;
-      const now = new Date().toISOString();
+      // Se estiver atualizando apenas o status (caso do Kanban)
+      if (Object.keys(lead).length === 1 && 'status' in lead) {
+        const { error } = await supabase
+          .from("leads")
+          .update({
+            status: lead.status,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", id);
 
-      // Sempre inclui updatedat em qualquer atualização
-      const updates = {
-        ...restLead,
-        updatedat: now
-      };
+        if (error) {
+          console.error("Erro ao atualizar lead:", error);
+          return;
+        }
+      } else {
+        // Remove campos que não devem ser enviados ao banco
+        const { id: _, created_at, updated_at, ...cleanLead } = lead as any;
 
-      const { error } = await supabase
-        .from("leads")
-        .update(updates)
-        .eq("id", id);
+        const updates = {
+          ...cleanLead,
+          updated_at: new Date().toISOString()
+        };
 
-      if (error) {
-        console.error("Erro ao atualizar lead:", error);
-        return;
+        const { error } = await supabase
+          .from("leads")
+          .update(updates)
+          .eq("id", id);
+
+        if (error) {
+          console.error("Erro ao atualizar lead:", error);
+          return;
+        }
       }
 
-      // Atualiza o estado local com o novo updatedat
-      const updatedLead = { ...lead, updatedat: now };
-      setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...updatedLead } : l));
-      await fetchLeads();
+      // Atualiza o estado local
+      setLeads((prev: Lead[]) => 
+        prev.map((l: Lead) => 
+          l.id === id 
+            ? { 
+                ...l, 
+                ...lead,
+                updated_at: new Date().toISOString() 
+              } 
+            : l
+        )
+      );
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
     }
@@ -177,7 +204,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, isOffline, isLoading: false }}>
+    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, isOffline, isLoading }}>
       {children}
     </LeadContext.Provider>
   );

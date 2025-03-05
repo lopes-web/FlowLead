@@ -33,8 +33,8 @@ export interface Lead {
   ultimocontato: string;
   anotacoes: string;
   tags: LeadQualityTag[];
-  createdat: string;
-  updatedat: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Project {
