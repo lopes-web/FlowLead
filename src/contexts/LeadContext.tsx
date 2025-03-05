@@ -72,8 +72,22 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const now = new Date().toISOString();
       const { id: _, created_at, updated_at, ...restLead } = lead as any;
 
+      // Garante que a data de último contato é válida
+      let ultimocontato = now;
+      try {
+        if (restLead.ultimocontato) {
+          const date = new Date(restLead.ultimocontato);
+          if (!isNaN(date.getTime())) {
+            ultimocontato = date.toISOString();
+          }
+        }
+      } catch (error) {
+        console.error("Data de último contato inválida, usando data atual:", error);
+      }
+
       const dbLead = {
         ...restLead,
+        ultimocontato,
         created_at: now,
         updated_at: now
       };
@@ -126,6 +140,19 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Remove campos que não devem ser enviados ao banco
         const { id: _, created_at, updated_at, ...cleanLead } = lead as any;
+
+        // Garante que a data de último contato é válida
+        if (cleanLead.ultimocontato) {
+          try {
+            const date = new Date(cleanLead.ultimocontato);
+            if (!isNaN(date.getTime())) {
+              cleanLead.ultimocontato = date.toISOString();
+            }
+          } catch (error) {
+            console.error("Data de último contato inválida, mantendo valor anterior:", error);
+            delete cleanLead.ultimocontato;
+          }
+        }
 
         const updates = {
           ...cleanLead,

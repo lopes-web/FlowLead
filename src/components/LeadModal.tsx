@@ -50,8 +50,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     ultimocontato: new Date().toISOString(),
     anotacoes: "",
     tags: [],
-    createdat: new Date().toISOString(),
-    updatedat: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -87,8 +87,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         ultimocontato: new Date().toISOString(),
         anotacoes: "",
         tags: [],
-        createdat: new Date().toISOString(),
-        updatedat: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
     }
   }, [leadId, leads]);
@@ -102,6 +102,15 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         ...prev,
         [name]: numericValue
       }));
+    } else if (name === "ultimocontato") {
+      // Garante que a data está no formato ISO
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: date.toISOString()
+        }));
+      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -292,7 +301,15 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   id="ultimocontato"
                   name="ultimocontato"
                   type="date"
-                  value={formData.ultimocontato ? formData.ultimocontato.split('T')[0] : new Date().toISOString().split('T')[0]}
+                  value={(() => {
+                    try {
+                      return formData.ultimocontato 
+                        ? new Date(formData.ultimocontato).toISOString().split('T')[0]
+                        : new Date().toISOString().split('T')[0];
+                    } catch (error) {
+                      return new Date().toISOString().split('T')[0];
+                    }
+                  })()}
                   onChange={handleChange}
                   required
                 />

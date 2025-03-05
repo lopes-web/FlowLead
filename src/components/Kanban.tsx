@@ -174,7 +174,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
                         <div className="flex flex-col gap-2">
                           <Badge className={`w-fit ${statusConfig[status].color}`}>
-                            {lead.tipo_projeto}
+                            {lead.tipoprojeto}
                           </Badge>
 
                           <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -191,7 +191,15 @@ export function Kanban({ onEditLead }: KanbanProps) {
                             <Calendar className="h-3 w-3 shrink-0" />
                             <span>
                               Último contato: {" "}
-                              {new Date(lead.ultimo_contato).toLocaleDateString("pt-BR")}
+                              {(() => {
+                                try {
+                                  return lead.ultimocontato 
+                                    ? new Date(lead.ultimocontato).toLocaleDateString("pt-BR") 
+                                    : "Não definido";
+                                } catch (error) {
+                                  return "Data inválida";
+                                }
+                              })()}
                             </span>
                           </div>
 
