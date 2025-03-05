@@ -33,7 +33,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       const formattedProjects = data?.map(project => ({
         ...project,
-        leadId: project.lead_id,
         tipo_projeto: project.tipo_projeto,
         prazo_entrega: project.prazo_entrega,
         arquivos_recebidos: project.arquivos_recebidos,
@@ -65,9 +64,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           // Verifica se já existe um projeto com o mesmo nome do lead
           const { data: existingProject } = await supabase
             .from("projects")
-            .select("id")
+            .select("id, nome")
             .eq("nome", lead.nome)
-            .single();
+            .maybeSingle();
 
           if (!existingProject) {
             console.log(`Criando projeto para o lead: ${lead.nome}`);
@@ -80,10 +79,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
         }
       }
+
+      // Atualiza a lista de projetos após criar novos
+      await fetchProjects();
     };
 
     handleClosedLeads();
-  }, [leads]);
+  }, [leads, fetchProjects]);
 
   async function createProjectFromLead(lead: Lead) {
     if (!lead.id) {
@@ -99,6 +101,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       valor: lead.orcamento || 0,
       descricao: lead.necessidades || "",
       observacoes: lead.observacoes || "",
+      prazo_entrega: null,
+      arquivos_recebidos: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
