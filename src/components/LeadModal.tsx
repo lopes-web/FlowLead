@@ -44,10 +44,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     instagram: "",
     website: "",
     origem: "",
-    tipo_projeto: "",
+    tipoprojeto: "",
     orcamento: 0,
     status: "nao_contatado",
-    ultimo_contato: new Date().toISOString(),
+    ultimocontato: new Date().toISOString(),
     anotacoes: "",
     tags: [],
     createdat: new Date().toISOString(),
@@ -81,10 +81,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         instagram: "",
         website: "",
         origem: "",
-        tipo_projeto: "",
+        tipoprojeto: "",
         orcamento: 0,
         status: "nao_contatado",
-        ultimo_contato: new Date().toISOString(),
+        ultimocontato: new Date().toISOString(),
         anotacoes: "",
         tags: [],
         createdat: new Date().toISOString(),
@@ -263,11 +263,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
+                <Label htmlFor="tipoprojeto">Tipo de Projeto</Label>
                 <Input
-                  id="tipo_projeto"
-                  name="tipo_projeto"
-                  value={formData.tipo_projeto}
+                  id="tipoprojeto"
+                  name="tipoprojeto"
+                  value={formData.tipoprojeto}
                   onChange={handleChange}
                   placeholder="Ex: Redesign de Site"
                 />
@@ -287,12 +287,12 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ultimo_contato">Último Contato</Label>
+                <Label htmlFor="ultimocontato">Último Contato</Label>
                 <Input
-                  id="ultimo_contato"
-                  name="ultimo_contato"
+                  id="ultimocontato"
+                  name="ultimocontato"
                   type="date"
-                  value={formData.ultimo_contato ? formData.ultimo_contato.split('T')[0] : new Date().toISOString().split('T')[0]}
+                  value={formData.ultimocontato ? formData.ultimocontato.split('T')[0] : new Date().toISOString().split('T')[0]}
                   onChange={handleChange}
                   required
                 />

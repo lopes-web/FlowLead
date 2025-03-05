@@ -27,10 +27,10 @@ export interface Lead {
   instagram: string;
   website: string;
   origem: string;
-  tipo_projeto: string;
+  tipoprojeto: string;
   orcamento: number;
   status: LeadStatus;
-  ultimo_contato: string;
+  ultimocontato: string;
   anotacoes: string;
   tags: LeadQualityTag[];
   createdat: string;
