@@ -55,32 +55,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleClosedLeads = async () => {
       console.log("Verificando leads fechados...");
-      console.log("Total de leads:", leads.length);
-      console.log("Total de projetos:", projects.length);
+      
+      // Filtra leads fechados
+      const closedLeads = leads.filter(lead => lead.status === "fechado");
+      console.log("Total de leads fechados:", closedLeads.length);
 
-      // Busca todos os projetos do Supabase para ter certeza que temos a lista mais atualizada
-      const { data: currentProjects } = await supabase
-        .from("projects")
-        .select("lead_id");
-
-      const projectLeadIds = new Set(currentProjects?.map(p => p.lead_id) || []);
-
-      const closedLeadsWithoutProjects = leads.filter(lead => {
-        const hasProject = projectLeadIds.has(lead.id);
-        const isClosed = lead.status === "fechado";
-        console.log(`Lead ${lead.nome}: fechado=${isClosed}, tem projeto=${hasProject}`);
-        return isClosed && !hasProject;
-      });
-
-      console.log("Leads fechados sem projetos:", closedLeadsWithoutProjects.length);
-
-      for (const lead of closedLeadsWithoutProjects) {
+      for (const lead of closedLeads) {
         try {
-          // Verifica novamente antes de criar
+          // Verifica se já existe um projeto com o mesmo nome do lead
           const { data: existingProject } = await supabase
             .from("projects")
             .select("id")
-            .eq("lead_id", lead.id)
+            .eq("nome", lead.nome)
             .single();
 
           if (!existingProject) {
@@ -94,13 +80,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
         }
       }
-
-      // Atualiza a lista de projetos
-      await fetchProjects();
     };
 
     handleClosedLeads();
-  }, [leads, fetchProjects]);
+  }, [leads]);
 
   async function createProjectFromLead(lead: Lead) {
     if (!lead.id) {
@@ -112,7 +95,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       nome: lead.nome,
       cliente: lead.nome,
       tipo_projeto: lead.tipo_projeto || "",
-      status: "solicitar_arquivos",
+      status: "solicitar_arquivos" as ProjectStatus,
       valor: lead.orcamento || 0,
       descricao: lead.necessidades || "",
       observacoes: lead.observacoes || "",
@@ -132,14 +115,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        const formattedProject = {
-          ...data[0],
-          tipo_projeto: data[0].tipo_projeto,
-          prazo_entrega: data[0].prazo_entrega,
-          arquivos_recebidos: data[0].arquivos_recebidos,
-          created_at: data[0].created_at,
-          updated_at: data[0].updated_at
-        };
+        const formattedProject = data[0] as Project;
         console.log(`Projeto criado com sucesso: ${formattedProject.nome}`);
         setProjects(prev => [formattedProject, ...prev]);
       }
@@ -152,16 +128,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   async function addProject(project: Omit<Project, "id">) {
     try {
       const dbProject = {
-        lead_id: project.leadId,
         nome: project.nome,
         cliente: project.cliente,
         tipo_projeto: project.tipo_projeto,
         status: project.status,
         valor: project.valor,
-        descricao: project.descricao || null,
-        observacoes: project.observacoes || null,
+        descricao: project.descricao || "",
+        observacoes: project.observacoes || "",
         prazo_entrega: project.prazo_entrega || null,
-        arquivos_recebidos: project.arquivos_recebidos || null,
+        arquivos_recebidos: project.arquivos_recebidos || [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -177,15 +152,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        const formattedProject = {
-          ...data[0],
-          leadId: data[0].lead_id,
-          tipo_projeto: data[0].tipo_projeto,
-          prazo_entrega: data[0].prazo_entrega,
-          arquivos_recebidos: data[0].arquivos_recebidos,
-          created_at: data[0].created_at,
-          updated_at: data[0].updated_at
-        };
+        const formattedProject = data[0] as Project;
         setProjects(prev => [formattedProject, ...prev]);
       }
     } catch (error) {
@@ -196,7 +163,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   async function updateProject(id: string, project: Partial<Project>) {
     try {
       const dbProject = {
-        ...(project.leadId && { lead_id: project.leadId }),
         ...(project.nome && { nome: project.nome }),
         ...(project.cliente && { cliente: project.cliente }),
         ...(project.tipo_projeto && { tipo_projeto: project.tipo_projeto }),
