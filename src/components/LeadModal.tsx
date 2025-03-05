@@ -49,9 +49,12 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     status: "nao_contatado",
     ultimocontato: new Date().toISOString(),
     anotacoes: "",
+    necessidades: "",
+    observacoes: "",
+    ideias: "",
     tags: [],
     createdat: new Date().toISOString(),
-    updatedat: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -86,9 +89,12 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         status: "nao_contatado",
         ultimocontato: new Date().toISOString(),
         anotacoes: "",
+        necessidades: "",
+        observacoes: "",
+        ideias: "",
         tags: [],
         createdat: new Date().toISOString(),
-        updatedat: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
     }
   }, [leadId, leads]);

@@ -32,9 +32,12 @@ export interface Lead {
   status: LeadStatus;
   ultimocontato: string;
   anotacoes: string;
+  necessidades: string;
+  observacoes: string;
+  ideias: string;
   tags: LeadQualityTag[];
   createdat: string;
-  updatedat: string;
+  updated_at: string;
 }
 
 export interface Project {
