@@ -105,21 +105,35 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { createdat, updatedat, ...restLead } = lead;
+      // Se estiver atualizando apenas o status (caso do Kanban)
+      if (Object.keys(lead).length === 1 && 'status' in lead) {
+        const { error } = await supabase
+          .from("leads")
+          .update({ status: lead.status })
+          .eq("id", id);
 
-      const updates = {
-        ...restLead,
-        updatedat: new Date().toISOString()
-      };
+        if (error) {
+          console.error("Erro ao atualizar lead:", error);
+          return;
+        }
+      } else {
+        // Para outras atualizações
+        const { createdat, updatedat, ...restLead } = lead;
 
-      const { error } = await supabase
-        .from("leads")
-        .update(updates)
-        .eq("id", id);
+        const updates = {
+          ...restLead,
+          updatedat: new Date().toISOString()
+        };
 
-      if (error) {
-        console.error("Erro ao atualizar lead:", error);
-        return;
+        const { error } = await supabase
+          .from("leads")
+          .update(updates)
+          .eq("id", id);
+
+        if (error) {
+          console.error("Erro ao atualizar lead:", error);
+          return;
+        }
       }
 
       setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
