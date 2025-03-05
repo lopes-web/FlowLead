@@ -108,15 +108,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Verifica se já existe um projeto para este lead
-    const existingProject = projects.find(p => p.leadId === lead.id);
-    if (existingProject) {
-      console.log(`Projeto já existe para o lead ${lead.nome}`);
-      return;
-    }
-
     const project = {
-      lead_id: lead.id,
       nome: lead.nome,
       cliente: lead.nome,
       tipo_projeto: lead.tipo_projeto || "",
@@ -142,7 +134,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         const formattedProject = {
           ...data[0],
-          leadId: data[0].lead_id,
           tipo_projeto: data[0].tipo_projeto,
           prazo_entrega: data[0].prazo_entrega,
           arquivos_recebidos: data[0].arquivos_recebidos,

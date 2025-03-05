@@ -163,17 +163,32 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Primeiro, verifica se existe um projeto associado
+      const { data: projectExists, error: projectError } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("lead_id", id)
+        .single();
+
+      if (projectExists) {
+        throw new Error("Este lead não pode ser excluído pois já foi convertido em projeto.");
+      }
+
       const { error } = await supabase.from("leads").delete().eq("id", id);
 
       if (error) {
         console.error("Erro ao deletar lead:", error);
-        return;
+        if (error.code === '23503') {
+          throw new Error("Este lead não pode ser excluído pois está vinculado a um projeto.");
+        }
+        throw error;
       }
 
       setLeads((prevLeads: Lead[]) => prevLeads.filter((lead: Lead) => lead.id !== id));
       offlineStorage.saveLeads(leads.filter((lead: Lead) => lead.id !== id));
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
+      throw error; // Propaga o erro para ser tratado no componente
     }
   }
 

@@ -100,9 +100,9 @@ export function Kanban({ onEditLead }: KanbanProps) {
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (leadToDelete) {
-      deleteLead(leadToDelete.id);
+      await deleteLead(leadToDelete.id);
       setDeleteDialogOpen(false);
       setLeadToDelete(null);
     }

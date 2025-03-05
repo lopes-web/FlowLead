@@ -10,16 +10,15 @@ export type ProjectStatus =
 
 export interface Project {
   id: string;
-  leadId: string;
   nome: string;
   cliente: string;
   tipo_projeto: string;
   status: ProjectStatus;
-  descricao?: string;
+  descricao: string;
   prazo_entrega?: string;
   valor: number;
   arquivos_recebidos?: string[];
-  observacoes?: string;
+  observacoes: string;
   created_at: string;
   updated_at: string;
 }

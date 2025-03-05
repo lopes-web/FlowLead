@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,11 +9,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface DeleteLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   leadName: string;
 }
 
@@ -22,6 +24,25 @@ export function DeleteLeadDialog({
   onConfirm,
   leadName,
 }: DeleteLeadDialogProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      await onConfirm();
+      onOpenChange(false);
+      toast.success("Lead excluído com sucesso!");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Erro ao excluir lead. Tente novamente mais tarde.");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -33,12 +54,13 @@ export function DeleteLeadDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isDeleting}
           >
-            Excluir Lead
+            {isDeleting ? "Excluindo..." : "Excluir Lead"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

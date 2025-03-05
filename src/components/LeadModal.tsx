@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type LeadFormData = Omit<Lead, "id">;
 
@@ -183,6 +184,105 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       style: 'currency',
       currency: 'BRL'
     }).format(value).replace('R$', '').trim();
+  };
+
+  const renderTable = () => {
+    const data = [
+      {
+        cod: 1,
+        categoria: "Imovel Casa",
+        administradora: "Bradesco",
+        credito: "1234.51",
+        entrada: "2.39",
+        parcelas: "123",
+        vlrParcela: "10.02",
+        taxa: "21.34",
+        status: "disponivel"
+      },
+      {
+        cod: 2,
+        categoria: "Imovel Casa",
+        administradora: "Bradesco",
+        credito: "12309120.39",
+        entrada: "1234.12",
+        parcelas: "122",
+        vlrParcela: "100884.31",
+        taxa: "0.00",
+        status: "disponivel"
+      },
+      {
+        cod: 3,
+        categoria: "veiculo casad",
+        administradora: "Porto Seguro",
+        credito: "13516.23",
+        entrada: "1231.45",
+        parcelas: "12",
+        vlrParcela: "1023.73",
+        taxa: "0.00",
+        status: "disponivel"
+      },
+      {
+        cod: 4,
+        categoria: "veiculo",
+        administradora: "Porto Seguro",
+        credito: "134",
+        entrada: "20.00",
+        parcelas: "0.20",
+        vlrParcela: "12",
+        taxa: "1.65",
+        status: "disponivel"
+      }
+    ];
+
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[80px]">Cod.</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Administradora</TableHead>
+              <TableHead className="text-right">Crédito</TableHead>
+              <TableHead className="text-right">Entrada</TableHead>
+              <TableHead className="text-center">Nº Parcelas</TableHead>
+              <TableHead className="text-right">Vlr Parcela</TableHead>
+              <TableHead className="text-right">Taxa</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((row) => (
+              <TableRow key={row.cod}>
+                <TableCell>{row.cod}</TableCell>
+                <TableCell>{row.categoria}</TableCell>
+                <TableCell>{row.administradora}</TableCell>
+                <TableCell className="text-right">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format(Number(row.credito))}
+                </TableCell>
+                <TableCell className="text-right">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format(Number(row.entrada))}
+                </TableCell>
+                <TableCell className="text-center">{row.parcelas}</TableCell>
+                <TableCell className="text-right">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format(Number(row.vlrParcela))}
+                </TableCell>
+                <TableCell className="text-right">{row.taxa}%</TableCell>
+                <TableCell>{row.status}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
   };
 
   return (
@@ -378,6 +478,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 <FileUpload leadId={leadId} />
               </div>
             )}
+
+            <div className="space-y-4">
+              {renderTable()}
+            </div>
 
             <div className="sticky bottom-0 bg-background pt-4 border-t">
               <div className="flex gap-2">
