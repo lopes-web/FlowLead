@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Lead } from "@/types/lead";
+import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
@@ -10,6 +10,7 @@ interface LeadContextType {
   updateLead: (id: string, lead: Partial<Lead>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   isOffline: boolean;
+  isLoading: boolean;
 }
 
 const LeadContext = createContext<LeadContextType | undefined>(undefined);
@@ -33,23 +34,15 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .order("updated_at", { ascending: false });
+        .order("updatedat", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar leads:", error);
         return;
       }
 
-      const formattedLeads = data.map(lead => ({
-        ...lead,
-        created_at: lead.created_at,
-        updated_at: lead.updated_at,
-        tipo_projeto: lead.tipoprojeto,
-        ultimo_contato: lead.ultimocontato,
-      }));
-
-      setLeads(formattedLeads);
-      offlineStorage.saveLeads(formattedLeads);
+      setLeads(data);
+      offlineStorage.saveLeads(data);
     } catch (error) {
       console.error("Erro ao buscar leads:", error);
       const offlineLeads = offlineStorage.getLeads();
@@ -72,14 +65,12 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = lead;
+      const { createdat, updatedat, ...restLead } = lead;
 
       const dbLead = {
         ...restLead,
-        created_at: created_at || new Date().toISOString(),
-        updated_at: updated_at || new Date().toISOString(),
-        tipoprojeto: tipo_projeto,
-        ultimocontato: ultimo_contato,
+        createdat: createdat || new Date().toISOString(),
+        updatedat: updatedat || new Date().toISOString(),
       };
 
       const { data, error } = await supabase
@@ -92,16 +83,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const formattedLead = {
-        ...data[0],
-        created_at: data[0].created_at,
-        updated_at: data[0].updated_at,
-        tipo_projeto: data[0].tipoprojeto,
-        ultimo_contato: data[0].ultimocontato,
-      };
-
-      setLeads((prevLeads: Lead[]) => [formattedLead, ...prevLeads]);
-      offlineStorage.saveLeads([formattedLead, ...leads]);
+      setLeads((prevLeads: Lead[]) => [data[0], ...prevLeads]);
+      offlineStorage.saveLeads([data[0], ...leads]);
       await fetchLeads(); // Recarrega os leads após adicionar
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
@@ -122,12 +105,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = lead;
+      const { createdat, updatedat, ...restLead } = lead;
 
       const updates = {
         ...restLead,
-        ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
-        ...(ultimo_contato && { ultimocontato: ultimo_contato })
+        updatedat: new Date().toISOString()
       };
 
       const { error } = await supabase
@@ -140,7 +122,6 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Atualiza o estado local e recarrega os leads para garantir sincronização
       setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
       await fetchLeads();
     } catch (error) {
@@ -192,7 +173,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, isOffline }}>
+    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, isOffline, isLoading: false }}>
       {children}
     </LeadContext.Provider>
   );
