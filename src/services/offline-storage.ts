@@ -48,7 +48,7 @@ export const offlineStorage = {
       try {
         switch (action.type) {
           case 'add': {
-            const { created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = action.data;
+            const { createdat, updatedat, tipo_projeto, ultimo_contato, ...restLead } = action.data;
             const dbLead = {
               ...restLead,
               createdat: new Date().toISOString(),
@@ -60,7 +60,7 @@ export const offlineStorage = {
             break;
           }
           case 'update': {
-            const { id, created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = action.data;
+            const { id, createdat, updatedat, tipo_projeto, ultimo_contato, ...restLead } = action.data;
             const updates = {
               ...restLead,
               updatedat: new Date().toISOString(),
