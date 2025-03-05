@@ -66,6 +66,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     "prioridade_baixa",
     "decisor",
     "influenciador",
+    "redesign"
   ];
 
   useEffect(() => {
@@ -357,7 +358,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Tags de Qualidade</Label>
+              <Label>Tags</Label>
               <div className="flex flex-wrap gap-2">
                 {availableTags.map(tag => (
                   <Badge
