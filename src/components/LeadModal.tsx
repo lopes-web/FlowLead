@@ -49,7 +49,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     status: "nao_contatado",
     ultimo_contato: new Date().toISOString(),
     anotacoes: "",
-    observacoes: "",
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -87,7 +86,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         status: "nao_contatado",
         ultimo_contato: new Date().toISOString(),
         anotacoes: "",
-        observacoes: "",
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -339,17 +337,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 value={formData.anotacoes}
                 onChange={handleChange}
                 className="min-h-[400px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                name="observacoes"
-                value={formData.observacoes}
-                onChange={handleChange}
-                className="min-h-[100px]"
               />
             </div>
 
