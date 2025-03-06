@@ -18,16 +18,33 @@ export async function uploadFile(file: File, leadId: string) {
   try {
     const fileName = `${leadId}/${file.name}`;
 
+    // Verificar se o arquivo já existe
+    const { data: existingFiles } = await supabase.storage
+      .from('lead-files')
+      .list(leadId);
+
+    const fileExists = existingFiles?.some(f => f.name === file.name);
+    if (fileExists) {
+      throw new Error('Já existe um arquivo com este nome. Por favor, renomeie o arquivo antes de fazer o upload.');
+    }
+
     const { data, error } = await supabase.storage
       .from('lead-files')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: true // Sobrescrever se já existir
+        upsert: false // Não sobrescrever se já existir
       });
 
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('permission')) {
+        throw new Error('Erro de permissão ao fazer upload do arquivo. Por favor, tente novamente.');
+      } else {
+        throw new Error('Erro ao fazer upload do arquivo: ' + error.message);
+      }
+    }
+
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao fazer upload:', error);
     throw error;
   }

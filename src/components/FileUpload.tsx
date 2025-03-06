@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { uploadFile, listFiles, getFileUrl, deleteFile } from '@/lib/supabase';
 import { FileIcon, Trash2Icon, DownloadIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FileUploadProps {
   leadId: string;
@@ -20,6 +21,7 @@ export function FileUpload({ leadId }: FileUploadProps) {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadFiles();
@@ -29,7 +31,6 @@ export function FileUpload({ leadId }: FileUploadProps) {
     try {
       const fileList = await listFiles(leadId);
       if (fileList) {
-        // Garantir que cada arquivo tenha o path correto
         const filesWithPath = fileList.map(file => ({
           ...file,
           path: `${leadId}/${file.name}`
@@ -41,23 +42,31 @@ export function FileUpload({ leadId }: FileUploadProps) {
     } catch (error) {
       console.error('Erro ao carregar arquivos:', error);
       setFiles([]);
+      toast.error('Erro ao carregar arquivos');
     } finally {
       setLoading(false);
     }
   }
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
 
+    try {
       setUploading(true);
+      setError(null);
       await uploadFile(file, leadId);
       await loadFiles();
-    } catch (error) {
+      toast.success('Arquivo enviado com sucesso!');
+    } catch (error: any) {
       console.error('Erro no upload:', error);
+      const errorMessage = error?.message || 'Erro ao fazer upload do arquivo';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
+      // Limpar o input após o upload (sucesso ou erro)
+      event.target.value = '';
     }
   }
 
@@ -119,14 +128,23 @@ export function FileUpload({ leadId }: FileUploadProps) {
     <div className="space-y-4" onClick={e => e.stopPropagation()}>
       <div className="flex items-end gap-4">
         <div className="flex-1">
-          <Label htmlFor="file">Anexar arquivo</Label>
+          <Label htmlFor="file">
+            Anexar arquivo
+          </Label>
           <Input
             id="file"
             type="file"
             onChange={handleUpload}
             disabled={uploading}
             className="cursor-pointer"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
           />
+          {uploading && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Enviando arquivo...</span>
+            </div>
+          )}
         </div>
       </div>
 
