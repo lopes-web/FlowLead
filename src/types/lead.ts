@@ -30,11 +30,11 @@ export interface Lead {
   orcamento: number;
   status: LeadStatus;
   ultimo_contato: string;
-  anotacoes: string;
-  necessidades: string;
-  observacoes: string;
-  ideias: string;
-  tags: LeadQualityTag[];
+  anotacoes: string | null;
+  necessidades: string | null;
+  observacoes: string | null;
+  ideias: string | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
