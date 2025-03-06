@@ -33,7 +33,6 @@ export interface Lead {
   anotacoes: string | null;
   necessidades: string | null;
   observacoes: string | null;
-  ideias: string | null;
   tags: string[];
   created_at: string;
   updated_at: string;
