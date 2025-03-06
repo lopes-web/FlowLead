@@ -13,17 +13,30 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
+// Função para sanitizar nome de arquivo
+function sanitizeFileName(fileName: string): string {
+  // Remove acentos
+  const withoutAccents = fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  // Remove caracteres especiais, mantendo apenas letras, números, ponto, traço e underscore
+  const sanitized = withoutAccents.replace(/[^a-zA-Z0-9._-]/g, '_');
+  
+  return sanitized;
+}
+
 // Função para fazer upload de arquivo
 export async function uploadFile(file: File, leadId: string) {
   try {
-    const fileName = `${leadId}/${file.name}`;
+    // Sanitiza o nome do arquivo
+    const sanitizedFileName = sanitizeFileName(file.name);
+    const fileName = `${leadId}/${sanitizedFileName}`;
 
     // Verificar se o arquivo já existe
     const { data: existingFiles } = await supabase.storage
       .from('lead-files')
       .list(leadId);
 
-    const fileExists = existingFiles?.some(f => f.name === file.name);
+    const fileExists = existingFiles?.some(f => f.name === sanitizedFileName);
     if (fileExists) {
       throw new Error('Já existe um arquivo com este nome. Por favor, renomeie o arquivo antes de fazer o upload.');
     }
