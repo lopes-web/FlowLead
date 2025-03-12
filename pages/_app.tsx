@@ -1,5 +1,5 @@
 import type { AppProps } from 'next/app'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AuthProvider } from '../contexts/AuthContext'
 import { Toaster } from '@/components/ui/toaster'
 
 export default function App({ Component, pageProps }: AppProps) {

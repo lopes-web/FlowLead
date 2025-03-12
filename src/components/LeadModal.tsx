@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLeads } from "@/contexts/LeadContext";
 import { useProjects } from "@/contexts/ProjectContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

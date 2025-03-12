@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Lead } from "@/types/lead";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../lib/supabaseClient";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface LeadContextType {
   leads: Lead[];
