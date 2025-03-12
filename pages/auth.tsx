@@ -21,7 +21,7 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-center mb-2">LeadFlow</h1>
-        <p className="text-gray-600 text-center">Gerencie seus leads de forma eficiente</p>
+        <p className="text-gray-600 text-center">Sistema inteligente para gestão de leads</p>
       </div>
 
       <div className="w-full max-w-md">
