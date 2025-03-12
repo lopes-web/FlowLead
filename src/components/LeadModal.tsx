@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useLeads } from "@/contexts/LeadContext";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -35,6 +37,7 @@ interface LeadModalProps {
 export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const { leads, addLead, updateLead } = useLeads();
   const { createProjectFromLead } = useProjects();
+  const { user } = useAuth();
   const whatsappRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<LeadFormData>({
@@ -52,6 +55,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    user_id: user?.id || "",
+    is_public: false,
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -89,6 +94,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        user_id: user?.id || "",
+        is_public: false,
       });
     }
   }, [leadId, leads]);
@@ -126,21 +133,34 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     }));
   };
 
+  const handleSwitchChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_public: checked
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const dataWithUserId = {
+        ...formData,
+        user_id: user?.id || "",
+        updated_at: new Date().toISOString(),
+      };
+
       if (leadId) {
         const oldLead = leads.find(lead => lead.id === leadId);
-        await updateLead(leadId, formData);
+        await updateLead(leadId, dataWithUserId);
         
         // Se o status mudou para fechado, cria um projeto
         if (oldLead?.status !== "fechado" && formData.status === "fechado") {
-          const updatedLead = { ...oldLead, ...formData, id: leadId };
+          const updatedLead = { ...oldLead, ...dataWithUserId, id: leadId };
           await createProjectFromLead(updatedLead);
         }
       } else {
-        await addLead(formData);
+        await addLead(dataWithUserId);
       }
       onOpenChange(false);
     } catch (error) {
@@ -363,15 +383,26 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
             )}
 
-            <div className="sticky bottom-0 bg-background pt-4 border-t">
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {leadId ? "Salvar Alterações" : "Cadastrar Lead"}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-                  Cancelar
-                </Button>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_public"
+                checked={formData.is_public}
+                onCheckedChange={handleSwitchChange}
+              />
+              <Label htmlFor="is_public">Tornar lead público</Label>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {leadId ? "Salvar" : "Criar"}
+              </Button>
             </div>
           </form>
         </ScrollArea>

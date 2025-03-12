@@ -3,6 +3,7 @@ import { Lead } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LeadContextType {
   leads: Lead[];
@@ -17,22 +18,24 @@ const LeadContext = createContext<LeadContextType | undefined>(undefined);
 export function LeadProvider({ children }: { children: React.ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const isOffline = useOffline();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!isOffline) {
+    if (!isOffline && user) {
       fetchLeads();
       offlineStorage.syncWithServer();
-    } else {
+    } else if (isOffline) {
       const offlineLeads = offlineStorage.getLeads();
       setLeads(offlineLeads);
     }
-  }, [isOffline]);
+  }, [isOffline, user]);
 
   async function fetchLeads() {
     try {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
+        .or(`user_id.eq.${user?.id},is_public.eq.true`)
         .order("updated_at", { ascending: false });
 
       if (error) {
@@ -80,6 +83,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         updated_at: updated_at || new Date().toISOString(),
         tipoprojeto: tipo_projeto,
         ultimocontato: ultimo_contato,
+        user_id: user?.id,
       };
 
       const { data, error } = await supabase
@@ -133,14 +137,14 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from("leads")
         .update(updates)
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", user?.id);
 
       if (error) {
         console.error("Erro ao atualizar lead:", error);
         return;
       }
 
-      // Atualiza o estado local e recarrega os leads para garantir sincronização
       setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
       await fetchLeads();
     } catch (error) {
@@ -173,7 +177,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Este lead não pode ser excluído pois já foi convertido em projeto.");
       }
 
-      const { error } = await supabase.from("leads").delete().eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user?.id);
 
       if (error) {
         console.error("Erro ao deletar lead:", error);
@@ -187,7 +195,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       offlineStorage.saveLeads(leads.filter((lead: Lead) => lead.id !== id));
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
-      throw error; // Propaga o erro para ser tratado no componente
+      throw error;
     }
   }
 

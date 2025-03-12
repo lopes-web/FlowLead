@@ -34,6 +34,8 @@ export interface Lead {
   tags: string[];
   created_at: string;
   updated_at: string;
+  user_id: string;
+  is_public: boolean;
 }
 
 export interface Project {
