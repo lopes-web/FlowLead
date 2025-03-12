@@ -1,5 +1,5 @@
 import { Lead } from '@/types/lead';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabaseClient';
 
 const LEADS_STORAGE_KEY = 'offline_leads';
 const PENDING_ACTIONS_KEY = 'pending_actions';
