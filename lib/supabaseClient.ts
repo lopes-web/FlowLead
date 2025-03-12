@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Valores padrão caso as variáveis de ambiente não estejam disponíveis
+const DEFAULT_SUPABASE_URL = 'https://arscmhkqmllgwkdfpwrl.supabase.co'
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyc2NtaGtxbWxsZ3drZGZwd3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwNzYwNzcsImV4cCI6MjA1NTY1MjA3N30.VIohQC4cIYNTNNwvjPCFghVA0MpowYSyvlvuf_2WMIE'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Variáveis de ambiente do Supabase não encontradas')
-  throw new Error('Configuração do Supabase incompleta')
-}
+// Tenta usar as variáveis de ambiente, mas usa os valores padrão se não estiverem disponíveis
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
 
+// Cria o cliente Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const BUCKET_NAME = 'lead-files'
