@@ -35,7 +35,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .or(`user_id.eq.${user?.id},is_public.eq.true`)
+        .or('is_public.eq.true,user_id.eq.' + user?.id)
         .order("updated_at", { ascending: false });
 
       if (error) {
