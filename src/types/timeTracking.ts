@@ -12,9 +12,12 @@ export interface TimeTracking {
 }
 
 export interface TimeTrackingContextType {
-  currentTracking: TimeTracking | null;
-  startTracking: (activity_type: ActivityType, notes?: string) => Promise<void>;
-  stopTracking: () => Promise<void>;
   isTracking: boolean;
+  currentActivity: TimeTracking | null;
+  history: TimeTracking[];
+  startTracking: (activity_type: string, notes?: string) => Promise<void>;
+  stopTracking: () => Promise<void>;
+  fetchHistory: (data: TimeTracking[]) => void;
+  deleteActivity: (id: string) => Promise<void>;
   lastUpdate: number;
 } 

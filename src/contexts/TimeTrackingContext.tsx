@@ -1,19 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
-import { TimeTracking } from "@/types/timeTracking";
+import { TimeTracking, TimeTrackingContextType } from "@/types/timeTracking";
 
-interface TimeTrackingContextData {
-  isTracking: boolean;
-  currentActivity: TimeTracking | null;
-  history: TimeTracking[];
-  startTracking: (activity_type: string, notes?: string) => Promise<void>;
-  stopTracking: () => Promise<void>;
-  fetchHistory: (data: TimeTracking[]) => void;
-  deleteActivity: (id: string) => Promise<void>;
-  lastUpdate: number;
-}
-
-const TimeTrackingContext = createContext<TimeTrackingContextData>({} as TimeTrackingContextData);
+const TimeTrackingContext = createContext<TimeTrackingContextType>({} as TimeTrackingContextType);
 
 interface TimeTrackingProviderProps {
   children: ReactNode;
