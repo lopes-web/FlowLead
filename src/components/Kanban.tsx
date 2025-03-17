@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { LeadStatus } from "@/types/lead";
 import { DeleteLeadDialog } from "./DeleteLeadDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Edit2,
   Trash2,
@@ -129,13 +130,43 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
   };
 
+  // Função para gerar as iniciais do nome
+  const getInitials = (name: string) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map(part => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  // Função para gerar uma cor de fundo baseada no nome
+  const getAvatarColor = (name: string) => {
+    if (!name) return "bg-[#9b87f5]";
+    
+    // Lista de cores de fundo para os avatares
+    const colors = [
+      "bg-[#9b87f5]",
+      "bg-[#14B8A6]",
+      "bg-[#EC4899]",
+      "bg-[#F59E0B]",
+      "bg-[#06B6D4]",
+      "bg-[#8B5CF6]"
+    ];
+    
+    // Usar a soma dos códigos ASCII das letras do nome para escolher uma cor
+    const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[sum % colors.length];
+  };
+
   // Função para renderizar o ícone de visibilidade do lead
   const renderVisibilityIcon = (lead: any) => {
     // Verifica se o usuário pode editar este lead
     const canEdit = user && (lead.user_id === user.id || lead.user_id === null);
     
     // Função para impedir a propagação do evento de drag
-    const preventDrag = (e: React.MouseEvent) => {
+    const preventDrag = (e: React.MouseEvent | React.TouchEvent) => {
       e.stopPropagation();
     };
     
@@ -159,7 +190,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
                 disabled={!canEdit}
                 draggable="false"
               >
-                <Unlock className="h-3 w-3 text-green-400" draggable="false" />
+                <Unlock className="h-3 w-3 text-green-400" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -191,7 +222,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
               disabled={!canEdit}
               draggable="false"
             >
-              <Lock className="h-3 w-3 text-gray-400" draggable="false" />
+              <Lock className="h-3 w-3 text-gray-400" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -266,7 +297,15 @@ export function Kanban({ onEditLead }: KanbanProps) {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-2">
                           <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          <h4 className="font-medium text-sm text-white">{lead.nome}</h4>
+                          
+                          <Avatar className="h-6 w-6 mr-1">
+                            <AvatarImage src={lead.avatar_url || ""} alt={lead.nome} />
+                            <AvatarFallback className={`text-xs ${getAvatarColor(lead.nome)}`}>
+                              {getInitials(lead.nome)}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <h4 className="font-medium text-sm text-white truncate max-w-[120px]">{lead.nome}</h4>
                           
                           {/* Renderiza o ícone de visibilidade */}
                           {renderVisibilityIcon(lead)}
@@ -274,12 +313,12 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
                         <div className="flex flex-col gap-2">
                           <Badge className={`w-fit ${statusConfig[status].color}`}>
-                            {lead.tipo_projeto}
+                            <span className="truncate max-w-[150px]">{lead.tipo_projeto}</span>
                           </Badge>
 
                           <div className="flex items-center gap-2 text-xs text-gray-400">
                             <DollarSign className="h-3 w-3 shrink-0" />
-                            <span>
+                            <span className="truncate">
                               {new Intl.NumberFormat("pt-BR", {
                                 style: "currency",
                                 currency: "BRL",
@@ -289,19 +328,19 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
                           <div className="flex items-center gap-2 text-xs text-gray-400">
                             <Calendar className="h-3 w-3 shrink-0" />
-                            <span>
+                            <span className="truncate">
                               Último contato: {" "}
                               {new Date(lead.ultimo_contato).toLocaleDateString("pt-BR")}
                             </span>
                           </div>
 
                           {lead.tags && lead.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1 overflow-hidden max-h-[22px]">
                               {lead.tags.map(tag => (
                                 <Badge
                                   key={tag}
                                   variant="secondary"
-                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446]"
+                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446] truncate max-w-[80px]"
                                 >
                                   {tag.replace(/_/g, ' ')}
                                 </Badge>
