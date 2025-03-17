@@ -23,8 +23,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/contexts/AuthContext";
+import { Lock, Unlock } from "lucide-react";
 
-type LeadFormData = Omit<Lead, "id">;
+type LeadFormData = Omit<Lead, "id"> & { is_public?: boolean };
 
 interface LeadModalProps {
   open: boolean;
@@ -35,6 +38,7 @@ interface LeadModalProps {
 export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const { leads, addLead, updateLead } = useLeads();
   const { createProjectFromLead } = useProjects();
+  const { user } = useAuth();
   const whatsappRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<LeadFormData>({
@@ -52,6 +56,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    is_public: false
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -71,7 +76,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       const lead = leads.find(lead => lead.id === leadId);
       if (lead) {
         const { id: _, ...leadData } = lead;
-        setFormData(leadData);
+        setFormData({
+          ...leadData,
+          is_public: lead.is_public === true
+        });
       }
     } else {
       setFormData({
@@ -89,6 +97,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        is_public: false
       });
     }
   }, [leadId, leads]);
@@ -123,6 +132,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       tags: prev.tags.includes(tag)
         ? prev.tags.filter(t => t !== tag)
         : [...prev.tags, tag]
+    }));
+  };
+
+  const handleSwitchChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_public: checked
     }));
   };
 
@@ -327,6 +343,29 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                   <SelectItem value="perdido">Perdido</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is_public" className="flex items-center gap-2">
+                  <span>Visibilidade</span>
+                  {formData.is_public ? (
+                    <Unlock className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Lock className="h-4 w-4 text-gray-500" />
+                  )}
+                </Label>
+                <Switch
+                  id="is_public"
+                  checked={formData.is_public}
+                  onCheckedChange={handleSwitchChange}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {formData.is_public
+                  ? "Lead público: Visível para todos os usuários do sistema."
+                  : "Lead privado: Visível apenas para você."}
+              </p>
             </div>
 
             <div className="space-y-2">

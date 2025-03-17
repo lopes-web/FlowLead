@@ -7,10 +7,10 @@ import { v4 as uuidv4 } from "uuid";
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (type: NotificationType, title: string, message: string, data?: any) => void;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  clearNotifications: () => void;
+  addNotification: (type: NotificationType, title: string, message: string, data?: any) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  clearNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -22,68 +22,199 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   // Calcular o número de notificações não lidas
   const unreadCount = notifications.filter(notification => !notification.read).length;
 
-  // Carregar notificações do localStorage ao iniciar
+  // Carregar notificações do Supabase ao iniciar
   useEffect(() => {
     if (user) {
-      const storedNotifications = localStorage.getItem(`notifications_${user.id}`);
-      if (storedNotifications) {
-        try {
-          setNotifications(JSON.parse(storedNotifications));
-        } catch (error) {
-          console.error("Erro ao carregar notificações:", error);
-        }
-      }
+      fetchNotifications();
+    } else {
+      setNotifications([]);
     }
   }, [user]);
 
-  // Salvar notificações no localStorage quando mudar
-  useEffect(() => {
-    if (user && notifications.length > 0) {
-      localStorage.setItem(`notifications_${user.id}`, JSON.stringify(notifications));
+  // Função para buscar notificações do Supabase
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Erro ao buscar notificações:", error);
+        return;
+      }
+
+      if (data) {
+        // Formatar as notificações para o formato esperado
+        const formattedNotifications = data.map(notification => ({
+          id: notification.id,
+          type: notification.type as NotificationType,
+          title: notification.title,
+          message: notification.message,
+          createdAt: notification.created_at,
+          read: notification.read_by?.includes(user?.id || "") || false,
+          data: notification.data
+        }));
+
+        setNotifications(formattedNotifications);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
     }
-  }, [notifications, user]);
+  };
 
   // Adicionar uma nova notificação
-  const addNotification = (
+  const addNotification = async (
     type: NotificationType,
     title: string,
     message: string,
     data?: any
   ) => {
-    const newNotification: Notification = {
-      id: uuidv4(),
-      type,
-      title,
-      message,
-      createdAt: new Date().toISOString(),
-      read: false,
-      data
-    };
+    if (!user) return;
 
-    setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Limitar a 50 notificações
+    try {
+      const notificationId = uuidv4();
+      
+      const { error } = await supabase
+        .from("notifications")
+        .insert([{
+          id: notificationId,
+          type,
+          title,
+          message,
+          created_at: new Date().toISOString(),
+          created_by: user.id,
+          read_by: [],
+          data
+        }]);
+
+      if (error) {
+        console.error("Erro ao adicionar notificação:", error);
+        return;
+      }
+
+      // Atualizar o estado local
+      const newNotification: Notification = {
+        id: notificationId,
+        type,
+        title,
+        message,
+        createdAt: new Date().toISOString(),
+        read: false,
+        data
+      };
+
+      setNotifications(prev => [newNotification, ...prev]);
+      
+      // Recarregar notificações para garantir sincronização
+      fetchNotifications();
+    } catch (error) {
+      console.error("Erro ao adicionar notificação:", error);
+    }
   };
 
   // Marcar uma notificação como lida
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const markAsRead = async (id: string) => {
+    if (!user) return;
+
+    try {
+      // Buscar a notificação atual para obter a lista de leitores
+      const { data, error: fetchError } = await supabase
+        .from("notifications")
+        .select("read_by")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) {
+        console.error("Erro ao buscar notificação:", fetchError);
+        return;
+      }
+
+      // Adicionar o usuário atual à lista de leitores se ainda não estiver lá
+      const readBy = data.read_by || [];
+      if (!readBy.includes(user.id)) {
+        readBy.push(user.id);
+      }
+
+      // Atualizar a notificação no Supabase
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read_by: readBy })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Erro ao marcar notificação como lida:", error);
+        return;
+      }
+
+      // Atualizar o estado local
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification.id === id ? { ...notification, read: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+    }
   };
 
   // Marcar todas as notificações como lidas
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, read: true }))
-    );
+  const markAllAsRead = async () => {
+    if (!user || notifications.length === 0) return;
+
+    try {
+      // Para cada notificação não lida, adicionar o usuário à lista de leitores
+      const updates = notifications
+        .filter(notification => !notification.read)
+        .map(async notification => {
+          // Buscar a notificação atual para obter a lista de leitores
+          const { data, error: fetchError } = await supabase
+            .from("notifications")
+            .select("read_by")
+            .eq("id", notification.id)
+            .single();
+
+          if (fetchError) {
+            console.error("Erro ao buscar notificação:", fetchError);
+            return;
+          }
+
+          // Adicionar o usuário atual à lista de leitores
+          const readBy = data.read_by || [];
+          if (!readBy.includes(user.id)) {
+            readBy.push(user.id);
+          }
+
+          // Atualizar a notificação no Supabase
+          return supabase
+            .from("notifications")
+            .update({ read_by: readBy })
+            .eq("id", notification.id);
+        });
+
+      await Promise.all(updates);
+
+      // Atualizar o estado local
+      setNotifications(prev =>
+        prev.map(notification => ({ ...notification, read: true }))
+      );
+    } catch (error) {
+      console.error("Erro ao marcar todas as notificações como lidas:", error);
+    }
   };
 
-  // Limpar todas as notificações
-  const clearNotifications = () => {
-    setNotifications([]);
-    if (user) {
-      localStorage.removeItem(`notifications_${user.id}`);
+  // Limpar todas as notificações (apenas para o usuário atual)
+  const clearNotifications = async () => {
+    if (!user) return;
+
+    try {
+      // Não vamos excluir as notificações, apenas marcá-las como lidas
+      await markAllAsRead();
+      
+      // Atualizar o estado local para esconder as notificações
+      setNotifications([]);
+    } catch (error) {
+      console.error("Erro ao limpar notificações:", error);
     }
   };
 
