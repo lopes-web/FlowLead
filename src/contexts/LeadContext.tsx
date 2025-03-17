@@ -52,6 +52,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      console.log("Leads carregados:", data);
+
       const formattedLeads = data.map(lead => ({
         ...lead,
         created_at: lead.created_at,

@@ -129,6 +129,56 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
   };
 
+  // Função para renderizar o ícone de visibilidade do lead
+  const renderVisibilityIcon = (lead: any) => {
+    // Se o lead for público, mostra o ícone de desbloqueado
+    if (lead.is_public) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
+                onClick={() => user && lead.user_id === user.id ? handleTogglePublic(lead.id, true) : null}
+                disabled={!user || lead.user_id !== user.id}
+              >
+                <Unlock className="h-3 w-3 text-green-400" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {user && lead.user_id === user.id 
+                ? "Lead público (clique para tornar privado)" 
+                : "Lead público compartilhado"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    // Se o lead for privado, mostra o ícone de bloqueado
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
+              onClick={() => handleTogglePublic(lead.id, false)}
+            >
+              <Lock className="h-3 w-3 text-gray-400" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Lead privado (clique para tornar público)
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   const filteredStatuses = Object.keys(statusConfig).filter(status => 
     status !== "perdido" || showPerdidos
   ) as LeadStatus[];
@@ -184,43 +234,8 @@ export function Kanban({ onEditLead }: KanbanProps) {
                           <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           <h4 className="font-medium text-sm text-white">{lead.nome}</h4>
                           
-                          {user && lead.user_id === user.id && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                                    onClick={() => handleTogglePublic(lead.id, lead.is_public)}
-                                  >
-                                    {lead.is_public ? 
-                                      <Unlock className="h-3 w-3 text-green-400" /> : 
-                                      <Lock className="h-3 w-3 text-gray-400" />
-                                    }
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  {lead.is_public ? "Lead público (clique para tornar privado)" : "Lead privado (clique para tornar público)"}
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                          
-                          {user && lead.user_id !== user.id && lead.is_public && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="ml-auto">
-                                    <Unlock className="h-3 w-3 text-green-400" />
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Lead público compartilhado
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
+                          {/* Renderiza o ícone de visibilidade */}
+                          {renderVisibilityIcon(lead)}
                         </div>
 
                         <div className="flex flex-col gap-2">
