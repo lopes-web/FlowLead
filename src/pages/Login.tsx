@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap } from "lucide-react";
+import { Zap, Loader2, CheckCircle } from "lucide-react";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   console.log("Login - Renderizando com user:", user);
   
@@ -24,7 +26,16 @@ export function Login() {
       console.log("Login - Usuário já autenticado, redirecionando para /");
       navigate("/");
     }
-  }, [user, navigate]);
+    
+    // Verificar se há uma mensagem de sucesso no estado da navegação
+    if (location.state && location.state.message) {
+      console.log("Login - Mensagem recebida:", location.state.message);
+      setSuccess(location.state.message);
+      
+      // Limpar o estado para não mostrar a mensagem novamente após refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [user, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +48,7 @@ export function Login() {
     
     try {
       setError(null);
+      setSuccess(null);
       setLoading(true);
       
       console.log("Login - Chamando signIn");
@@ -87,6 +99,15 @@ export function Login() {
           </p>
         </div>
         
+        {success && (
+          <div className="rounded-md bg-green-50 p-4">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+              <div className="text-sm text-green-700">{success}</div>
+            </div>
+          </div>
+        )}
+        
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
@@ -132,7 +153,14 @@ export function Login() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
             </Button>
           </div>
         </form>

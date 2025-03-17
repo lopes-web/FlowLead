@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,7 @@ export function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Formulário enviado");
     
     if (!name || !email || !password || !confirmPassword) {
       setError("Por favor, preencha todos os campos");
@@ -68,6 +68,7 @@ export function Register() {
           } 
         });
       } else {
+        console.error("Dados de usuário não encontrados na resposta:", data);
         setError("Não foi possível criar a conta. Tente novamente.");
       }
     } catch (err: any) {
@@ -178,6 +179,7 @@ export function Register() {
               type="submit"
               className="w-full"
               disabled={loading}
+              onClick={() => console.log("Botão clicado")}
             >
               {loading ? (
                 <>
