@@ -9,11 +9,14 @@ import {
   KanbanSquare,
   Timer,
   Zap,
-  FolderKanban
+  FolderKanban,
+  UserCircle
 } from "lucide-react";
 import TimeTracking from "./TimeTracking";
 import { useNavigate } from "react-router-dom";
 import { ProjectsKanban } from "@/components/ProjectsKanban";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface IndexProps {
   view?: "dashboard" | "leads" | "projects" | "timetracking";
@@ -23,10 +26,16 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState<string | undefined>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleOpenModal = (leadId?: string) => {
     setEditingLeadId(leadId);
     setModalOpen(true);
+  };
+
+  // Função para obter as iniciais do email
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -80,15 +89,29 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
                 Tempo
               </Button>
             </div>
-            <Button
-              variant="default"
-              onClick={() => handleOpenModal()}
-              className="gap-2"
-              size="sm"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Novo Lead
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                onClick={() => handleOpenModal()}
+                className="gap-2"
+                size="sm"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Novo Lead
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/profile")}
+                className="gap-2"
+                size="sm"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] text-white text-xs">
+                    {user ? getInitials(user.email) : "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </div>
           </div>
         </div>
 

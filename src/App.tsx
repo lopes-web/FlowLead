@@ -8,6 +8,7 @@ import { Layout } from "@/components/Layout";
 import { LeadProvider } from "@/contexts/LeadContext";
 import { ProjectProvider } from "@/contexts/ProjectContext";
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
+import { Profile } from "@/pages/Profile";
 
 function App() {
   return (
@@ -63,6 +64,12 @@ function App() {
                 </TimeTrackingProvider>
               </ProjectProvider>
             </LeadProvider>
+          </Layout>
+        } />
+
+        <Route path="/profile" element={
+          <Layout>
+            <Profile />
           </Layout>
         } />
 
