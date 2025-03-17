@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap } from "lucide-react";
+import { Zap, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export function Register() {
@@ -14,7 +14,6 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +38,10 @@ export function Register() {
       setError(null);
       setLoading(true);
       
+      console.log("Tentando criar conta com:", { email, name });
+      
       // Registrar com nome como metadado
-      const { error, user } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -50,20 +51,27 @@ export function Register() {
         }
       });
       
+      console.log("Resposta do registro:", data, error);
+      
       if (error) {
+        console.error("Erro ao criar conta:", error);
         setError(error.message || "Erro ao criar conta");
         return;
       }
       
-      if (user) {
+      if (data && data.user) {
+        console.log("Conta criada com sucesso:", data.user);
         // Redireciona para a página de login após o registro
         navigate("/login", { 
           state: { 
             message: "Conta criada com sucesso! Verifique seu email para confirmar o cadastro." 
           } 
         });
+      } else {
+        setError("Não foi possível criar a conta. Tente novamente.");
       }
     } catch (err: any) {
+      console.error("Erro inesperado:", err);
       setError(err.message || "Ocorreu um erro inesperado");
     } finally {
       setLoading(false);
@@ -171,7 +179,14 @@ export function Register() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Criando conta..." : "Criar conta"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando conta...
+                </>
+              ) : (
+                "Criar conta"
+              )}
             </Button>
           </div>
         </form>
