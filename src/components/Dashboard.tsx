@@ -7,8 +7,8 @@ export function Dashboard() {
   const { leads } = useLeads();
 
   const totalLeads = leads.length;
-  const leadsAtivos = leads.filter(
-    (lead) => lead.status !== "arquivado" && lead.status !== "fechado"
+  const leadsEmNegociacao = leads.filter(
+    (lead) => !["arquivado", "fechado", "novo"].includes(lead.status)
   ).length;
   const leadsFechados = leads.filter((lead) => lead.status === "fechado").length;
   const valorTotal = leads
@@ -37,7 +37,7 @@ export function Dashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{leadsAtivos}</div>
+            <div className="text-2xl font-bold">{leadsEmNegociacao}</div>
             <p className="text-xs text-muted-foreground">
               Em processo de negociação
             </p>
