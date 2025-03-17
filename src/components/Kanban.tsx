@@ -298,23 +298,41 @@ export function Kanban({ onEditLead }: KanbanProps) {
                         <div className="flex items-center gap-2">
                           <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           
-                          <Avatar className="h-6 w-6 mr-1">
+                          <Avatar className="h-6 w-6 mr-1 transition-transform duration-200 group-hover:scale-110">
                             <AvatarImage src={lead.avatar_url || ""} alt={lead.nome} />
                             <AvatarFallback className={`text-xs ${getAvatarColor(lead.nome)}`}>
                               {getInitials(lead.nome)}
                             </AvatarFallback>
                           </Avatar>
                           
-                          <h4 className="font-medium text-sm text-white truncate max-w-[120px]">{lead.nome}</h4>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <h4 className="font-medium text-sm text-white truncate max-w-[100px] sm:max-w-[120px] md:max-w-[80px] lg:max-w-[120px]">{lead.nome}</h4>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+                                {lead.nome}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           
                           {/* Renderiza o ícone de visibilidade */}
                           {renderVisibilityIcon(lead)}
                         </div>
 
                         <div className="flex flex-col gap-2">
-                          <Badge className={`w-fit ${statusConfig[status].color}`}>
-                            <span className="truncate max-w-[150px]">{lead.tipo_projeto}</span>
-                          </Badge>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge className={`w-fit ${statusConfig[status].color}`}>
+                                  <span className="truncate max-w-[120px] sm:max-w-[150px] md:max-w-[100px] lg:max-w-[150px]">{lead.tipo_projeto}</span>
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+                                {lead.tipo_projeto}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
 
                           <div className="flex items-center gap-2 text-xs text-gray-400">
                             <DollarSign className="h-3 w-3 shrink-0" />
@@ -336,15 +354,23 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
                           {lead.tags && lead.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 overflow-hidden max-h-[22px]">
-                              {lead.tags.map(tag => (
+                              {lead.tags.slice(0, 3).map(tag => (
                                 <Badge
                                   key={tag}
                                   variant="secondary"
-                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446] truncate max-w-[80px]"
+                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446] truncate max-w-[60px] sm:max-w-[80px]"
                                 >
                                   {tag.replace(/_/g, ' ')}
                                 </Badge>
                               ))}
+                              {lead.tags.length > 3 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446]"
+                                >
+                                  +{lead.tags.length - 3}
+                                </Badge>
+                              )}
                             </div>
                           )}
                         </div>
