@@ -134,6 +134,11 @@ export function Kanban({ onEditLead }: KanbanProps) {
     // Verifica se o usuário pode editar este lead
     const canEdit = user && (lead.user_id === user.id || lead.user_id === null);
     
+    // Função para impedir a propagação do evento de drag
+    const preventDrag = (e: React.MouseEvent) => {
+      e.stopPropagation();
+    };
+    
     // Se o lead for público, mostra o ícone de desbloqueado
     if (lead.is_public) {
       return (
@@ -144,10 +149,17 @@ export function Kanban({ onEditLead }: KanbanProps) {
                 variant="ghost"
                 size="icon"
                 className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                onClick={() => canEdit ? handleTogglePublic(lead.id, true) : null}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  if (canEdit) handleTogglePublic(lead.id, true);
+                }}
+                onMouseDown={preventDrag}
+                onTouchStart={preventDrag}
                 disabled={!canEdit}
+                draggable="false"
               >
-                <Unlock className="h-3 w-3 text-green-400" />
+                <Unlock className="h-3 w-3 text-green-400" draggable="false" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -169,10 +181,17 @@ export function Kanban({ onEditLead }: KanbanProps) {
               variant="ghost"
               size="icon"
               className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
-              onClick={() => canEdit ? handleTogglePublic(lead.id, false) : null}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (canEdit) handleTogglePublic(lead.id, false);
+              }}
+              onMouseDown={preventDrag}
+              onTouchStart={preventDrag}
               disabled={!canEdit}
+              draggable="false"
             >
-              <Lock className="h-3 w-3 text-gray-400" />
+              <Lock className="h-3 w-3 text-gray-400" draggable="false" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -232,7 +251,16 @@ export function Kanban({ onEditLead }: KanbanProps) {
                     key={lead.id}
                     className="group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] hover:border-[#9b87f5] hover:shadow-md transition-all duration-200"
                     draggable
-                    onDragStart={(e) => handleDragStart(e, lead.id, status)}
+                    onDragStart={(e) => {
+                      // Verificar se o clique foi em um botão
+                      const target = e.target as HTMLElement;
+                      if (target.closest('button')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                      }
+                      handleDragStart(e, lead.id, status);
+                    }}
                   >
                     <CardContent className="p-4">
                       <div className="flex flex-col gap-3">
