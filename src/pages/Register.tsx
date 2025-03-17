@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export function Register() {
@@ -80,50 +80,26 @@ export function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#0f1117] px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] p-2 rounded-lg">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
-              LeadFlow
-            </h1>
+          <div className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] p-2 rounded-lg">
+            <Zap className="h-6 w-6 text-white" />
           </div>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
+            LeadFlow
+          </h1>
+          <h2 className="mt-2 text-xl font-semibold text-white">
             Crie sua conta
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Ou{" "}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              faça login na sua conta existente
-            </Link>
-          </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
+          <div className="space-y-4 rounded-md">
             <div>
-              <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome completo"
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -132,13 +108,14 @@ export function Register() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
                 placeholder="seu@email.com"
-                className="mt-1"
               />
             </div>
-            
             <div>
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-white">
+                Senha
+              </Label>
               <Input
                 id="password"
                 name="password"
@@ -147,13 +124,17 @@ export function Register() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
                 placeholder="••••••••"
-                className="mt-1"
               />
+              <p className="mt-1 text-xs text-gray-400">
+                A senha deve ter pelo menos 6 caracteres
+              </p>
             </div>
-            
             <div>
-              <Label htmlFor="confirmPassword">Confirme a senha</Label>
+              <Label htmlFor="confirmPassword" className="text-white">
+                Confirmar Senha
+              </Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -162,24 +143,31 @@ export function Register() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
                 placeholder="••••••••"
-                className="mt-1"
               />
             </div>
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className="rounded-md bg-[#1c2132] border border-red-500/30 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-red-500">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
           <div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-[#9b87f5] hover:bg-[#8b77e5] text-white"
               disabled={loading}
-              onClick={() => console.log("Botão clicado")}
+              onClick={() => console.log("Botão de criar conta clicado")}
             >
               {loading ? (
                 <>
@@ -187,11 +175,20 @@ export function Register() {
                   Criando conta...
                 </>
               ) : (
-                "Criar conta"
+                "Criar Conta"
               )}
             </Button>
           </div>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-400">
+            Já tem uma conta?{" "}
+            <Link to="/login" className="font-medium text-[#9b87f5] hover:text-[#8b77e5]">
+              Faça login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
