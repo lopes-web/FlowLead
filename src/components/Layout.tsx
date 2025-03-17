@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 interface LayoutProps {
@@ -9,14 +9,6 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      // Se não estiver carregando e não houver usuário, redireciona para o login
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -26,6 +18,11 @@ export function Layout({ children }: LayoutProps) {
     );
   }
 
+  // Se não houver usuário, redireciona para o login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   // Se o usuário estiver autenticado, renderiza o conteúdo
-  return <>{user && children}</>;
+  return <>{children}</>;
 } 

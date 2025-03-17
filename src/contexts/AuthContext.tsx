@@ -23,35 +23,63 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verifica se há uma sessão ativa ao carregar
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Função para carregar a sessão inicial
+    const loadSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Erro ao carregar sessão:", error);
+          setLoading(false);
+          return;
+        }
+        
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+      } catch (err) {
+        console.error("Erro inesperado ao carregar sessão:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSession();
 
     // Configura o listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error };
+    } catch (err) {
+      console.error("Erro ao fazer login:", err);
+      return { error: err };
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    return { error, user: data.user };
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      return { error, user: data.user };
+    } catch (err) {
+      console.error("Erro ao criar conta:", err);
+      return { error: err, user: null };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Erro ao fazer logout:", err);
+    }
   };
 
   return (

@@ -13,46 +13,64 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <LeadProvider>
-          <ProjectProvider>
-            <TimeTrackingProvider>
-              <Routes>
-                {/* Rotas públicas */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+        <Routes>
+          {/* Rotas públicas */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-                {/* Rotas protegidas */}
-                <Route path="/" element={
-                  <Layout>
+          {/* Rotas protegidas */}
+          <Route path="/" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
                     <Index view="dashboard" />
-                  </Layout>
-                } />
-                
-                <Route path="/leads" element={
-                  <Layout>
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
+          
+          <Route path="/leads" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
                     <Index view="leads" />
-                  </Layout>
-                } />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-                <Route path="/projects" element={
-                  <Layout>
+          <Route path="/projects" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
                     <Index view="projects" />
-                  </Layout>
-                } />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-                <Route path="/time" element={
-                  <Layout>
+          <Route path="/time" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
                     <Index view="timetracking" />
-                  </Layout>
-                } />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-                {/* Redireciona qualquer rota não encontrada para o dashboard */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <Toaster />
-            </TimeTrackingProvider>
-          </ProjectProvider>
-        </LeadProvider>
+          {/* Redireciona qualquer rota não encontrada para o dashboard */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Toaster />
       </AuthProvider>
     </BrowserRouter>
   );
