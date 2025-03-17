@@ -171,9 +171,35 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Verificar se o lead existe e se o usuário tem permissão para alterá-lo
+      const { data: leadData, error: fetchError } = await supabase
+        .from("leads")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) {
+        console.error("Erro ao buscar lead:", fetchError);
+        return;
+      }
+
+      // Usuário só pode alterar leads sem dono (user_id = null) ou seus próprios leads
+      if (leadData.user_id !== null && leadData.user_id !== user?.id) {
+        console.error("Sem permissão para alterar este lead");
+        return;
+      }
+
+      // Se o lead não tem dono e o usuário está logado, atribuir o lead ao usuário atual
+      let updates: any = { is_public: isPublic };
+      
+      if (leadData.user_id === null && user) {
+        updates.user_id = user.id;
+        console.log("Atribuindo lead sem dono ao usuário atual:", user.id);
+      }
+
       const { error } = await supabase
         .from("leads")
-        .update({ is_public: isPublic })
+        .update(updates)
         .eq("id", id);
 
       if (error) {
@@ -183,7 +209,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       // Atualiza o estado local
       setLeads((prev: Lead[]) => prev.map((l: Lead) => 
-        l.id === id ? { ...l, is_public: isPublic } : l
+        l.id === id ? { ...l, is_public: isPublic, ...(leadData.user_id === null && user ? { user_id: user.id } : {}) } : l
       ));
       
       await fetchLeads(); // Recarrega os leads para garantir sincronização

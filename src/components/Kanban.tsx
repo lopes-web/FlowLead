@@ -131,6 +131,9 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   // Função para renderizar o ícone de visibilidade do lead
   const renderVisibilityIcon = (lead: any) => {
+    // Verifica se o usuário pode editar este lead
+    const canEdit = user && (lead.user_id === user.id || lead.user_id === null);
+    
     // Se o lead for público, mostra o ícone de desbloqueado
     if (lead.is_public) {
       return (
@@ -141,14 +144,14 @@ export function Kanban({ onEditLead }: KanbanProps) {
                 variant="ghost"
                 size="icon"
                 className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                onClick={() => user && lead.user_id === user.id ? handleTogglePublic(lead.id, true) : null}
-                disabled={!user || lead.user_id !== user.id}
+                onClick={() => canEdit ? handleTogglePublic(lead.id, true) : null}
+                disabled={!canEdit}
               >
                 <Unlock className="h-3 w-3 text-green-400" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {user && lead.user_id === user.id 
+              {canEdit 
                 ? "Lead público (clique para tornar privado)" 
                 : "Lead público compartilhado"}
             </TooltipContent>
@@ -166,13 +169,16 @@ export function Kanban({ onEditLead }: KanbanProps) {
               variant="ghost"
               size="icon"
               className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
-              onClick={() => handleTogglePublic(lead.id, false)}
+              onClick={() => canEdit ? handleTogglePublic(lead.id, false) : null}
+              disabled={!canEdit}
             >
               <Lock className="h-3 w-3 text-gray-400" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Lead privado (clique para tornar público)
+            {canEdit 
+              ? "Lead privado (clique para tornar público)"
+              : "Lead privado (sem permissão para editar)"}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
