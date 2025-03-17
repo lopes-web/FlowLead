@@ -1,10 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
-import { Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  user: any | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any, user: any }>;
@@ -18,74 +16,55 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Função para carregar a sessão inicial
-    const loadSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Erro ao carregar sessão:", error);
-          setLoading(false);
-          return;
-        }
-        
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-      } catch (err) {
-        console.error("Erro inesperado ao carregar sessão:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSession();
-
-    // Configura o listener para mudanças na autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (data && data.user) {
+        setUser(data.user);
+      }
+      
       return { error };
     } catch (err) {
       console.error("Erro ao fazer login:", err);
       return { error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signUp({ email, password });
       return { error, user: data.user };
     } catch (err) {
       console.error("Erro ao criar conta:", err);
       return { error: err, user: null };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
+      setUser(null);
     } catch (err) {
       console.error("Erro ao fazer logout:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AuthContext.Provider
       value={{
-        session,
         user,
         loading,
         signIn,
