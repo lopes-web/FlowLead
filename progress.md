@@ -136,6 +136,33 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Drag and drop para mudança de status
 - Atualização em tempo real
 
+### Sistema de Notificações
+- Notificações em tempo real para ações importantes:
+  - Criação de leads
+  - Atualização de leads
+  - Mudança de status
+  - Exclusão de leads
+  - Criação de projetos
+  - Atualização de projetos
+- Interface de notificações com contador de não lidas
+- Marcação automática como lidas ao visualizar
+- Opção para limpar todas as notificações
+- Exibição do nome do usuário em vez do email
+- Tooltips para visualizar mensagens completas
+- Formatação de data relativa (ex: "há 5 minutos")
+- Ícones intuitivos para cada tipo de notificação
+
+### Gerenciamento de Usuários
+- Página de perfil do usuário com:
+  - Upload de foto de perfil
+  - Edição de nome de usuário
+  - Alteração de senha
+  - Visualização de informações da conta
+- Autenticação segura via Supabase
+- Controle de acesso a leads e projetos
+- Opção de leads públicos ou privados
+- Indicadores visuais de propriedade de leads
+
 ### Melhorias Recentes
 - Unificação do sistema de navegação
   - Navegação consistente entre todas as páginas
@@ -151,6 +178,10 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Alinhamento de colunas nas tabelas
   - Formatação de valores monetários em BRL
   - Melhorias na responsividade
+- Tema escuro consistente em todas as páginas
+  - Login e registro com tema escuro
+  - Melhor contraste e legibilidade
+  - Cores consistentes com a identidade visual
 
 ## Estrutura do Banco de Dados
 
@@ -170,8 +201,10 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - observacoes (text)
 - ideias (text)
 - tags (text[])
-- createdat (timestamp)
-- updatedat (timestamp)
+- created_at (timestamp)
+- updated_at (timestamp)
+- user_id (UUID, referência para auth.users)
+- is_public (boolean)
 
 ### Tabela: time_tracking
 - id (UUID)
@@ -196,6 +229,17 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - arquivos_recebidos (text[])
 - created_at (timestamp)
 - updated_at (timestamp)
+- user_id (UUID, referência para auth.users)
+
+### Tabela: notifications
+- id (UUID)
+- type (text)
+- title (text)
+- message (text)
+- created_at (timestamp)
+- created_by (UUID, referência para auth.users)
+- read_by (UUID[], array de IDs de usuários)
+- data (jsonb, dados adicionais da notificação)
 
 ## Próximos Passos
 
@@ -207,7 +251,8 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [x] Unificar sistema de navegação
 - [x] Melhorar tratamento de erros
 - [x] Atualizar identidade visual
-- [ ] Implementar sistema de notificações
+- [x] Implementar sistema de notificações
+- [x] Adicionar edição de perfil de usuário
 - [ ] Adicionar histórico de alterações
 - [ ] Melhorar sistema de tags
 - [ ] Implementar busca avançada
@@ -217,4 +262,4 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [ ] Implementar metas personalizáveis
 - [ ] Adicionar gráficos de conversão
 - [ ] Implementar análise de funil de vendas
-``` 
+```

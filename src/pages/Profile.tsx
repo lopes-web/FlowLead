@@ -15,9 +15,11 @@ export function Profile() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [nameLoading, setNameLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userName, setUserName] = useState(user?.user_metadata?.name || "");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -170,6 +172,42 @@ export function Profile() {
     navigate('/');
   };
 
+  // Função para atualizar o nome do usuário
+  const handleUpdateName = async () => {
+    if (!userName.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um nome válido.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setNameLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { name: userName }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Seu nome foi atualizado com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível atualizar seu nome.",
+        variant: "destructive"
+      });
+    } finally {
+      setNameLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -239,6 +277,28 @@ export function Profile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome de Usuário</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="name"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Seu nome"
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={handleUpdateName} 
+                      disabled={nameLoading}
+                      size="sm"
+                    >
+                      {nameLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Salvar
+                    </Button>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{user.email}</span>
