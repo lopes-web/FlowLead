@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LeadStatus } from "@/types/lead";
 import { DeleteLeadDialog } from "./DeleteLeadDialog";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Edit2,
   Trash2,
@@ -18,8 +19,11 @@ import {
   GripHorizontal,
   Inbox,
   Eye,
-  EyeOff
+  EyeOff,
+  Lock,
+  Unlock
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface KanbanProps {
   onEditLead: (leadId: string) => void;
@@ -59,7 +63,8 @@ const statusConfig: Record<LeadStatus, { label: string; color: string; icon: Rea
 };
 
 export function Kanban({ onEditLead }: KanbanProps) {
-  const { leads, updateLead, deleteLead } = useLeads();
+  const { leads, updateLead, deleteLead, togglePublic } = useLeads();
+  const { user } = useAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<LeadStatus | null>(null);
@@ -113,6 +118,14 @@ export function Kanban({ onEditLead }: KanbanProps) {
       await updateLead(leadId, { status: "perdido" });
     } catch (error) {
       console.error('Erro ao mover para perdido:', error);
+    }
+  };
+
+  const handleTogglePublic = async (leadId: string, isCurrentlyPublic: boolean | null | undefined) => {
+    try {
+      await togglePublic(leadId, !isCurrentlyPublic);
+    } catch (error) {
+      console.error('Erro ao alterar visibilidade do lead:', error);
     }
   };
 
@@ -170,6 +183,44 @@ export function Kanban({ onEditLead }: KanbanProps) {
                         <div className="flex items-center gap-2">
                           <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           <h4 className="font-medium text-sm text-white">{lead.nome}</h4>
+                          
+                          {user && lead.user_id === user.id && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5 ml-auto hover:bg-[#2e3446] text-gray-400 hover:text-white"
+                                    onClick={() => handleTogglePublic(lead.id, lead.is_public)}
+                                  >
+                                    {lead.is_public ? 
+                                      <Unlock className="h-3 w-3 text-green-400" /> : 
+                                      <Lock className="h-3 w-3 text-gray-400" />
+                                    }
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {lead.is_public ? "Lead público (clique para tornar privado)" : "Lead privado (clique para tornar público)"}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          
+                          {user && lead.user_id !== user.id && lead.is_public && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="ml-auto">
+                                    <Unlock className="h-3 w-3 text-green-400" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Lead público compartilhado
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
                         </div>
 
                         <div className="flex flex-col gap-2">

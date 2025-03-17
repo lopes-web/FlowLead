@@ -3,12 +3,14 @@ import { Lead } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LeadContextType {
   leads: Lead[];
   addLead: (lead: Omit<Lead, "id">) => Promise<void>;
   updateLead: (id: string, lead: Partial<Lead>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
+  togglePublic: (id: string, isPublic: boolean) => Promise<void>;
   isOffline: boolean;
 }
 
@@ -17,6 +19,7 @@ const LeadContext = createContext<LeadContextType | undefined>(undefined);
 export function LeadProvider({ children }: { children: React.ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const isOffline = useOffline();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!isOffline) {
@@ -26,14 +29,23 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       const offlineLeads = offlineStorage.getLeads();
       setLeads(offlineLeads);
     }
-  }, [isOffline]);
+  }, [isOffline, user]);
 
   async function fetchLeads() {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("leads")
-        .select("*")
-        .order("updated_at", { ascending: false });
+        .select("*");
+      
+      // Se o usuário estiver logado, busca leads públicos OU leads do usuário atual
+      if (user) {
+        query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+      } else {
+        // Se não estiver logado, busca apenas leads públicos
+        query = query.eq('is_public', true);
+      }
+      
+      const { data, error } = await query.order("updated_at", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar leads:", error);
@@ -80,6 +92,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         updated_at: updated_at || new Date().toISOString(),
         tipoprojeto: tipo_projeto,
         ultimocontato: ultimo_contato,
+        user_id: user?.id || null,
+        is_public: user ? false : true, // Se não houver usuário logado, o lead é público por padrão
       };
 
       const { data, error } = await supabase
@@ -148,6 +162,34 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function togglePublic(id: string, isPublic: boolean) {
+    try {
+      if (isOffline) {
+        console.error("Não é possível alterar a visibilidade do lead no modo offline");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("leads")
+        .update({ is_public: isPublic })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Erro ao alterar visibilidade do lead:", error);
+        return;
+      }
+
+      // Atualiza o estado local
+      setLeads((prev: Lead[]) => prev.map((l: Lead) => 
+        l.id === id ? { ...l, is_public: isPublic } : l
+      ));
+      
+      await fetchLeads(); // Recarrega os leads para garantir sincronização
+    } catch (error) {
+      console.error("Erro ao alterar visibilidade do lead:", error);
+    }
+  }
+
   async function deleteLead(id: string) {
     try {
       if (isOffline) {
@@ -192,7 +234,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, isOffline }}>
+    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, togglePublic, isOffline }}>
       {children}
     </LeadContext.Provider>
   );
@@ -200,7 +242,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
 export function useLeads() {
   const context = useContext(LeadContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useLeads must be used within a LeadProvider");
   }
   return context;

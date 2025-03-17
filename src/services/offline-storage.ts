@@ -55,6 +55,8 @@ export const offlineStorage = {
               updated_at: new Date().toISOString(),
               tipoprojeto: tipo_projeto,
               ultimocontato: ultimo_contato,
+              is_public: action.data.is_public !== undefined ? action.data.is_public : true,
+              user_id: action.data.user_id || null
             };
             await supabase.from("leads").insert([dbLead]);
             break;
@@ -63,9 +65,10 @@ export const offlineStorage = {
             const { id, created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = action.data;
             const updates = {
               ...restLead,
-              updatedat: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
               ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
               ...(ultimo_contato && { ultimocontato: ultimo_contato }),
+              ...(action.data.is_public !== undefined && { is_public: action.data.is_public })
             };
             await supabase.from("leads").update(updates).eq("id", id);
             break;
