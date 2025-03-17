@@ -16,7 +16,7 @@ import TimeTracking from "./TimeTracking";
 import { useNavigate } from "react-router-dom";
 import { ProjectsKanban } from "@/components/ProjectsKanban";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface IndexProps {
   view?: "dashboard" | "leads" | "projects" | "timetracking";
@@ -102,10 +102,14 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
               <Button
                 variant="ghost"
                 onClick={() => navigate("/profile")}
-                className="gap-2"
+                className="gap-2 p-0"
                 size="sm"
               >
-                <Avatar className="h-6 w-6">
+                <Avatar className="h-8 w-8 transition-transform hover:scale-110">
+                  <AvatarImage 
+                    src={user?.user_metadata?.avatar_url || ""} 
+                    alt={user?.email || "Usuário"} 
+                  />
                   <AvatarFallback className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] text-white text-xs">
                     {user ? getInitials(user.email) : "U"}
                   </AvatarFallback>
