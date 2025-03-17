@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { ProjectsKanban } from "@/components/ProjectsKanban";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 
 interface IndexProps {
   view?: "dashboard" | "leads" | "projects" | "timetracking";
@@ -99,6 +100,7 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
                 <PlusCircle className="h-4 w-4" />
                 Novo Lead
               </Button>
+              <NotificationDropdown />
               <Button
                 variant="ghost"
                 onClick={() => navigate("/profile")}

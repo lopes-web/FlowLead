@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface LeadContextType {
   leads: Lead[];
@@ -20,6 +21,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const isOffline = useOffline();
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     if (!isOffline) {
@@ -118,6 +120,20 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       setLeads((prevLeads: Lead[]) => [formattedLead, ...prevLeads]);
       offlineStorage.saveLeads([formattedLead, ...leads]);
+      
+      // Adicionar notificação de novo lead
+      addNotification(
+        "lead_created",
+        "Novo lead adicionado",
+        `${user?.email || "Você"} adicionou o lead "${lead.nome}"`,
+        {
+          leadId: formattedLead.id,
+          leadName: lead.nome,
+          userId: user?.id,
+          userName: user?.email
+        }
+      );
+      
       await fetchLeads(); // Recarrega os leads após adicionar
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
@@ -126,6 +142,13 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
   async function updateLead(id: string, lead: Partial<Lead>) {
     try {
+      // Encontrar o lead atual para comparação
+      const currentLead = leads.find(l => l.id === id);
+      if (!currentLead) {
+        console.error("Lead não encontrado para atualização");
+        return;
+      }
+
       if (isOffline) {
         setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
         const updatedLeads = leads.map((l: Lead) => l.id === id ? { ...l, ...lead } : l);
@@ -158,11 +181,55 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       // Atualiza o estado local e recarrega os leads para garantir sincronização
       setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
+      
+      // Verificar se o status mudou para criar uma notificação específica
+      if (lead.status && lead.status !== currentLead.status) {
+        addNotification(
+          "lead_status_changed",
+          "Status de lead alterado",
+          `${user?.email || "Você"} moveu "${currentLead.nome}" para ${statusToText(lead.status)}`,
+          {
+            leadId: id,
+            leadName: currentLead.nome,
+            userId: user?.id,
+            userName: user?.email,
+            oldStatus: currentLead.status,
+            newStatus: lead.status
+          }
+        );
+      } else {
+        // Notificação genérica de atualização
+        addNotification(
+          "lead_updated",
+          "Lead atualizado",
+          `${user?.email || "Você"} atualizou o lead "${currentLead.nome}"`,
+          {
+            leadId: id,
+            leadName: currentLead.nome,
+            userId: user?.id,
+            userName: user?.email
+          }
+        );
+      }
+      
       await fetchLeads();
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
     }
   }
+
+  // Função auxiliar para converter status em texto legível
+  const statusToText = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      nao_contatado: "Não Contatado",
+      primeiro_contato: "Primeiro Contato",
+      proposta_enviada: "Proposta Enviada",
+      em_negociacao: "Em Negociação",
+      fechado: "Fechado",
+      perdido: "Perdido"
+    };
+    return statusMap[status] || status;
+  };
 
   async function togglePublic(id: string, isPublic: boolean) {
     try {
@@ -220,6 +287,9 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
   async function deleteLead(id: string) {
     try {
+      // Encontrar o lead atual para a notificação
+      const leadToDelete = leads.find(l => l.id === id);
+      
       if (isOffline) {
         setLeads((prev: Lead[]) => prev.filter((lead: Lead) => lead.id !== id));
         const filteredLeads = leads.filter((lead: Lead) => lead.id !== id);
@@ -259,6 +329,21 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       // Atualiza o armazenamento offline com o estado atualizado
       const updatedLeads = leads.filter((lead: Lead) => lead.id !== id);
       offlineStorage.saveLeads(updatedLeads);
+      
+      // Adicionar notificação de exclusão
+      if (leadToDelete) {
+        addNotification(
+          "lead_deleted",
+          "Lead excluído",
+          `${user?.email || "Você"} excluiu o lead "${leadToDelete.nome}"`,
+          {
+            leadId: id,
+            leadName: leadToDelete.nome,
+            userId: user?.id,
+            userName: user?.email
+          }
+        );
+      }
       
       // Força uma nova busca dos leads para garantir sincronização com o servidor
       await fetchLeads();

@@ -8,75 +8,78 @@ import { Layout } from "@/components/Layout";
 import { LeadProvider } from "@/contexts/LeadContext";
 import { ProjectProvider } from "@/contexts/ProjectContext";
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { Profile } from "@/pages/Profile";
 
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        {/* Rotas públicas */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* Rotas protegidas */}
-        <Route path="/" element={
-          <Layout>
-            <LeadProvider>
-              <ProjectProvider>
-                <TimeTrackingProvider>
-                  <Index view="dashboard" />
-                </TimeTrackingProvider>
-              </ProjectProvider>
-            </LeadProvider>
-          </Layout>
-        } />
-        
-        <Route path="/leads" element={
-          <Layout>
-            <LeadProvider>
-              <ProjectProvider>
-                <TimeTrackingProvider>
-                  <Index view="leads" />
-                </TimeTrackingProvider>
-              </ProjectProvider>
-            </LeadProvider>
-          </Layout>
-        } />
+      <NotificationProvider>
+        <Routes>
+          {/* Rotas públicas */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Rotas protegidas */}
+          <Route path="/" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
+                    <Index view="dashboard" />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
+          
+          <Route path="/leads" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
+                    <Index view="leads" />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-        <Route path="/projects" element={
-          <Layout>
-            <LeadProvider>
-              <ProjectProvider>
-                <TimeTrackingProvider>
-                  <Index view="projects" />
-                </TimeTrackingProvider>
-              </ProjectProvider>
-            </LeadProvider>
-          </Layout>
-        } />
+          <Route path="/projects" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
+                    <Index view="projects" />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-        <Route path="/time" element={
-          <Layout>
-            <LeadProvider>
-              <ProjectProvider>
-                <TimeTrackingProvider>
-                  <Index view="timetracking" />
-                </TimeTrackingProvider>
-              </ProjectProvider>
-            </LeadProvider>
-          </Layout>
-        } />
+          <Route path="/time" element={
+            <Layout>
+              <LeadProvider>
+                <ProjectProvider>
+                  <TimeTrackingProvider>
+                    <Index view="timetracking" />
+                  </TimeTrackingProvider>
+                </ProjectProvider>
+              </LeadProvider>
+            </Layout>
+          } />
 
-        <Route path="/profile" element={
-          <Layout>
-            <Profile />
-          </Layout>
-        } />
+          <Route path="/profile" element={
+            <Layout>
+              <Profile />
+            </Layout>
+          } />
 
-        {/* Redireciona qualquer rota não encontrada para o login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-      <Toaster />
+          {/* Redireciona qualquer rota não encontrada para o login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <Toaster />
+      </NotificationProvider>
     </AuthProvider>
   );
 }
