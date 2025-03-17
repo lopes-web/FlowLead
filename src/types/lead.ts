@@ -15,7 +15,8 @@ export type LeadQualityTag =
   | "prioridade_media"
   | "prioridade_baixa"
   | "decisor"
-  | "influenciador";
+  | "influenciador"
+  | "redesign";
 
 // Interface principal do Lead
 export interface Lead {

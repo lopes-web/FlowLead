@@ -373,7 +373,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               <Textarea
                 id="anotacoes"
                 name="anotacoes"
-                value={formData.anotacoes}
+                value={formData.anotacoes || ""}
                 onChange={handleChange}
                 className="min-h-[400px]"
               />
