@@ -8,7 +8,10 @@ export function Dashboard() {
 
   const totalLeads = leads.length;
   const leadsEmNegociacao = leads.filter(
-    (lead) => !["arquivado", "fechado", "novo"].includes(lead.status)
+    (lead) => {
+      const status = lead.status as string;
+      return status.includes("negociacao") || status.includes("proposta");
+    }
   ).length;
   const leadsFechados = leads.filter((lead) => lead.status === "fechado").length;
   const valorTotal = leads

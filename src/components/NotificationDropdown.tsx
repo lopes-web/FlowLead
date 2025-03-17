@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function NotificationDropdown() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
@@ -106,10 +108,28 @@ export function NotificationDropdown() {
                   <div className="flex items-start gap-2 w-full">
                     <div className="text-lg">{getNotificationIcon(notification.type)}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {notification.message}
-                      </p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="font-medium text-sm truncate">{notification.title}</p>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{notification.title}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="text-xs text-muted-foreground truncate max-w-full">
+                              {notification.message}
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-md">
+                            <p>{notification.message}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatRelativeTime(notification.createdAt)}
                       </p>
