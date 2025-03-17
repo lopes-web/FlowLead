@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,24 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  
+  console.log("Login - Renderizando com user:", user);
+  
+  useEffect(() => {
+    console.log("Login - useEffect com user:", user);
+    
+    // Se o usuário já estiver autenticado, redireciona para a página principal
+    if (user) {
+      console.log("Login - Usuário já autenticado, redirecionando para /");
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Login - Iniciando submit com:", { email, password: "***" });
     
     if (!email || !password) {
       setError("Por favor, preencha todos os campos");
@@ -26,16 +39,22 @@ export function Login() {
       setError(null);
       setLoading(true);
       
+      console.log("Login - Chamando signIn");
       const { error } = await signIn(email, password);
       
+      console.log("Login - Resultado do signIn:", { error });
+      
       if (error) {
+        console.error("Login - Erro ao fazer login:", error);
         setError(error.message || "Erro ao fazer login");
         return;
       }
       
+      console.log("Login - Login bem-sucedido, redirecionando para /");
       // Redireciona para a página principal após o login
       navigate("/");
     } catch (err: any) {
+      console.error("Login - Erro inesperado:", err);
       setError(err.message || "Ocorreu um erro inesperado");
     } finally {
       setLoading(false);

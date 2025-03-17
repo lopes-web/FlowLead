@@ -23,6 +23,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log("Verificando sessão...");
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -30,8 +31,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return;
         }
         
+        console.log("Sessão verificada:", data.session);
+        
         if (data.session) {
+          console.log("Usuário encontrado:", data.session.user);
           setUser(data.session.user);
+        } else {
+          console.log("Nenhuma sessão ativa encontrada");
         }
       } catch (err) {
         console.error("Erro inesperado ao verificar sessão:", err);
@@ -44,7 +50,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Configurar listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log("Evento de autenticação:", event);
+        console.log("Sessão:", session);
         setUser(session?.user || null);
       }
     );
@@ -56,10 +64,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("Tentando fazer login com:", email);
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
+      console.log("Resposta do login:", data, error);
+      
       if (data && data.user) {
+        console.log("Login bem-sucedido, usuário:", data.user);
         setUser(data.user);
       }
       
