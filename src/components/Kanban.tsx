@@ -298,17 +298,10 @@ export function Kanban({ onEditLead }: KanbanProps) {
                         <div className="flex items-center gap-2">
                           <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           
-                          <Avatar className="h-6 w-6 mr-1 transition-transform duration-200 group-hover:scale-110">
-                            <AvatarImage src={lead.avatar_url || ""} alt={lead.nome} />
-                            <AvatarFallback className={`text-xs ${getAvatarColor(lead.nome)}`}>
-                              {getInitials(lead.nome)}
-                            </AvatarFallback>
-                          </Avatar>
-                          
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <h4 className="font-medium text-sm text-white truncate max-w-[100px] sm:max-w-[120px] md:max-w-[80px] lg:max-w-[120px]">{lead.nome}</h4>
+                                <h4 className="font-medium text-sm text-white truncate max-w-[150px] sm:max-w-[180px] md:max-w-[120px] lg:max-w-[180px]">{lead.nome}</h4>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
                                 {lead.nome}

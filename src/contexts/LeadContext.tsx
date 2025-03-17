@@ -253,8 +253,15 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
+      // Atualiza o estado local usando a função de atualização para garantir o estado mais recente
       setLeads((prevLeads: Lead[]) => prevLeads.filter((lead: Lead) => lead.id !== id));
-      offlineStorage.saveLeads(leads.filter((lead: Lead) => lead.id !== id));
+      
+      // Atualiza o armazenamento offline com o estado atualizado
+      const updatedLeads = leads.filter((lead: Lead) => lead.id !== id);
+      offlineStorage.saveLeads(updatedLeads);
+      
+      // Força uma nova busca dos leads para garantir sincronização com o servidor
+      await fetchLeads();
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
       throw error; // Propaga o erro para ser tratado no componente
