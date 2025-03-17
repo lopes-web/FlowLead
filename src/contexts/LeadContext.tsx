@@ -193,8 +193,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
             leadName: currentLead.nome,
             userId: user?.id,
             userName: user?.email,
-            oldStatus: currentLead.status,
-            newStatus: lead.status
+            userMetadata: user?.user_metadata
           }
         );
       } else {
@@ -207,7 +206,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
             leadId: id,
             leadName: currentLead.nome,
             userId: user?.id,
-            userName: user?.email
+            userName: user?.email,
+            userMetadata: user?.user_metadata
           }
         );
       }
@@ -340,7 +340,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
             leadId: id,
             leadName: leadToDelete.nome,
             userId: user?.id,
-            userName: user?.email
+            userName: user?.email,
+            userMetadata: user?.user_metadata
           }
         );
       }

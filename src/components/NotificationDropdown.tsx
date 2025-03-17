@@ -40,22 +40,47 @@ export function NotificationDropdown() {
     }
   };
 
-  // Função para extrair o nome do usuário do email ou da mensagem
-  const extractUserName = (notification: any) => {
-    // Se a mensagem contém um email, extrair o nome da parte antes do @
-    if (notification.message && notification.message.includes('@')) {
-      const emailMatch = notification.message.match(/([a-zA-Z0-9._-]+)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-      if (emailMatch && emailMatch[1]) {
-        // Formatar o nome (primeira letra maiúscula, substituir pontos e underscores por espaços)
-        const name = emailMatch[1]
-          .replace(/[._-]/g, ' ')
-          .split(' ')
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-          .join(' ');
-        
-        // Substituir o email pelo nome na mensagem
-        return notification.message.replace(emailMatch[0], name);
+  // Função para extrair o nome do usuário da mensagem
+  const formatUserMessage = (notification: any) => {
+    if (!notification.message) return "";
+    
+    // Padrão para encontrar emails na mensagem
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+    const emailMatch = notification.message.match(emailRegex);
+    
+    if (emailMatch && emailMatch[1]) {
+      const email = emailMatch[1];
+      
+      // Verificar se temos dados adicionais com o nome do usuário
+      if (notification.data && notification.data.userName) {
+        // Se o email no data for o mesmo que encontramos na mensagem
+        if (notification.data.userName === email) {
+          // Verificar se temos um nome de usuário nos metadados
+          if (notification.data.userMetadata && notification.data.userMetadata.name) {
+            return notification.message.replace(email, notification.data.userMetadata.name);
+          }
+          
+          // Caso contrário, extrair um nome do email
+          const username = email.split('@')[0];
+          const formattedName = username
+            .replace(/[._-]/g, ' ')
+            .split(' ')
+            .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+            .join(' ');
+          
+          return notification.message.replace(email, formattedName);
+        }
       }
+      
+      // Fallback: extrair nome do email
+      const username = email.split('@')[0];
+      const formattedName = username
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+      
+      return notification.message.replace(email, formattedName);
     }
     
     return notification.message;
@@ -143,11 +168,11 @@ export function NotificationDropdown() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <p className="text-xs text-muted-foreground truncate max-w-full">
-                              {extractUserName(notification)}
+                              {formatUserMessage(notification)}
                             </p>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-md">
-                            <p>{extractUserName(notification)}</p>
+                            <p>{formatUserMessage(notification)}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
