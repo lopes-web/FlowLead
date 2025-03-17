@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Zap } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,7 +20,7 @@ export function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("Por favor, preencha todos os campos");
       return;
     }
@@ -37,7 +39,16 @@ export function Register() {
       setError(null);
       setLoading(true);
       
-      const { error, user } = await signUp(email, password);
+      // Registrar com nome como metadado
+      const { error, user } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name
+          }
+        }
+      });
       
       if (error) {
         setError(error.message || "Erro ao criar conta");
@@ -87,6 +98,21 @@ export function Register() {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Seu nome completo"
+                className="mt-1"
+              />
+            </div>
+            
             <div>
               <Label htmlFor="email">Email</Label>
               <Input

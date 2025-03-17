@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,14 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { Loader2, User, Mail, Calendar, Shield } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, ArrowLeft, Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function Profile() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   // Função para obter as iniciais do email
   const getInitials = (email: string) => {
@@ -82,9 +87,87 @@ export function Profile() {
     }
   };
 
+  // Função para fazer upload da foto de perfil
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Verificar tamanho do arquivo (máximo 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 2MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Verificar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro",
+        description: "O arquivo deve ser uma imagem.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadLoading(true);
+    try {
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload do arquivo para o Storage
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Obter URL pública do arquivo
+      const { data: urlData } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath);
+
+      const avatarUrl = urlData.publicUrl;
+
+      // Atualizar metadados do usuário
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: avatarUrl }
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setAvatarUrl(avatarUrl);
+      toast({
+        title: "Sucesso",
+        description: "Foto de perfil atualizada com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível fazer upload da imagem.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   // Função para fazer logout
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  // Função para voltar à página inicial
+  const handleGoBack = () => {
+    navigate('/');
   };
 
   if (!user) {
@@ -99,9 +182,19 @@ export function Profile() {
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
-            Meu Perfil
-          </h1>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleGoBack}
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
+              Meu Perfil
+            </h1>
+          </div>
           <Button variant="outline" onClick={handleSignOut}>
             Sair
           </Button>
@@ -111,12 +204,34 @@ export function Profile() {
           {/* Coluna 1: Informações do perfil */}
           <Card className="md:col-span-1">
             <CardHeader className="flex flex-col items-center">
-              <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={user.user_metadata?.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] text-white text-xl">
-                  {getInitials(user.email)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative group">
+                <Avatar className="h-24 w-24 mb-4">
+                  <AvatarImage src={avatarUrl || undefined} />
+                  <AvatarFallback className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] text-white text-xl">
+                    {getInitials(user.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute bottom-3 right-0 h-8 w-8 rounded-full bg-background shadow-md"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadLoading}
+                >
+                  {uploadLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  accept="image/*"
+                />
+              </div>
               <CardTitle className="text-xl">{user.email}</CardTitle>
               <CardDescription>
                 {user.user_metadata?.name || "Usuário LeadFlow"}
