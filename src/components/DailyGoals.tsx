@@ -75,8 +75,8 @@ export function DailyGoals() {
       const { data: leadsAdicionados, error: errorLeads } = await supabase
         .from("leads")
         .select("id")
-        .gte("createdat", inicioPeriodo.toISOString())
-        .lte("createdat", fimPeriodo.toISOString());
+        .gte("created_at", inicioPeriodo.toISOString())
+        .lte("created_at", fimPeriodo.toISOString());
 
       if (errorLeads) {
         console.error("Erro ao buscar leads:", errorLeads);
@@ -123,8 +123,8 @@ export function DailyGoals() {
           const { data: leadsNoDia, error: errorStreak } = await supabase
             .from("leads")
             .select("id")
-            .gte("createdat", inicioDiaStreak.toISOString())
-            .lte("createdat", fimDiaStreak.toISOString());
+            .gte("created_at", inicioDiaStreak.toISOString())
+            .lte("created_at", fimDiaStreak.toISOString());
 
           if (errorStreak) {
             console.error("Erro ao calcular streak:", errorStreak);

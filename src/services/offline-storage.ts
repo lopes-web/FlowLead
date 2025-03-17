@@ -51,8 +51,8 @@ export const offlineStorage = {
             const { created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = action.data;
             const dbLead = {
               ...restLead,
-              createdat: new Date().toISOString(),
-              updatedat: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
               tipoprojeto: tipo_projeto,
               ultimocontato: ultimo_contato,
             };
