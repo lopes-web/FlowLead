@@ -40,6 +40,27 @@ export function NotificationDropdown() {
     }
   };
 
+  // Função para extrair o nome do usuário do email ou da mensagem
+  const extractUserName = (notification: any) => {
+    // Se a mensagem contém um email, extrair o nome da parte antes do @
+    if (notification.message && notification.message.includes('@')) {
+      const emailMatch = notification.message.match(/([a-zA-Z0-9._-]+)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (emailMatch && emailMatch[1]) {
+        // Formatar o nome (primeira letra maiúscula, substituir pontos e underscores por espaços)
+        const name = emailMatch[1]
+          .replace(/[._-]/g, ' ')
+          .split(' ')
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+          .join(' ');
+        
+        // Substituir o email pelo nome na mensagem
+        return notification.message.replace(emailMatch[0], name);
+      }
+    }
+    
+    return notification.message;
+  };
+
   // Função para obter o ícone baseado no tipo de notificação
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -122,11 +143,11 @@ export function NotificationDropdown() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <p className="text-xs text-muted-foreground truncate max-w-full">
-                              {notification.message}
+                              {extractUserName(notification)}
                             </p>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-md">
-                            <p>{notification.message}</p>
+                            <p>{extractUserName(notification)}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
