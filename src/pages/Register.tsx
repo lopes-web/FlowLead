@@ -97,6 +97,22 @@ export function Register() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md">
             <div>
+              <Label htmlFor="name" className="text-white">
+                Nome Completo
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                placeholder="Seu Nome Completo"
+              />
+            </div>
+            <div>
               <Label htmlFor="email" className="text-white">
                 Email
               </Label>
