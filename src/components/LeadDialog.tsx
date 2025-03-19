@@ -22,6 +22,7 @@ import { useLeads } from "@/contexts/LeadContext";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, Lock, Unlock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { statusConfig } from "@/config/statusConfig";
 
 interface LeadDialogProps {
   open: boolean;
@@ -156,229 +157,241 @@ export function LeadDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#222839] border-[#2e3446] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Nome do Lead
-              </label>
-              <Input
-                value={formData.nome}
-                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                placeholder="Nome do lead ou empresa"
-                disabled={!canEdit}
-              />
+      <DialogContent className="bg-[#222839] border-[#2e3446] text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-semibold">
+                {leadId ? "Editar Lead" : "Novo Lead"}
+              </DialogTitle>
+              <DialogDescription className="text-gray-400 mt-1">
+                {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
+              </DialogDescription>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Tipo de Projeto
-              </label>
-              <Input
-                value={formData.tipo_projeto}
-                onChange={(e) => setFormData({ ...formData, tipo_projeto: e.target.value })}
-                placeholder="Ex: Website, E-commerce, App"
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Orçamento
-              </label>
-              <Input
-                value={formData.orcamento}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '');
-                  if (value) {
-                    const numberValue = parseInt(value) / 100;
-                    setFormData({
-                      ...formData,
-                      orcamento: numberValue.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      })
-                    });
-                  } else {
-                    setFormData({ ...formData, orcamento: '' });
-                  }
-                }}
-                placeholder="R$ 0,00"
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Status
-              </label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value as LeadStatus })}
+            {leadId && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleTogglePublic}
+                className="h-9 w-9 shrink-0"
                 disabled={!canEdit}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="cursor-pointer"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {formData.is_public ? (
+                  <Unlock className="h-4 w-4 text-green-400" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
+              </Button>
+            )}
           </div>
 
-          <div className="space-y-4">
-            {formData.status === "perdido" && (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-200">
-                    Motivo da Perda
-                  </label>
-                  <Select
-                    value={formData.motivo_perda}
-                    onValueChange={(value) => setFormData({ ...formData, motivo_perda: value as LeadLossReason })}
-                    disabled={!canEdit}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o motivo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {motivoPerdaOptions.map((option) => (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value}
-                          className="cursor-pointer"
-                        >
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="flex flex-wrap gap-2">
+            {statusOptions.map((option) => (
+              <Button
+                key={option.value}
+                variant="outline"
+                size="sm"
+                onClick={() => setFormData({ ...formData, status: option.value as LeadStatus })}
+                className={`gap-2 transition-all duration-200 ${
+                  formData.status === option.value
+                    ? "bg-[#2e3446] text-gray-200"
+                    : "hover:bg-[#2e3446] text-gray-400"
+                }`}
+                disabled={!canEdit}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </DialogHeader>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <label className="text-sm font-medium text-gray-200">
+                Informações Básicas
+              </label>
+              <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-200">
-                    Detalhes da Perda
-                  </label>
-                  <Textarea
-                    value={formData.detalhes_perda}
-                    onChange={(e) => setFormData({ ...formData, detalhes_perda: e.target.value })}
-                    placeholder="Descreva mais detalhes sobre o motivo da perda..."
-                    className="min-h-[100px]"
+                  <label className="text-xs text-gray-400">Nome do Lead</label>
+                  <Input
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    placeholder="Nome do lead ou empresa"
+                    className="bg-[#222839] border-[#2e3446]"
                     disabled={!canEdit}
                   />
                 </div>
-              </>
-            )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Último Contato
-              </label>
-              <Input
-                type="date"
-                value={formData.ultimo_contato}
-                onChange={(e) => setFormData({ ...formData, ultimo_contato: e.target.value })}
-                disabled={!canEdit}
-              />
+                <div className="space-y-2">
+                  <label className="text-xs text-gray-400">Tipo de Projeto</label>
+                  <Input
+                    value={formData.tipo_projeto}
+                    onChange={(e) => setFormData({ ...formData, tipo_projeto: e.target.value })}
+                    placeholder="Ex: Website, E-commerce, App"
+                    className="bg-[#222839] border-[#2e3446]"
+                    disabled={!canEdit}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-gray-400">Orçamento</label>
+                  <Input
+                    value={formData.orcamento}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value) {
+                        const numberValue = parseInt(value) / 100;
+                        setFormData({
+                          ...formData,
+                          orcamento: numberValue.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          })
+                        });
+                      } else {
+                        setFormData({ ...formData, orcamento: '' });
+                      }
+                    }}
+                    placeholder="R$ 0,00"
+                    className="bg-[#222839] border-[#2e3446]"
+                    disabled={!canEdit}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label className="text-sm font-medium text-gray-200">
                 Observações
               </label>
-              <Textarea
-                value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                placeholder="Adicione observações importantes sobre o lead..."
-                className="min-h-[100px]"
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-200">
-                Tags
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Adicionar tag..."
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
+              <div className="bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
+                <Textarea
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                  placeholder="Adicione observações importantes sobre o lead..."
+                  className="min-h-[150px] bg-[#222839] border-[#2e3446]"
                   disabled={!canEdit}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleAddTag}
-                  disabled={!canEdit}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
-              {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="bg-[#2e3446] text-gray-200 hover:bg-[#3a4257]"
-                    >
-                      {tag}
-                      <button
-                        onClick={() => handleRemoveTag(tag)}
-                        className="ml-2 hover:text-white"
-                        disabled={!canEdit}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
             </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <label className="text-sm font-medium text-gray-200">
+                Detalhes do Contato
+              </label>
+              <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
+                <div className="space-y-2">
+                  <label className="text-xs text-gray-400">Último Contato</label>
+                  <Input
+                    type="date"
+                    value={formData.ultimo_contato}
+                    onChange={(e) => setFormData({ ...formData, ultimo_contato: e.target.value })}
+                    className="bg-[#222839] border-[#2e3446]"
+                    disabled={!canEdit}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-gray-400">Tags</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Adicionar tag..."
+                      className="bg-[#222839] border-[#2e3446]"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      disabled={!canEdit}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleAddTag}
+                      className="shrink-0"
+                      disabled={!canEdit}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="bg-[#222839] text-gray-200 hover:bg-[#2e3446] transition-colors"
+                        >
+                          {tag}
+                          <button
+                            onClick={() => handleRemoveTag(tag)}
+                            className="ml-2 hover:text-white"
+                            disabled={!canEdit}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {formData.status === "perdido" && (
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-gray-200">
+                  Informações da Perda
+                </label>
+                <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
+                  <div className="space-y-2">
+                    <label className="text-xs text-gray-400">Motivo da Perda</label>
+                    <Select
+                      value={formData.motivo_perda}
+                      onValueChange={(value) => setFormData({ ...formData, motivo_perda: value as LeadLossReason })}
+                      disabled={!canEdit}
+                    >
+                      <SelectTrigger className="bg-[#222839] border-[#2e3446]">
+                        <SelectValue placeholder="Selecione o motivo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {motivoPerdaOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="cursor-pointer"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs text-gray-400">Detalhes da Perda</label>
+                    <Textarea
+                      value={formData.detalhes_perda}
+                      onChange={(e) => setFormData({ ...formData, detalhes_perda: e.target.value })}
+                      placeholder="Descreva mais detalhes sobre o motivo da perda..."
+                      className="min-h-[100px] bg-[#222839] border-[#2e3446]"
+                      disabled={!canEdit}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         <DialogFooter className="gap-2">
-          {leadId && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleTogglePublic}
-              className="mr-auto"
-              disabled={!canEdit}
-            >
-              {formData.is_public ? (
-                <Unlock className="h-4 w-4 text-green-400" />
-              ) : (
-                <Lock className="h-4 w-4" />
-              )}
-            </Button>
-          )}
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
