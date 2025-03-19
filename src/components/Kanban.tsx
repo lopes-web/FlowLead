@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLeads } from "@/contexts/LeadContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,10 +25,10 @@ import {
   Unlock
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LeadFilters, type LeadFilters as LeadFiltersType } from "./LeadFilters";
+import { LeadFilters as LeadFiltersComponent, type LeadFilters } from "./LeadFilters";
 
 interface KanbanProps {
-  onEditLead: (leadId: string) => void;
+  onEditLead: (id: string) => void;
 }
 
 const statusConfig: Record<LeadStatus, { label: string; color: string; icon: React.ReactNode }> = {
@@ -71,51 +71,24 @@ export function Kanban({ onEditLead }: KanbanProps) {
   const [leadToDelete, setLeadToDelete] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<LeadStatus | null>(null);
   const [showPerdidos, setShowPerdidos] = useState(false);
-  const [filters, setFilters] = useState<LeadFiltersType>({
+  const [filters, setFilters] = useState<LeadFilters>({
     search: "",
     status: "todos",
     motivo_perda: "todos",
-    data_inicio: "",
-    data_fim: "",
   });
 
-  // Função para filtrar os leads
-  const filteredLeads = leads.filter(lead => {
-    // Filtro de busca
-    if (filters.search && !lead.nome.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
+  const filteredLeads = useMemo(() => {
+    return leads.filter((lead) => {
+      const matchesSearch = lead.nome.toLowerCase().includes(filters.search.toLowerCase()) ||
+        lead.tipo_projeto.toLowerCase().includes(filters.search.toLowerCase());
 
-    // Filtro de status
-    if (filters.status !== "todos" && lead.status !== filters.status) {
-      return false;
-    }
+      const matchesStatus = filters.status === "todos" || lead.status === filters.status;
+      
+      const matchesMotivo = filters.motivo_perda === "todos" || lead.motivo_perda === filters.motivo_perda;
 
-    // Filtro de motivo de perda
-    if (filters.motivo_perda !== "todos" && lead.motivo_perda !== filters.motivo_perda) {
-      return false;
-    }
-
-    // Filtro de data
-    if (filters.data_inicio) {
-      const dataInicio = new Date(filters.data_inicio);
-      const leadData = new Date(lead.created_at);
-      if (leadData < dataInicio) {
-        return false;
-      }
-    }
-
-    if (filters.data_fim) {
-      const dataFim = new Date(filters.data_fim);
-      dataFim.setHours(23, 59, 59); // Ajusta para o final do dia
-      const leadData = new Date(lead.created_at);
-      if (leadData > dataFim) {
-        return false;
-      }
-    }
-
-    return true;
-  });
+      return matchesSearch && matchesStatus && matchesMotivo;
+    });
+  }, [leads, filters]);
 
   const handleDragStart = (e: React.DragEvent, leadId: string, status: LeadStatus) => {
     e.dataTransfer.setData("text/plain", leadId);
@@ -290,36 +263,42 @@ export function Kanban({ onEditLead }: KanbanProps) {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-end mb-4">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setShowPerdidos(!showPerdidos)}
-            className={showPerdidos ? "bg-[#2e3446]" : ""}
+            className="gap-2"
           >
+            {showPerdidos ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             {showPerdidos ? "Ocultar Perdidos" : "Mostrar Perdidos"}
           </Button>
         </div>
 
-        <LeadFilters onFilterChange={setFilters} />
+        <LeadFiltersComponent onFilterChange={setFilters} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 animate-fadeIn">
           {filteredStatuses.map((status) => (
             <div
               key={status}
-              className="space-y-4"
+              className="flex flex-col gap-2 bg-[#222839] p-6 rounded-xl border border-[#2e3446] transition-colors duration-200"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, status)}
             >
-              <div className="flex items-center gap-2">
-                {statusConfig[status].icon}
-                <h3 className="font-medium">{statusConfig[status].label}</h3>
-                <Badge variant="secondary" className="ml-auto">
+              <div className={`flex items-center gap-2 p-2 rounded-lg ${statusConfig[status].color} transition-colors duration-200`}>
+                <div className="p-1 shrink-0">
+                  {statusConfig[status].icon}
+                </div>
+                <h3 className="font-medium truncate">
+                  {statusConfig[status].label}
+                </h3>
+                <Badge variant="secondary" className="ml-auto shrink-0 bg-[#1c2132] text-white border-[#2e3446]">
                   {filteredLeads.filter((lead) => lead.status === status).length}
                 </Badge>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 min-h-[200px]">
                 {filteredLeads
                   .filter((lead) => lead.status === status)
                   .map((lead) => (
@@ -354,7 +333,6 @@ export function Kanban({ onEditLead }: KanbanProps) {
                               </Tooltip>
                             </TooltipProvider>
                             
-                            {/* Renderiza o ícone de visibilidade */}
                             {renderVisibilityIcon(lead)}
                           </div>
 

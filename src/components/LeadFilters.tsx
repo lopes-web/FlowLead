@@ -19,8 +19,6 @@ export interface LeadFilters {
   search: string;
   status: LeadStatus | "todos";
   motivo_perda: LeadLossReason | "todos";
-  data_inicio: string;
-  data_fim: string;
 }
 
 const statusOptions: { value: LeadStatus; label: string }[] = [
@@ -47,8 +45,6 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
     search: "",
     status: "todos",
     motivo_perda: "todos",
-    data_inicio: "",
-    data_fim: "",
   });
 
   const handleFilterChange = (
@@ -65,15 +61,13 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
       search: "",
       status: "todos",
       motivo_perda: "todos",
-      data_inicio: "",
-      data_fim: "",
     };
     setFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
 
   return (
-    <div className="space-y-4 p-4 bg-[#1c2132] rounded-lg">
+    <div className="space-y-4 p-4 bg-[#222839] rounded-lg border border-[#2e3446]">
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -119,20 +113,6 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
               ))}
             </SelectContent>
           </Select>
-
-          <Input
-            type="date"
-            value={filters.data_inicio}
-            onChange={(e) => handleFilterChange("data_inicio", e.target.value)}
-            className="w-[180px]"
-          />
-
-          <Input
-            type="date"
-            value={filters.data_fim}
-            onChange={(e) => handleFilterChange("data_fim", e.target.value)}
-            className="w-[180px]"
-          />
 
           <Button
             variant="outline"
