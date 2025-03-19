@@ -25,6 +25,7 @@ import {
   Unlock
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LeadFilters, type LeadFilters as LeadFiltersType } from "./LeadFilters";
 
 interface KanbanProps {
   onEditLead: (leadId: string) => void;
@@ -70,6 +71,51 @@ export function Kanban({ onEditLead }: KanbanProps) {
   const [leadToDelete, setLeadToDelete] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<LeadStatus | null>(null);
   const [showPerdidos, setShowPerdidos] = useState(false);
+  const [filters, setFilters] = useState<LeadFiltersType>({
+    search: "",
+    status: "",
+    motivo_perda: "",
+    data_inicio: "",
+    data_fim: "",
+  });
+
+  // Função para filtrar os leads
+  const filteredLeads = leads.filter(lead => {
+    // Filtro de busca
+    if (filters.search && !lead.nome.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+
+    // Filtro de status
+    if (filters.status && lead.status !== filters.status) {
+      return false;
+    }
+
+    // Filtro de motivo de perda
+    if (filters.motivo_perda && lead.motivo_perda !== filters.motivo_perda) {
+      return false;
+    }
+
+    // Filtro de data
+    if (filters.data_inicio) {
+      const dataInicio = new Date(filters.data_inicio);
+      const leadData = new Date(lead.created_at);
+      if (leadData < dataInicio) {
+        return false;
+      }
+    }
+
+    if (filters.data_fim) {
+      const dataFim = new Date(filters.data_fim);
+      dataFim.setHours(23, 59, 59); // Ajusta para o final do dia
+      const leadData = new Date(lead.created_at);
+      if (leadData > dataFim) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   const handleDragStart = (e: React.DragEvent, leadId: string, status: LeadStatus) => {
     e.dataTransfer.setData("text/plain", leadId);
@@ -243,168 +289,166 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   return (
     <>
-      <div className="flex justify-end mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowPerdidos(!showPerdidos)}
-          className="gap-2"
-        >
-          {showPerdidos ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          {showPerdidos ? "Ocultar Perdidos" : "Mostrar Perdidos"}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 animate-fadeIn">
-        {filteredStatuses.map((status) => (
-          <div
-            key={status}
-            className="flex flex-col gap-2 bg-[#222839] p-6 rounded-xl border border-[#2e3446] transition-colors duration-200"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, status)}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={() => setShowPerdidos(!showPerdidos)}
+            className={showPerdidos ? "bg-[#2e3446]" : ""}
           >
-            <div className={`flex items-center gap-2 p-2 rounded-lg ${statusConfig[status].color} transition-colors duration-200`}>
-              <div className="p-1 shrink-0">
+            {showPerdidos ? "Ocultar Perdidos" : "Mostrar Perdidos"}
+          </Button>
+        </div>
+
+        <LeadFilters onFilterChange={setFilters} />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+          {filteredStatuses.map((status) => (
+            <div
+              key={status}
+              className="space-y-4"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, status)}
+            >
+              <div className="flex items-center gap-2">
                 {statusConfig[status].icon}
+                <h3 className="font-medium">{statusConfig[status].label}</h3>
+                <Badge variant="secondary" className="ml-auto">
+                  {filteredLeads.filter((lead) => lead.status === status).length}
+                </Badge>
               </div>
-              <h3 className="font-medium truncate">
-                {statusConfig[status].label}
-              </h3>
-              <Badge variant="secondary" className="ml-auto shrink-0 bg-[#1c2132] text-white border-[#2e3446]">
-                {leads.filter((lead) => lead.status === status).length}
-              </Badge>
-            </div>
 
-            <div className="space-y-3 min-h-[200px]">
-              {leads
-                .filter((lead) => lead.status === status)
-                .map((lead) => (
-                  <Card
-                    key={lead.id}
-                    className="group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] hover:border-[#9b87f5] hover:shadow-md transition-all duration-200"
-                    draggable
-                    onDragStart={(e) => {
-                      // Verificar se o clique foi em um botão
-                      const target = e.target as HTMLElement;
-                      if (target.closest('button')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                      }
-                      handleDragStart(e, lead.id, status);
-                    }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <h4 className="font-medium text-sm text-white truncate max-w-[150px] sm:max-w-[180px] md:max-w-[120px] lg:max-w-[180px]">{lead.nome}</h4>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
-                                {lead.nome}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          
-                          {/* Renderiza o ícone de visibilidade */}
-                          {renderVisibilityIcon(lead)}
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge className={`w-fit ${statusConfig[status].color}`}>
-                                  <span className="truncate max-w-[120px] sm:max-w-[150px] md:max-w-[100px] lg:max-w-[150px]">{lead.tipo_projeto}</span>
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
-                                {lead.tipo_projeto}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <DollarSign className="h-3 w-3 shrink-0" />
-                            <span className="truncate">
-                              {new Intl.NumberFormat("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                              }).format(lead.orcamento)}
-                            </span>
+              <div className="space-y-4">
+                {filteredLeads
+                  .filter((lead) => lead.status === status)
+                  .map((lead) => (
+                    <Card
+                      key={lead.id}
+                      className="group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] hover:border-[#9b87f5] hover:shadow-md transition-all duration-200"
+                      draggable
+                      onDragStart={(e) => {
+                        // Verificar se o clique foi em um botão
+                        const target = e.target as HTMLElement;
+                        if (target.closest('button')) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }
+                        handleDragStart(e, lead.id, status);
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-2">
+                            <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                            
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <h4 className="font-medium text-sm text-white truncate max-w-[150px] sm:max-w-[180px] md:max-w-[120px] lg:max-w-[180px]">{lead.nome}</h4>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+                                  {lead.nome}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            
+                            {/* Renderiza o ícone de visibilidade */}
+                            {renderVisibilityIcon(lead)}
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Calendar className="h-3 w-3 shrink-0" />
-                            <span className="truncate">
-                              Último contato: {" "}
-                              {new Date(lead.ultimo_contato).toLocaleDateString("pt-BR")}
-                            </span>
-                          </div>
+                          <div className="flex flex-col gap-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge className={`w-fit ${statusConfig[status].color}`}>
+                                    <span className="truncate max-w-[120px] sm:max-w-[150px] md:max-w-[100px] lg:max-w-[150px]">{lead.tipo_projeto}</span>
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+                                  {lead.tipo_projeto}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                          {lead.tags && lead.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 overflow-hidden max-h-[22px]">
-                              {lead.tags.slice(0, 3).map(tag => (
-                                <Badge
-                                  key={tag}
-                                  variant="secondary"
-                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446] truncate max-w-[60px] sm:max-w-[80px]"
-                                >
-                                  {tag.replace(/_/g, ' ')}
-                                </Badge>
-                              ))}
-                              {lead.tags.length > 3 && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446]"
-                                >
-                                  +{lead.tags.length - 3}
-                                </Badge>
-                              )}
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <DollarSign className="h-3 w-3 shrink-0" />
+                              <span className="truncate">
+                                {new Intl.NumberFormat("pt-BR", {
+                                  style: "currency",
+                                  currency: "BRL",
+                                }).format(lead.orcamento)}
+                              </span>
                             </div>
-                          )}
-                        </div>
 
-                        <div className="flex items-center gap-1 pt-2 border-t border-[#2e3446] mt-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                            onClick={() => onEditLead(lead.id)}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          {status !== "perdido" && (
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <Calendar className="h-3 w-3 shrink-0" />
+                              <span className="truncate">
+                                Último contato: {" "}
+                                {new Date(lead.ultimo_contato).toLocaleDateString("pt-BR")}
+                              </span>
+                            </div>
+
+                            {lead.tags && lead.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 overflow-hidden max-h-[22px]">
+                                {lead.tags.slice(0, 3).map(tag => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446] truncate max-w-[60px] sm:max-w-[80px]"
+                                  >
+                                    {tag.replace(/_/g, ' ')}
+                                  </Badge>
+                                ))}
+                                {lead.tags.length > 3 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] py-0 bg-[#2e3446] text-gray-400 border-[#2e3446]"
+                                  >
+                                    +{lead.tags.length - 3}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1 pt-2 border-t border-[#2e3446] mt-1">
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                              onClick={() => handleMoveToPerdido(lead.id)}
+                              onClick={() => onEditLead(lead.id)}
                             >
-                              <Archive className="h-4 w-4" />
+                              <Edit2 className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                            onClick={() => handleDeleteClick({ id: lead.id, nome: lead.nome })}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            {status !== "perdido" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
+                                onClick={() => handleMoveToPerdido(lead.id)}
+                              >
+                                <Archive className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
+                              onClick={() => handleDeleteClick({ id: lead.id, nome: lead.nome })}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <DeleteLeadDialog

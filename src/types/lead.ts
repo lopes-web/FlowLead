@@ -7,6 +7,15 @@ export type LeadStatus =
   | "fechado"
   | "perdido";
 
+export type LeadLossReason =
+  | "nao_respondeu"
+  | "achou_caro"
+  | "sem_dinheiro"
+  | "escolheu_concorrente"
+  | "projeto_cancelado"
+  | "fora_do_escopo"
+  | "outro";
+
 export type LeadQualityTag =
   | "quente"
   | "morno"
@@ -39,6 +48,8 @@ export interface Lead {
   updated_at: string;
   user_id?: string | null;
   is_public?: boolean | null;
+  motivo_perda?: LeadLossReason | null;
+  detalhes_perda?: string | null;
 }
 
 export interface Project {

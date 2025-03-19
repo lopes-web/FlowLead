@@ -56,7 +56,9 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    is_public: false
+    is_public: false,
+    motivo_perda: null,
+    detalhes_perda: null
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -97,7 +99,9 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        is_public: false
+        is_public: false,
+        motivo_perda: null,
+        detalhes_perda: null
       });
     }
   }, [leadId, leads]);
@@ -338,6 +342,43 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.status === "perdido" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="motivo_perda">Motivo da Perda</Label>
+                  <Select
+                    value={formData.motivo_perda || ""}
+                    onValueChange={(value) => handleSelectChange("motivo_perda", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o motivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nao_respondeu">Não Respondeu</SelectItem>
+                      <SelectItem value="achou_caro">Achou Caro</SelectItem>
+                      <SelectItem value="sem_dinheiro">Sem Dinheiro</SelectItem>
+                      <SelectItem value="escolheu_concorrente">Escolheu Concorrente</SelectItem>
+                      <SelectItem value="projeto_cancelado">Projeto Cancelado</SelectItem>
+                      <SelectItem value="fora_do_escopo">Fora do Escopo</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="detalhes_perda">Detalhes da Perda</Label>
+                  <Textarea
+                    id="detalhes_perda"
+                    name="detalhes_perda"
+                    value={formData.detalhes_perda || ""}
+                    onChange={handleChange}
+                    placeholder="Descreva os detalhes do motivo da perda..."
+                    className="h-20"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
