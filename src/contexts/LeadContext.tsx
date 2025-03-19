@@ -98,6 +98,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         ultimocontato: ultimo_contato,
         user_id: user?.id || null,
         is_public: user ? false : true, // Se não houver usuário logado, o lead é público por padrão
+        necessidades: lead.necessidades || null,
+        observacoes: lead.observacoes || null
       };
 
       const { data, error } = await supabase

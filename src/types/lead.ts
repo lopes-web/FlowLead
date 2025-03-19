@@ -14,7 +14,8 @@ export type LeadLossReason =
   | "escolheu_concorrente"
   | "projeto_cancelado"
   | "fora_do_escopo"
-  | "outro";
+  | "outro"
+  | null;
 
 export type LeadQualityTag =
   | "quente"
@@ -31,25 +32,25 @@ export type LeadQualityTag =
 export interface Lead {
   id: string;
   nome: string;
-  email: string;
+  email?: string;
   whatsapp: string;
-  instagram: string;
-  website: string;
+  instagram?: string;
+  website?: string;
   origem: string;
   tipo_projeto: string;
   orcamento: number;
   status: LeadStatus;
   ultimo_contato: string;
-  anotacoes: string | null;
-  necessidades: string | null;
-  observacoes: string | null;
-  tags: string[];
+  anotacoes?: string;
+  tags: LeadQualityTag[];
   created_at: string;
   updated_at: string;
+  is_public?: boolean;
   user_id?: string | null;
-  is_public?: boolean | null;
-  motivo_perda?: LeadLossReason | null;
+  motivo_perda?: LeadLossReason;
   detalhes_perda?: string | null;
+  necessidades?: string | null;
+  observacoes?: string | null;
 }
 
 export interface Project {
