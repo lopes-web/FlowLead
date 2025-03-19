@@ -232,11 +232,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-2xl font-semibold">
-                {leadId ? "Editar Lead" : "Novo Lead"}
-              </DialogTitle>
+            {leadId ? "Editar Lead" : "Novo Lead"}
+          </DialogTitle>
               <DialogDescription className="text-gray-400 mt-1">
                 {leadId ? "Edite as informações do lead" : "Preencha as informações do novo lead"}
-              </DialogDescription>
+          </DialogDescription>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -281,59 +281,59 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             {/* Informações Básicas */}
             <div className="space-y-4">
               <Label className="text-sm font-medium">Informações Básicas</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome</Label>
-                  <Input
-                    id="nome"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nome">Nome</Label>
+                <Input
+                  id="nome"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                    required
-                  />
-                </div>
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
-                  <Select
-                    value={formData.tipo_projeto}
-                    onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
-                  >
+              <div className="space-y-2">
+                <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
+                <Select
+                  value={formData.tipo_projeto}
+                  onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
+                >
                     <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
-                      <SelectValue placeholder="Selecione o tipo de projeto" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="site">Site</SelectItem>
-                      <SelectItem value="landing_page">Landing Page</SelectItem>
-                      <SelectItem value="criativos">Criativos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <SelectValue placeholder="Selecione o tipo de projeto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="site">Site</SelectItem>
+                    <SelectItem value="landing_page">Landing Page</SelectItem>
+                    <SelectItem value="criativos">Criativos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="orcamento">Orçamento</Label>
-                  <Input
-                    id="orcamento"
-                    name="orcamento"
-                    type="text"
-                    value={formatCurrency(formData.orcamento)}
-                    onChange={handleChange}
+              <div className="space-y-2">
+                <Label htmlFor="orcamento">Orçamento</Label>
+                <Input
+                  id="orcamento"
+                  name="orcamento"
+                  type="text"
+                  value={formatCurrency(formData.orcamento)}
+                  onChange={handleChange}
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                    required
-                  />
-                </div>
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <Label htmlFor="origem">Origem</Label>
-                  <Input
+                <Input
                     id="origem"
                     name="origem"
                     value={formData.origem}
-                    onChange={handleChange}
+                  onChange={handleChange}
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                    required
-                  />
+                  required
+                />
                 </div>
               </div>
             </div>
@@ -342,7 +342,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             <div className="space-y-4">
               <Label className="text-sm font-medium">Informações de Contato</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+            <div className="space-y-2">
                   <Label htmlFor="whatsapp" className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     WhatsApp
@@ -357,13 +357,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
                     required
                   />
-                </div>
+            </div>
 
-                <div className="space-y-2">
+            <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Email
-                  </Label>
+                </Label>
                   <Input
                     id="email"
                     name="email"
@@ -373,9 +373,9 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                     placeholder="exemplo@email.com"
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
                   />
-                </div>
+            </div>
 
-                <div className="space-y-2">
+            <div className="space-y-2">
                   <Label htmlFor="instagram" className="flex items-center gap-2">
                     <Instagram className="h-4 w-4" />
                     Instagram
@@ -384,13 +384,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                     id="instagram"
                     name="instagram"
                     value={formData.instagram}
-                    onChange={handleChange}
+                onChange={handleChange}
                     placeholder="@usuario ou URL completa"
                     className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                  />
-                </div>
+              />
+            </div>
 
-                <div className="space-y-2">
+            <div className="space-y-2">
                   <Label htmlFor="website" className="flex items-center gap-2">
                     <Globe className="h-4 w-4" />
                     Website

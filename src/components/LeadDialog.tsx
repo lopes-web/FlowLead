@@ -19,7 +19,6 @@ import {
 import { LeadStatus, LeadQualityTag } from "@/types/lead";
 import { useLeads } from "@/contexts/LeadContext";
 import { X, Plus } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 type LeadFormData = {
   nome: string;
