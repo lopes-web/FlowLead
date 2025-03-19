@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { LeadStatus, LeadLossReason } from "@/types/lead";
+import { LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
 import { useLeads } from "@/contexts/LeadContext";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, Lock, Unlock } from "lucide-react";
@@ -35,6 +35,10 @@ interface LeadFormData {
   orcamento: number;
   status: LeadStatus;
   ultimo_contato: string;
+  tags: [];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 interface LeadDialogProps {
@@ -68,7 +72,7 @@ export function LeadDialog({
   leadId,
 }: LeadDialogProps) {
   const { user } = useAuth();
-  const { leads, createLead, updateLead, togglePublic } = useLeads();
+  const { leads, addLead, updateLead, togglePublic } = useLeads();
   const [formData, setFormData] = useState<LeadFormData>({
     nome: "",
     email: "",
@@ -80,6 +84,10 @@ export function LeadDialog({
     orcamento: 0,
     status: "nao_contatado",
     ultimo_contato: new Date().toISOString().split('T')[0],
+    tags: [],
+    is_public: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   });
   const [newTag, setNewTag] = useState("");
 
@@ -98,6 +106,10 @@ export function LeadDialog({
           orcamento: lead.orcamento,
           status: lead.status,
           ultimo_contato: new Date(lead.ultimo_contato).toISOString().split('T')[0],
+          tags: lead.tags || [],
+          is_public: lead.is_public || false,
+          created_at: lead.created_at,
+          updated_at: new Date().toISOString()
         });
       }
     } else {
@@ -112,6 +124,10 @@ export function LeadDialog({
         orcamento: 0,
         status: "nao_contatado",
         ultimo_contato: new Date().toISOString().split('T')[0],
+        tags: [],
+        is_public: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
     }
   }, [leadId, leads]);
@@ -126,7 +142,7 @@ export function LeadDialog({
       if (leadId) {
         await updateLead(leadId, leadData);
       } else {
-        await createLead(leadData);
+        await addLead(leadData);
       }
 
       onOpenChange(false);
@@ -248,15 +264,10 @@ export function LeadDialog({
               }).replace('R$', '').trim()}
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, '');
-                if (value) {
-                  const numberValue = parseInt(value) / 100;
-                  setFormData({
-                    ...formData,
-                    orcamento: numberValue
-                  });
-                } else {
-                  setFormData({ ...formData, orcamento: 0 });
-                }
+                setFormData({
+                  ...formData,
+                  orcamento: value ? parseInt(value) : 0
+                });
               }}
               placeholder="Orçamento"
               className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
@@ -264,39 +275,36 @@ export function LeadDialog({
 
             <Select
               value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value as LeadStatus })}
+              onValueChange={(value: LeadStatus) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Selecione o status" />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className="cursor-pointer"
-                  >
+                  <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
+            <Input
+              type="date"
+              value={formData.ultimo_contato}
+              onChange={(e) => setFormData({ ...formData, ultimo_contato: e.target.value })}
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter>
           <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            Cancelar
-          </Button>
-          <Button
+            type="submit"
             onClick={handleSubmit}
-            className="flex-1 bg-[#9b87f5] hover:bg-[#8b74f4]"
+            className="bg-[#9b87f5] hover:bg-[#8b77e5] text-white"
           >
-            {leadId ? "Salvar" : "Cadastrar Lead"}
+            {leadId ? "Salvar" : "Criar"}
           </Button>
         </DialogFooter>
       </DialogContent>
