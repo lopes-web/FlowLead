@@ -73,8 +73,8 @@ export function Kanban({ onEditLead }: KanbanProps) {
   const [showPerdidos, setShowPerdidos] = useState(false);
   const [filters, setFilters] = useState<LeadFiltersType>({
     search: "",
-    status: "",
-    motivo_perda: "",
+    status: "todos",
+    motivo_perda: "todos",
     data_inicio: "",
     data_fim: "",
   });
@@ -87,12 +87,12 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
 
     // Filtro de status
-    if (filters.status && lead.status !== filters.status) {
+    if (filters.status !== "todos" && lead.status !== filters.status) {
       return false;
     }
 
     // Filtro de motivo de perda
-    if (filters.motivo_perda && lead.motivo_perda !== filters.motivo_perda) {
+    if (filters.motivo_perda !== "todos" && lead.motivo_perda !== filters.motivo_perda) {
       return false;
     }
 

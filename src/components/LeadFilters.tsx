@@ -17,8 +17,8 @@ interface LeadFiltersProps {
 
 export interface LeadFilters {
   search: string;
-  status: LeadStatus | "";
-  motivo_perda: LeadLossReason | "";
+  status: LeadStatus | "todos";
+  motivo_perda: LeadLossReason | "todos";
   data_inicio: string;
   data_fim: string;
 }
@@ -45,8 +45,8 @@ const motivoPerdaOptions: { value: LeadLossReason; label: string }[] = [
 export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
   const [filters, setFilters] = useState<LeadFilters>({
     search: "",
-    status: "",
-    motivo_perda: "",
+    status: "todos",
+    motivo_perda: "todos",
     data_inicio: "",
     data_fim: "",
   });
@@ -56,15 +56,15 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
     value: string
   ) => {
     const newFilters = { ...filters, [field]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters(newFilters as LeadFilters);
+    onFilterChange(newFilters as LeadFilters);
   };
 
   const clearFilters = () => {
-    const clearedFilters = {
+    const clearedFilters: LeadFilters = {
       search: "",
-      status: "",
-      motivo_perda: "",
+      status: "todos",
+      motivo_perda: "todos",
       data_inicio: "",
       data_fim: "",
     };
@@ -94,7 +94,7 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os Status</SelectItem>
+              <SelectItem value="todos">Todos os Status</SelectItem>
               {statusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -111,7 +111,7 @@ export function LeadFilters({ onFilterChange }: LeadFiltersProps) {
               <SelectValue placeholder="Motivo da Perda" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os Motivos</SelectItem>
+              <SelectItem value="todos">Todos os Motivos</SelectItem>
               {motivoPerdaOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
