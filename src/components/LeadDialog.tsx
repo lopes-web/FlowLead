@@ -16,11 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
+import { LeadStatus, LeadQualityTag } from "@/types/lead";
 import { useLeads } from "@/contexts/LeadContext";
-import { Badge } from "@/components/ui/badge";
-import { X, Plus, Lock, Unlock } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 type LeadFormData = {
@@ -55,23 +53,12 @@ const statusOptions: { value: LeadStatus; label: string }[] = [
   { value: "perdido", label: "Perdido" },
 ];
 
-const motivoPerdaOptions: { value: LeadLossReason; label: string }[] = [
-  { value: "nao_respondeu", label: "Não Respondeu" },
-  { value: "achou_caro", label: "Achou Caro" },
-  { value: "sem_dinheiro", label: "Sem Dinheiro" },
-  { value: "escolheu_concorrente", label: "Escolheu Concorrente" },
-  { value: "projeto_cancelado", label: "Projeto Cancelado" },
-  { value: "fora_do_escopo", label: "Fora do Escopo" },
-  { value: "outro", label: "Outro" },
-];
-
 export function LeadDialog({
   open,
   onOpenChange,
   leadId,
 }: LeadDialogProps) {
-  const { user } = useAuth();
-  const { leads, addLead, updateLead, togglePublic } = useLeads();
+  const { leads, addLead, updateLead } = useLeads();
   const [formData, setFormData] = useState<LeadFormData>({
     nome: "",
     email: "",
@@ -166,22 +153,6 @@ export function LeadDialog({
       tags: formData.tags.filter((tag) => tag !== tagToRemove),
     });
   };
-
-  const handleTogglePublic = async () => {
-    if (leadId) {
-      try {
-        await togglePublic(leadId, !formData.is_public);
-        setFormData({
-          ...formData,
-          is_public: !formData.is_public,
-        });
-      } catch (error) {
-        console.error('Erro ao alterar visibilidade do lead:', error);
-      }
-    }
-  };
-
-  const canEdit = leadId ? (formData.is_public || (user && leads.find(l => l.id === leadId)?.user_id === user.id)) : true;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
