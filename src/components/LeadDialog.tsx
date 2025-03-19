@@ -24,6 +24,19 @@ import { X, Plus, Lock, Unlock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { statusConfig } from "@/config/statusConfig";
 
+interface LeadFormData {
+  nome: string;
+  email: string;
+  whatsapp: string;
+  instagram: string;
+  website: string;
+  origem: string;
+  tipo_projeto: string;
+  orcamento: number;
+  status: LeadStatus;
+  ultimo_contato: string;
+}
+
 interface LeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -56,17 +69,17 @@ export function LeadDialog({
 }: LeadDialogProps) {
   const { user } = useAuth();
   const { leads, createLead, updateLead, togglePublic } = useLeads();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LeadFormData>({
     nome: "",
+    email: "",
+    whatsapp: "",
+    instagram: "",
+    website: "",
+    origem: "",
     tipo_projeto: "",
-    orcamento: "",
-    status: "nao_contatado" as LeadStatus,
-    motivo_perda: "nao_respondeu" as LeadLossReason,
-    detalhes_perda: "",
-    observacoes: "",
+    orcamento: 0,
+    status: "nao_contatado",
     ultimo_contato: new Date().toISOString().split('T')[0],
-    tags: [] as string[],
-    is_public: false,
   });
   const [newTag, setNewTag] = useState("");
 
@@ -76,29 +89,29 @@ export function LeadDialog({
       if (lead) {
         setFormData({
           nome: lead.nome,
+          email: lead.email || "",
+          whatsapp: lead.whatsapp || "",
+          instagram: lead.instagram || "",
+          website: lead.website || "",
+          origem: lead.origem || "",
           tipo_projeto: lead.tipo_projeto,
-          orcamento: lead.orcamento.toString(),
+          orcamento: lead.orcamento,
           status: lead.status,
-          motivo_perda: lead.motivo_perda || "nao_respondeu",
-          detalhes_perda: lead.detalhes_perda || "",
-          observacoes: lead.observacoes || "",
           ultimo_contato: new Date(lead.ultimo_contato).toISOString().split('T')[0],
-          tags: lead.tags || [],
-          is_public: lead.is_public || false,
         });
       }
     } else {
       setFormData({
         nome: "",
+        email: "",
+        whatsapp: "",
+        instagram: "",
+        website: "",
+        origem: "",
         tipo_projeto: "",
-        orcamento: "",
+        orcamento: 0,
         status: "nao_contatado",
-        motivo_perda: "nao_respondeu",
-        detalhes_perda: "",
-        observacoes: "",
         ultimo_contato: new Date().toISOString().split('T')[0],
-        tags: [],
-        is_public: false,
       });
     }
   }, [leadId, leads]);
@@ -107,7 +120,7 @@ export function LeadDialog({
     try {
       const leadData = {
         ...formData,
-        orcamento: parseFloat(formData.orcamento.replace(/[^\d,]/g, '').replace(',', '.')),
+        orcamento: parseFloat(formData.orcamento.toString().replace(/[^\d,]/g, '').replace(',', '.')) || 0,
       };
 
       if (leadId) {
@@ -157,237 +170,117 @@ export function LeadDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#222839] border-[#2e3446] text-white max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-semibold">
-                {leadId ? "Editar Lead" : "Novo Lead"}
-              </DialogTitle>
-              <DialogDescription className="text-gray-400 mt-1">
-                {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
-              </DialogDescription>
-            </div>
-            {leadId && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleTogglePublic}
-                className="h-9 w-9 shrink-0"
-                disabled={!canEdit}
-              >
-                {formData.is_public ? (
-                  <Unlock className="h-4 w-4 text-green-400" />
-                ) : (
-                  <Lock className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {statusOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant="outline"
-                size="sm"
-                onClick={() => setFormData({ ...formData, status: option.value as LeadStatus })}
-                className={`gap-2 transition-all duration-200 ${
-                  formData.status === option.value
-                    ? "bg-[#2e3446] text-gray-200"
-                    : "hover:bg-[#2e3446] text-gray-400"
-                }`}
-                disabled={!canEdit}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
+      <DialogContent className="bg-[#1c2132] border-[#2e3446] text-white max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-200">
-                Informações Básicas
-              </label>
-              <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-400">Nome do Lead</label>
-                  <Input
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Nome do lead ou empresa"
-                    className="bg-[#222839] border-[#2e3446]"
-                    disabled={!canEdit}
-                  />
-                </div>
+        <div className="space-y-4 py-4">
+          <div className="space-y-4">
+            <Input
+              value={formData.nome}
+              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+              placeholder="Nome"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-400">Tipo de Projeto</label>
-                  <Input
-                    value={formData.tipo_projeto}
-                    onChange={(e) => setFormData({ ...formData, tipo_projeto: e.target.value })}
-                    placeholder="Ex: Website, E-commerce, App"
-                    className="bg-[#222839] border-[#2e3446]"
-                    disabled={!canEdit}
-                  />
-                </div>
+            <Input
+              value={formData.whatsapp}
+              onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+              placeholder="WhatsApp"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-400">Orçamento</label>
-                  <Input
-                    value={formData.orcamento}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value) {
-                        const numberValue = parseInt(value) / 100;
-                        setFormData({
-                          ...formData,
-                          orcamento: numberValue.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          })
-                        });
-                      } else {
-                        setFormData({ ...formData, orcamento: '' });
-                      }
-                    }}
-                    placeholder="R$ 0,00"
-                    className="bg-[#222839] border-[#2e3446]"
-                    disabled={!canEdit}
-                  />
-                </div>
-              </div>
-            </div>
+            <Input
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Email"
+              type="email"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-            <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-200">
-                Observações
-              </label>
-              <div className="bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
-                <Textarea
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  placeholder="Adicione observações importantes sobre o lead..."
-                  className="min-h-[150px] bg-[#222839] border-[#2e3446]"
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
-          </div>
+            <Input
+              value={formData.instagram}
+              onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+              placeholder="Instagram (@usuario ou URL completa)"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-200">
-                Detalhes do Contato
-              </label>
-              <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-400">Último Contato</label>
-                  <Input
-                    type="date"
-                    value={formData.ultimo_contato}
-                    onChange={(e) => setFormData({ ...formData, ultimo_contato: e.target.value })}
-                    className="bg-[#222839] border-[#2e3446]"
-                    disabled={!canEdit}
-                  />
-                </div>
+            <Input
+              value={formData.website}
+              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+              placeholder="Website"
+              type="url"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-400">Tags</label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Adicionar tag..."
-                      className="bg-[#222839] border-[#2e3446]"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      disabled={!canEdit}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={handleAddTag}
-                      className="shrink-0"
-                      disabled={!canEdit}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {formData.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="bg-[#222839] text-gray-200 hover:bg-[#2e3446] transition-colors"
-                        >
-                          {tag}
-                          <button
-                            onClick={() => handleRemoveTag(tag)}
-                            className="ml-2 hover:text-white"
-                            disabled={!canEdit}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <Input
+              value={formData.origem}
+              onChange={(e) => setFormData({ ...formData, origem: e.target.value })}
+              placeholder="Origem"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
 
-            {formData.status === "perdido" && (
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-gray-200">
-                  Informações da Perda
-                </label>
-                <div className="space-y-4 bg-[#1c2132] p-4 rounded-lg border border-[#2e3446]">
-                  <div className="space-y-2">
-                    <label className="text-xs text-gray-400">Motivo da Perda</label>
-                    <Select
-                      value={formData.motivo_perda}
-                      onValueChange={(value) => setFormData({ ...formData, motivo_perda: value as LeadLossReason })}
-                      disabled={!canEdit}
-                    >
-                      <SelectTrigger className="bg-[#222839] border-[#2e3446]">
-                        <SelectValue placeholder="Selecione o motivo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {motivoPerdaOptions.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={option.value}
-                            className="cursor-pointer"
-                          >
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <Select
+              value={formData.tipo_projeto}
+              onValueChange={(value) => setFormData({ ...formData, tipo_projeto: value })}
+            >
+              <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
+                <SelectValue placeholder="Selecione o tipo de projeto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="website">Website</SelectItem>
+                <SelectItem value="ecommerce">E-commerce</SelectItem>
+                <SelectItem value="landing_page">Landing Page</SelectItem>
+                <SelectItem value="aplicativo">Aplicativo</SelectItem>
+                <SelectItem value="sistema">Sistema</SelectItem>
+                <SelectItem value="outro">Outro</SelectItem>
+              </SelectContent>
+            </Select>
 
-                  <div className="space-y-2">
-                    <label className="text-xs text-gray-400">Detalhes da Perda</label>
-                    <Textarea
-                      value={formData.detalhes_perda}
-                      onChange={(e) => setFormData({ ...formData, detalhes_perda: e.target.value })}
-                      placeholder="Descreva mais detalhes sobre o motivo da perda..."
-                      className="min-h-[100px] bg-[#222839] border-[#2e3446]"
-                      disabled={!canEdit}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <Input
+              value={formData.orcamento === 0 ? "" : formData.orcamento.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).replace('R$', '').trim()}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value) {
+                  const numberValue = parseInt(value) / 100;
+                  setFormData({
+                    ...formData,
+                    orcamento: numberValue
+                  });
+                } else {
+                  setFormData({ ...formData, orcamento: 0 });
+                }
+              }}
+              placeholder="Orçamento"
+              className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
+            />
+
+            <Select
+              value={formData.status}
+              onValueChange={(value) => setFormData({ ...formData, status: value as LeadStatus })}
+            >
+              <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="cursor-pointer"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -395,16 +288,15 @@ export function LeadDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="flex-1 sm:flex-none"
+            className="flex-1"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
-            className="flex-1 sm:flex-none bg-[#9b87f5] hover:bg-[#8b74f4]"
-            disabled={!canEdit}
+            className="flex-1 bg-[#9b87f5] hover:bg-[#8b74f4]"
           >
-            {leadId ? "Salvar" : "Criar"}
+            {leadId ? "Salvar" : "Cadastrar Lead"}
           </Button>
         </DialogFooter>
       </DialogContent>
