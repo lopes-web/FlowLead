@@ -224,8 +224,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-[#1c2132] border-[#2e3446] text-white">
-        <DialogHeader className="p-6 pb-4 border-b border-[#2e3446]">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-[#1c2132] border-[#2e3446] text-white flex flex-col">
+        <DialogHeader className="p-6 pb-4 border-b border-[#2e3446] shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-2xl font-semibold">
@@ -251,7 +251,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
           </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-8rem)]">
+        <ScrollArea className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-8">
             {/* Status do Lead */}
             <div className="space-y-4">
@@ -492,8 +492,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
           </form>
         </ScrollArea>
 
-        {/* Ações */}
-        <div className="sticky bottom-0 p-6 bg-[#1c2132] border-t border-[#2e3446]">
+        <div className="shrink-0 p-6 bg-[#1c2132] border-t border-[#2e3446]">
           <div className="flex gap-2 justify-end">
             <Button
               type="button"
