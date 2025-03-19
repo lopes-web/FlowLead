@@ -22,9 +22,8 @@ import { useLeads } from "@/contexts/LeadContext";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, Lock, Unlock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { statusConfig } from "@/config/statusConfig";
 
-interface LeadFormData {
+type LeadFormData = {
   nome: string;
   email: string;
   whatsapp: string;
@@ -35,7 +34,7 @@ interface LeadFormData {
   orcamento: number;
   status: LeadStatus;
   ultimo_contato: string;
-  tags: [];
+  tags: LeadQualityTag[];
   is_public: boolean;
   created_at: string;
   updated_at: string;
