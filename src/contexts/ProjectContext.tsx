@@ -61,19 +61,19 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       for (const lead of closedLeads) {
         try {
-          // Verifica se já existe um projeto com o mesmo nome do lead
+          // Verifica se já existe um projeto com o mesmo lead_id
           const { data: existingProject } = await supabase
             .from("projects")
-            .select("id, nome")
-            .eq("nome", lead.nome)
+            .select("id")
+            .eq("lead_id", lead.id)
             .maybeSingle();
 
           if (!existingProject) {
-            console.log(`Criando projeto para o lead: ${lead.nome}`);
+            console.log(`Criando projeto para o lead: ${lead.nome} (ID: ${lead.id})`);
             await createProjectFromLead(lead);
             console.log(`Projeto criado com sucesso para o lead: ${lead.nome}`);
           } else {
-            console.log(`Projeto já existe para o lead: ${lead.nome}`);
+            console.log(`Projeto já existe para o lead: ${lead.nome} (ID: ${lead.id})`);
           }
         } catch (error) {
           console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
@@ -104,7 +104,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       prazo_entrega: null,
       arquivos_recebidos: [],
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      lead_id: lead.id // Adicionando o lead_id para rastreamento
     };
 
     try {
@@ -120,7 +121,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         const formattedProject = data[0] as Project;
-        console.log(`Projeto criado com sucesso: ${formattedProject.nome}`);
+        console.log(`Projeto criado com sucesso: ${formattedProject.nome} (Lead ID: ${lead.id})`);
         setProjects(prev => [formattedProject, ...prev]);
       }
     } catch (error) {

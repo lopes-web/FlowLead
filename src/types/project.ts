@@ -14,13 +14,15 @@ export interface Project {
   cliente: string;
   tipo_projeto: string;
   status: ProjectStatus;
-  descricao: string;
-  prazo_entrega?: string;
+  descricao: string | null;
+  prazo_entrega: string | null;
   valor: number;
-  arquivos_recebidos?: string[];
-  observacoes: string;
+  arquivos_recebidos: string[];
+  observacoes: string | null;
   created_at: string;
   updated_at: string;
+  user_id?: string | null;
+  lead_id?: string | null;
 }
 
 export interface ProjectWithLead extends Project {

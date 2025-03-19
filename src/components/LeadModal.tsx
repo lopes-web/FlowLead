@@ -149,12 +149,6 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       if (leadId) {
         const oldLead = leads.find(lead => lead.id === leadId);
         await updateLead(leadId, formData);
-        
-        // Se o status mudou para fechado, cria um projeto
-        if (oldLead?.status !== "fechado" && formData.status === "fechado") {
-          const updatedLead = { ...oldLead, ...formData, id: leadId };
-          await createProjectFromLead(updatedLead);
-        }
       } else {
         await addLead(formData);
       }
