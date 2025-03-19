@@ -88,7 +88,7 @@ export function LeadDialog({
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   });
-  const [newTag, setNewTag] = useState("");
+  const [newTag, setNewTag] = useState<LeadQualityTag>("quente");
 
   useEffect(() => {
     if (leadId) {
@@ -151,16 +151,16 @@ export function LeadDialog({
   };
 
   const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+    if (!formData.tags.includes(newTag)) {
       setFormData({
         ...formData,
-        tags: [...formData.tags, newTag.trim()],
+        tags: [...formData.tags, newTag],
       });
-      setNewTag("");
+      setNewTag("quente");
     }
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
+  const handleRemoveTag = (tagToRemove: LeadQualityTag) => {
     setFormData({
       ...formData,
       tags: formData.tags.filter((tag) => tag !== tagToRemove),
@@ -294,6 +294,33 @@ export function LeadDialog({
               onChange={(e) => setFormData({ ...formData, ultimo_contato: e.target.value })}
               className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
             />
+
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag) => (
+                <div key={tag} className="flex items-center gap-1 bg-[#2e3446] px-2 py-1 rounded">
+                  <span>{tag}</span>
+                  <button onClick={() => handleRemoveTag(tag)} className="text-gray-400 hover:text-white">
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Select value={newTag} onValueChange={(value: LeadQualityTag) => setNewTag(value)}>
+                <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
+                  <SelectValue placeholder="Selecione uma tag" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="quente">Quente</SelectItem>
+                  <SelectItem value="morno">Morno</SelectItem>
+                  <SelectItem value="frio">Frio</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleAddTag} variant="outline" size="icon">
+                <Plus size={16} />
+              </Button>
+            </div>
           </div>
         </div>
 
