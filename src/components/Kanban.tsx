@@ -162,8 +162,10 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   // Função para renderizar o ícone de visibilidade do lead
   const renderVisibilityIcon = (lead: any) => {
-    // Verifica se o usuário pode editar este lead
-    const canEdit = user && (lead.user_id === user.id || lead.user_id === null);
+    // Verificar quem pode editar este lead
+    // Um lead público pode ser editado por qualquer usuário
+    // Um lead privado só pode ser editado pelo seu proprietário
+    const canEdit = lead.is_public || (user && lead.user_id === user.id);
     
     // Função para impedir a propagação do evento de drag
     const preventDrag = (e: React.MouseEvent | React.TouchEvent) => {
