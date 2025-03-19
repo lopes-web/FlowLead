@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LeadFilters as LeadFiltersComponent, type LeadFilters } from "./LeadFilters";
+import { LossReasonDialog } from "./LossReasonDialog";
 
 interface KanbanProps {
   onEditLead: (id: string) => void;
@@ -68,7 +69,9 @@ export function Kanban({ onEditLead }: KanbanProps) {
   const { leads, updateLead, deleteLead, togglePublic } = useLeads();
   const { user } = useAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [lossReasonDialogOpen, setLossReasonDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<{ id: string; nome: string } | null>(null);
+  const [leadToArchive, setLeadToArchive] = useState<{ id: string; nome: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<LeadStatus | null>(null);
   const [showPerdidos, setShowPerdidos] = useState(false);
   const [filters, setFilters] = useState<LeadFilters>({
@@ -133,11 +136,24 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
   };
 
-  const handleMoveToPerdido = async (leadId: string) => {
-    try {
-      await updateLead(leadId, { status: "perdido" });
-    } catch (error) {
-      console.error('Erro ao mover para perdido:', error);
+  const handleMoveToPerdido = (lead: { id: string; nome: string }) => {
+    setLeadToArchive(lead);
+    setLossReasonDialogOpen(true);
+  };
+
+  const handleConfirmArchive = async (data: { motivo_perda: LeadLossReason; detalhes_perda: string }) => {
+    if (leadToArchive) {
+      try {
+        await updateLead(leadToArchive.id, {
+          status: "perdido",
+          motivo_perda: data.motivo_perda,
+          detalhes_perda: data.detalhes_perda,
+        });
+        setLossReasonDialogOpen(false);
+        setLeadToArchive(null);
+      } catch (error) {
+        console.error('Erro ao mover para perdido:', error);
+      }
     }
   };
 
@@ -307,7 +323,6 @@ export function Kanban({ onEditLead }: KanbanProps) {
                       className="group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] hover:border-[#9b87f5] hover:shadow-md transition-all duration-200"
                       draggable
                       onDragStart={(e) => {
-                        // Verificar se o clique foi em um botão
                         const target = e.target as HTMLElement;
                         if (target.closest('button')) {
                           e.preventDefault();
@@ -405,7 +420,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 hover:bg-[#2e3446] text-gray-400 hover:text-white"
-                                onClick={() => handleMoveToPerdido(lead.id)}
+                                onClick={() => handleMoveToPerdido({ id: lead.id, nome: lead.nome })}
                               >
                                 <Archive className="h-4 w-4" />
                               </Button>
@@ -434,6 +449,13 @@ export function Kanban({ onEditLead }: KanbanProps) {
         onOpenChange={setDeleteDialogOpen}
         leadName={leadToDelete?.nome || ""}
         onConfirm={handleConfirmDelete}
+      />
+
+      <LossReasonDialog
+        open={lossReasonDialogOpen}
+        onOpenChange={setLossReasonDialogOpen}
+        leadName={leadToArchive?.nome || ""}
+        onConfirm={handleConfirmArchive}
       />
     </>
   );
