@@ -13,6 +13,7 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Lucide Icons para ícones
   - Date-fns para manipulação de datas
   - Date-fns-tz para fuso horário
+  - Recharts para gráficos interativos
 
 - **Backend:**
   - Supabase para banco de dados e autenticação
@@ -34,6 +35,10 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Animações suaves de transição
 - Interface responsiva
 - Opção de ocultar/mostrar coluna "Perdido"
+- Sistema de filtros avançado:
+  - Busca por texto
+  - Filtro por status
+  - Filtro por motivo de perda
 
 ### Gestão de Leads
 - Criação de novos leads com informações detalhadas:
@@ -50,6 +55,27 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Observações
   - Ideias
 - Status inicial automático como "Não Contatado"
+- Modal de edição com layout otimizado
+- Captura de motivo de perda ao arquivar leads
+
+### Dashboard Analítico
+- Métricas em tempo real:
+  - Total de Leads
+  - Taxa de Conversão
+  - Valor Total em Orçamentos
+  - Leads Ativos
+- Gráficos interativos:
+  - Leads por Mês (gráfico de área)
+  - Status dos Leads (gráfico de rosca)
+  - Valor por Status (gráfico de barras)
+- Design moderno com:
+  - Efeito glassmorphism nos cards
+  - Gradientes suaves
+  - Tooltips personalizados
+  - Animações fluidas
+  - Cores harmoniosas
+- Ordenação inteligente de dados
+- Responsividade total
 
 ### Rastreamento de Tempo
 - Cronômetro em tempo real para atividades
@@ -69,23 +95,6 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Por tipo de atividade
 - Atualização automática do histórico
 
-### Dashboard de Produtividade
-- Meta diária de leads (10 leads por dia)
-- Recompensa visual ao atingir a meta:
-  - Animação de celebração
-  - Efeito de brilho
-  - Ícone especial
-  - Mensagem de parabéns
-- Streak de dias consecutivos atingindo a meta
-- Tempo total em prospecção
-- Produtividade em leads/hora
-- Filtros de período:
-  - Hoje
-  - Ontem
-  - Últimos 7 dias
-  - Últimos 30 dias
-  - Todos os períodos
-
 ### Interface
 - Design responsivo
 - Tema escuro moderno
@@ -101,40 +110,6 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Diálogo de confirmação para exclusão
 - Tooltips informativos
 - Cards informativos com ícones intuitivos
-
-### Melhorias de UX/UI
-- Cores personalizadas para cada status
-- Ícones intuitivos
-- Tooltips informativos
-- Feedback visual para drag and drop
-- Botões de ação contextuais
-- Cronômetro destacado
-- Histórico de atividades com filtros
-- Animações de recompensa
-- Layout responsivo em grid
-- Cartões informativos com métricas
-
-### Gestão de Projetos
-- Conversão automática de leads fechados em projetos
-- Projetos independentes após conversão (sem vínculo com lead)
-- Campos detalhados para projetos:
-  - Nome
-  - Cliente
-  - Tipo de Projeto
-  - Status
-  - Valor
-  - Descrição
-  - Observações
-  - Prazo de Entrega
-  - Arquivos Recebidos
-- Status de projetos:
-  - Solicitar Arquivos
-  - Em Andamento
-  - Em Revisão
-  - Concluído
-- Interface Kanban para visualização
-- Drag and drop para mudança de status
-- Atualização em tempo real
 
 ### Sistema de Notificações
 - Notificações em tempo real para ações importantes:
@@ -205,6 +180,8 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - updated_at (timestamp)
 - user_id (UUID, referência para auth.users)
 - is_public (boolean)
+- motivo_perda (text)
+- detalhes_perda (text)
 
 ### Tabela: time_tracking
 - id (UUID)
@@ -230,6 +207,7 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - created_at (timestamp)
 - updated_at (timestamp)
 - user_id (UUID, referência para auth.users)
+- lead_id (UUID, referência para leads)
 
 ### Tabela: notifications
 - id (UUID)
@@ -253,6 +231,7 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [x] Atualizar identidade visual
 - [x] Implementar sistema de notificações
 - [x] Adicionar edição de perfil de usuário
+- [x] Melhorar design dos gráficos do dashboard
 - [ ] Adicionar histórico de alterações
 - [ ] Melhorar sistema de tags
 - [ ] Implementar busca avançada
@@ -262,4 +241,3 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [ ] Implementar metas personalizáveis
 - [ ] Adicionar gráficos de conversão
 - [ ] Implementar análise de funil de vendas
-```
