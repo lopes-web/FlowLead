@@ -107,7 +107,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Erro ao adicionar lead:", error);
-        return;
+        throw error;
       }
 
       const formattedLead = {
@@ -137,6 +137,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       await fetchLeads(); // Recarrega os leads após adicionar
     } catch (error) {
       console.error("Erro ao adicionar lead:", error);
+      throw error; // Propaga o erro para ser tratado no componente
     }
   }
 
@@ -258,7 +259,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       // Apenas atualiza a flag is_public, sem alterar o user_id
       // Isso permite que leads públicos permaneçam editáveis por todos
-      let updates = { is_public: isPublic };
+      let updates: { is_public: boolean; user_id?: string | null } = { is_public: isPublic };
       
       // Se estamos tornando o lead privado e ele não tem dono, atribuir ao usuário atual
       if (!isPublic && leadData.user_id === null && user) {

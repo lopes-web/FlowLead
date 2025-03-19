@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { Lock, Unlock, Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const statusConfig: Record<LeadStatus, string> = {
   nao_contatado: "Não Contatado",
@@ -169,8 +170,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
         await addLead(formData);
       }
       onOpenChange(false);
+      toast.success(leadId ? "Lead atualizado com sucesso!" : "Lead adicionado com sucesso!");
     } catch (error) {
       console.error("Erro ao salvar lead:", error);
+      toast.error("Erro ao salvar lead. Por favor, tente novamente.");
     }
   };
 
