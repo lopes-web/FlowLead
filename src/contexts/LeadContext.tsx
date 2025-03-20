@@ -315,13 +315,17 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Primeiro, verifica se existe um projeto associado
-      const { data: projectExists, error: projectError } = await supabase
+      const { data: projects, error: projectError } = await supabase
         .from("projects")
         .select("id")
-        .eq("lead_id", id)
-        .single();
+        .eq("lead_id", id);
 
-      if (projectExists) {
+      if (projectError) {
+        console.error("Erro ao verificar projetos:", projectError);
+        throw new Error("Erro ao verificar projetos associados ao lead.");
+      }
+
+      if (projects && projects.length > 0) {
         throw new Error("Este lead não pode ser excluído pois já foi convertido em projeto.");
       }
 
@@ -352,17 +356,13 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
             leadId: id,
             leadName: leadToDelete.nome,
             userId: user?.id,
-            userName: user?.email,
-            userMetadata: user?.user_metadata
+            userName: user?.email
           }
         );
       }
-      
-      // Força uma nova busca dos leads para garantir sincronização com o servidor
-      await fetchLeads();
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
-      throw error; // Propaga o erro para ser tratado no componente
+      throw error;
     }
   }
 
