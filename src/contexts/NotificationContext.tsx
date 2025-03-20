@@ -208,11 +208,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      // Primeiro, marcar todas como lidas
-      await markAllAsRead();
-      
-      // Buscar todas as notificações para o usuário atual
-      const { data: notifications, error: fetchError } = await supabase
+      // Buscar todas as notificações do usuário atual
+      const { data: userNotifications, error: fetchError } = await supabase
         .from("notifications")
         .select("*")
         .order("created_at", { ascending: false });
@@ -222,18 +219,24 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Atualizar cada notificação para remover o usuário atual da lista de leitores
-      const updates = notifications.map(async (notification) => {
-        const readBy = notification.read_by || [];
-        const updatedReadBy = readBy.filter((id: string) => id !== user.id);
-        
-        return supabase
-          .from("notifications")
-          .update({ read_by: updatedReadBy })
-          .eq("id", notification.id);
-      });
+      // Filtrar notificações que têm o usuário atual como criador ou leitor
+      const notificationsToDelete = userNotifications.filter(notification => 
+        notification.created_by === user.id || 
+        (notification.read_by && notification.read_by.includes(user.id))
+      );
 
-      await Promise.all(updates);
+      if (notificationsToDelete.length > 0) {
+        // Excluir as notificações
+        const { error: deleteError } = await supabase
+          .from("notifications")
+          .delete()
+          .in("id", notificationsToDelete.map(n => n.id));
+
+        if (deleteError) {
+          console.error("Erro ao excluir notificações:", deleteError);
+          return;
+        }
+      }
       
       // Atualizar o estado local
       setNotifications([]);

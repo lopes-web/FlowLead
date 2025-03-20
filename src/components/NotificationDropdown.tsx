@@ -136,7 +136,7 @@ export function NotificationDropdown() {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
           {notifications.length === 0 ? (
             <div className="py-4 px-2 text-center text-muted-foreground">
               Nenhuma notificação
