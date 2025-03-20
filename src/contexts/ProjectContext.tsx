@@ -55,25 +55,37 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     const handleClosedLeads = async () => {
       console.log("Verificando leads fechados...");
       
-      // Filtra leads fechados
-      const closedLeads = leads.filter(lead => lead.status === "fechado");
-      console.log("Total de leads fechados:", closedLeads.length);
+      // Filtra leads que acabaram de ser fechados (usando o updated_at)
+      const recentlyClosedLeads = leads.filter(lead => {
+        const wasUpdatedRecently = new Date().getTime() - new Date(lead.updated_at).getTime() < 5000; // 5 segundos
+        return lead.status === "fechado" && wasUpdatedRecently;
+      });
 
-      for (const lead of closedLeads) {
+      console.log("Total de leads recentemente fechados:", recentlyClosedLeads.length);
+
+      for (const lead of recentlyClosedLeads) {
         try {
-          // Verifica se já existe um projeto com o mesmo lead_id
-          const { data: existingProject } = await supabase
+          // Verificação mais robusta para evitar duplicação
+          const { data: existingProjects, error: fetchError } = await supabase
             .from("projects")
-            .select("id")
-            .eq("lead_id", lead.id)
-            .maybeSingle();
+            .select("id, created_at")
+            .eq("lead_id", lead.id);
 
-          if (!existingProject) {
+          if (fetchError) {
+            console.error(`Erro ao verificar projetos existentes para o lead ${lead.nome}:`, fetchError);
+            continue;
+          }
+
+          if (!existingProjects || existingProjects.length === 0) {
             console.log(`Criando projeto para o lead: ${lead.nome} (ID: ${lead.id})`);
             await createProjectFromLead(lead);
             console.log(`Projeto criado com sucesso para o lead: ${lead.nome}`);
           } else {
-            console.log(`Projeto já existe para o lead: ${lead.nome} (ID: ${lead.id})`);
+            console.log(`Projeto(s) já existe(m) para o lead: ${lead.nome} (ID: ${lead.id})`);
+            console.log(`Total de projetos existentes: ${existingProjects.length}`);
+            existingProjects.forEach(proj => {
+              console.log(`- Projeto ID: ${proj.id}, Criado em: ${proj.created_at}`);
+            });
           }
         } catch (error) {
           console.error(`Erro ao criar projeto para o lead ${lead.nome}:`, error);
@@ -81,7 +93,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Atualiza a lista de projetos após criar novos
-      await fetchProjects();
+      if (recentlyClosedLeads.length > 0) {
+        await fetchProjects();
+      }
     };
 
     handleClosedLeads();
