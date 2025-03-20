@@ -208,10 +208,34 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      // Não vamos excluir as notificações, apenas marcá-las como lidas
+      // Primeiro, marcar todas como lidas
       await markAllAsRead();
       
-      // Atualizar o estado local para esconder as notificações
+      // Buscar todas as notificações para o usuário atual
+      const { data: notifications, error: fetchError } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (fetchError) {
+        console.error("Erro ao buscar notificações:", fetchError);
+        return;
+      }
+
+      // Atualizar cada notificação para remover o usuário atual da lista de leitores
+      const updates = notifications.map(async (notification) => {
+        const readBy = notification.read_by || [];
+        const updatedReadBy = readBy.filter((id: string) => id !== user.id);
+        
+        return supabase
+          .from("notifications")
+          .update({ read_by: updatedReadBy })
+          .eq("id", notification.id);
+      });
+
+      await Promise.all(updates);
+      
+      // Atualizar o estado local
       setNotifications([]);
     } catch (error) {
       console.error("Erro ao limpar notificações:", error);

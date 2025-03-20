@@ -121,7 +121,7 @@ export function NotificationDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end">
+      <DropdownMenuContent className="w-80">
         <DropdownMenuLabel className="flex justify-between items-center">
           <span>Notificações</span>
           {notifications.length > 0 && (
@@ -144,43 +144,26 @@ export function NotificationDropdown() {
           ) : (
             <DropdownMenuGroup>
               {notifications.map((notification) => (
-                <DropdownMenuItem
-                  key={notification.id}
-                  className={`flex flex-col items-start p-3 cursor-default ${
-                    !notification.read ? "bg-muted/50" : ""
-                  }`}
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <div className="flex items-start gap-2 w-full">
-                    <div className="text-lg">{getNotificationIcon(notification.type)}</div>
-                    <div className="flex-1 min-w-0">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="font-medium text-sm truncate">{notification.title}</p>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{notification.title}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-xs text-muted-foreground truncate max-w-full">
-                              {formatUserMessage(notification)}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-md">
-                            <p>{formatUserMessage(notification)}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatRelativeTime(notification.createdAt)}
-                      </p>
-                    </div>
+                <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3">
+                  <div className="flex items-center gap-2 w-full">
+                    <span>{getNotificationIcon(notification.type)}</span>
+                    <span className="font-medium flex-1">{notification.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatRelativeTime(notification.createdAt)}
+                    </span>
                   </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {formatUserMessage(notification)}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">{formatUserMessage(notification)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
