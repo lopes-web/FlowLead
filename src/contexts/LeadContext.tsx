@@ -299,10 +299,14 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
   async function deleteLead(id: string) {
     try {
+      console.log("Iniciando processo de exclusão do lead:", id);
+      
       // Encontrar o lead atual para a notificação
       const leadToDelete = leads.find(l => l.id === id);
+      console.log("Lead encontrado para exclusão:", leadToDelete);
       
       if (isOffline) {
+        console.log("Modo offline detectado, processando exclusão offline");
         setLeads((prev: Lead[]) => prev.filter((lead: Lead) => lead.id !== id));
         const filteredLeads = leads.filter((lead: Lead) => lead.id !== id);
         offlineStorage.saveLeads(filteredLeads);
@@ -314,11 +318,14 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      console.log("Verificando projetos associados ao lead...");
       // Primeiro, verifica se existe um projeto associado
       const { data: projects, error: projectError } = await supabase
         .from("projects")
         .select("id")
         .eq("lead_id", id);
+
+      console.log("Resultado da verificação de projetos:", { projects, projectError });
 
       if (projectError) {
         console.error("Erro ao verificar projetos:", projectError);
@@ -326,10 +333,18 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (projects && projects.length > 0) {
+        console.log("Projetos encontrados, não é possível excluir:", projects);
         throw new Error("Este lead não pode ser excluído pois já foi convertido em projeto.");
       }
 
-      const { error } = await supabase.from("leads").delete().eq("id", id);
+      console.log("Executando exclusão no Supabase...");
+      const { error, data } = await supabase
+        .from("leads")
+        .delete()
+        .eq("id", id)
+        .select();
+
+      console.log("Resultado da exclusão:", { error, data });
 
       if (error) {
         console.error("Erro ao deletar lead:", error);
@@ -339,8 +354,13 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
+      console.log("Atualizando estado local...");
       // Atualiza o estado local usando a função de atualização para garantir o estado mais recente
-      setLeads((prevLeads: Lead[]) => prevLeads.filter((lead: Lead) => lead.id !== id));
+      setLeads((prevLeads: Lead[]) => {
+        const newLeads = prevLeads.filter((lead: Lead) => lead.id !== id);
+        console.log("Novo estado após exclusão:", newLeads);
+        return newLeads;
+      });
       
       // Atualiza o armazenamento offline com o estado atualizado
       const updatedLeads = leads.filter((lead: Lead) => lead.id !== id);
@@ -348,6 +368,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       
       // Adicionar notificação de exclusão
       if (leadToDelete) {
+        console.log("Adicionando notificação de exclusão...");
         addNotification(
           "lead_deleted",
           "Lead excluído",
@@ -360,6 +381,9 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
           }
         );
       }
+
+      console.log("Processo de exclusão concluído com sucesso");
+      await fetchLeads(); // Recarrega os leads para garantir sincronização
     } catch (error) {
       console.error("Erro ao deletar lead:", error);
       throw error;
