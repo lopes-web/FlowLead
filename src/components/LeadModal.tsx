@@ -26,8 +26,10 @@ import { FileUpload } from "@/components/FileUpload";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { Lock, Unlock, Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formStorage } from "@/lib/utils";
 import { toast } from "sonner";
+
+const FORM_STORAGE_KEY = 'leadform';
 
 const statusConfig: Record<LeadStatus, string> = {
   nao_contatado: "Não Contatado",
@@ -52,26 +54,35 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const { user } = useAuth();
   const whatsappRef = useRef<HTMLInputElement>(null);
   
-  const [formData, setFormData] = useState<LeadFormData>({
-    nome: "",
-    email: "",
-    whatsapp: "",
-    instagram: "",
-    website: "",
-    origem: "",
-    tipo_projeto: "",
-    orcamento: 0,
-    status: "nao_contatado",
-    ultimo_contato: new Date().toISOString(),
-    anotacoes: "",
-    tags: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    is_public: false,
-    motivo_perda: null,
-    detalhes_perda: null,
-    necessidades: "",
-    observacoes: ""
+  const [formData, setFormData] = useState<LeadFormData>(() => {
+    // Tenta carregar dados salvos do localStorage
+    const savedData = formStorage.load(FORM_STORAGE_KEY);
+    if (savedData) {
+      return savedData;
+    }
+    
+    // Se não houver dados salvos, usa o estado inicial padrão
+    return {
+      nome: "",
+      email: "",
+      whatsapp: "",
+      instagram: "",
+      website: "",
+      origem: "",
+      tipo_projeto: "",
+      orcamento: 0,
+      status: "nao_contatado",
+      ultimo_contato: new Date().toISOString(),
+      anotacoes: "",
+      tags: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_public: false,
+      motivo_perda: null,
+      detalhes_perda: null,
+      necessidades: "",
+      observacoes: ""
+    };
   });
 
   const availableTags: LeadQualityTag[] = [
@@ -86,40 +97,43 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     "redesign"
   ];
 
+  // Efeito para carregar dados do lead quando o modal é aberto
   useEffect(() => {
-    if (leadId) {
-      const lead = leads.find(lead => lead.id === leadId);
-      if (lead) {
-        const { id: _, ...leadData } = lead;
-        setFormData({
-          ...leadData,
-          is_public: lead.is_public === true
-        });
+    if (open) {
+      if (leadId) {
+        const lead = leads.find(lead => lead.id === leadId);
+        if (lead) {
+          const { id: _, ...leadData } = lead;
+          const newFormData = {
+            ...leadData,
+            is_public: lead.is_public === true
+          };
+          setFormData(newFormData);
+          formStorage.save(FORM_STORAGE_KEY, newFormData);
+        }
+      } else {
+        // Se não houver leadId, tenta restaurar dados salvos
+        const savedData = formStorage.load(FORM_STORAGE_KEY);
+        if (savedData) {
+          setFormData(savedData);
+        }
       }
-    } else {
-      setFormData({
-        nome: "",
-        email: "",
-        whatsapp: "",
-        instagram: "",
-        website: "",
-        origem: "",
-        tipo_projeto: "",
-        orcamento: 0,
-        status: "nao_contatado",
-        ultimo_contato: new Date().toISOString(),
-        anotacoes: "",
-        tags: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_public: false,
-        motivo_perda: null,
-        detalhes_perda: null,
-        necessidades: "",
-        observacoes: ""
-      });
     }
-  }, [leadId, leads]);
+  }, [leadId, leads, open]);
+
+  // Efeito para limpar dados quando o modal é fechado
+  useEffect(() => {
+    if (!open) {
+      formStorage.clear(FORM_STORAGE_KEY);
+    }
+  }, [open]);
+
+  // Salva os dados no localStorage sempre que o formData muda
+  useEffect(() => {
+    if (open) {
+      formStorage.save(FORM_STORAGE_KEY, formData);
+    }
+  }, [formData, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -162,13 +176,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       if (leadId) {
         await updateLead(leadId, formData);
       } else {
         await addLead(formData);
       }
+      formStorage.clear(FORM_STORAGE_KEY); // Limpa os dados após salvar com sucesso
       onOpenChange(false);
       toast.success(leadId ? "Lead atualizado com sucesso!" : "Lead adicionado com sucesso!");
     } catch (error) {
