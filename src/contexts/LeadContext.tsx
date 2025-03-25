@@ -269,6 +269,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log(`Lead encontrado:`, leadData);
+      console.log(`Estado atual is_public: ${leadData.is_public}, tipo: ${typeof leadData.is_public}`);
 
       // Se o lead não for público e não pertencer ao usuário atual, não permitir a alteração
       if (leadData.is_public === false && leadData.user_id !== user?.id) {
@@ -276,20 +277,19 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Preparar os updates - sempre atualiza a flag is_public
-      let updates: { is_public: boolean; user_id?: string | null } = { is_public: isPublic };
+      // Criar updates com valores explícitos para garantir tipo correto
+      const updates = {
+        // Converter explicitamente para booleano
+        is_public: isPublic === true,
+        // Se estiver tornando privado e há usuário logado, associar ao usuário
+        ...((!isPublic && user) ? { user_id: user.id } : {}),
+        // Atualizar timestamp
+        updated_at: new Date().toISOString()
+      };
       
-      // Se estiver tornando o lead privado e o usuário estiver logado, atribuí-lo ao usuário atual
-      if (!isPublic && user) {
-        updates.user_id = user.id;
-        console.log(`Tornando lead privado e atribuindo ao usuário: ${user.id}`);
-      } else {
-        console.log(`Tornando lead público: is_public=${isPublic}`);
-      }
-
       console.log("Enviando atualização para o Supabase:", updates);
-
-      const { data: updateData, error } = await supabase
+      
+      const { data, error } = await supabase
         .from("leads")
         .update(updates)
         .eq("id", id)
@@ -300,18 +300,23 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log("Resposta do Supabase após atualização:", updateData);
+      console.log("Resposta do Supabase após atualização:", data);
+      if (data && data.length > 0) {
+        console.log(`Novo estado is_public: ${data[0].is_public}, tipo: ${typeof data[0].is_public}`);
+      }
 
       // Atualiza o estado local
       setLeads((prev: Lead[]) => {
         const updatedLeads = prev.map((l: Lead) => 
           l.id === id ? { 
             ...l, 
-            is_public: isPublic,
+            is_public: isPublic === true, // Garante um booleano
             ...((!isPublic && user) ? { user_id: user.id } : {})
           } : l
         );
-        console.log(`Estado local atualizado para o lead ${id}:`, updatedLeads.find(l => l.id === id));
+        const updatedLead = updatedLeads.find(l => l.id === id);
+        console.log(`Estado local atualizado para o lead ${id}:`, updatedLead);
+        console.log(`Novo estado local is_public: ${updatedLead?.is_public}, tipo: ${typeof updatedLead?.is_public}`);
         return updatedLeads;
       });
       
