@@ -157,9 +157,30 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
   };
 
-  const handleTogglePublic = async (leadId: string, isCurrentlyPublic: boolean | null | undefined) => {
+  const handleTogglePublic = async (leadId: string, newPublicState: boolean) => {
     try {
-      await togglePublic(leadId, !isCurrentlyPublic);
+      console.log(`handleTogglePublic - leadId: ${leadId}, novo estado: ${newPublicState}`);
+      
+      // Encontra o lead no estado local para debug
+      const leadBeforeUpdate = leads.find(l => l.id === leadId);
+      console.log(`Estado atual do lead antes da atualização:`, {
+        id: leadId,
+        is_public: leadBeforeUpdate?.is_public,
+        user_id: leadBeforeUpdate?.user_id
+      });
+
+      // Chama a função togglePublic com o novo estado desejado
+      await togglePublic(leadId, newPublicState);
+      
+      // Verificar se o estado foi atualizado corretamente
+      setTimeout(() => {
+        const leadAfterUpdate = leads.find(l => l.id === leadId);
+        console.log(`Estado do lead após atualização:`, {
+          id: leadId,
+          is_public: leadAfterUpdate?.is_public,
+          user_id: leadAfterUpdate?.user_id
+        });
+      }, 500);
     } catch (error) {
       console.error('Erro ao alterar visibilidade do lead:', error);
     }

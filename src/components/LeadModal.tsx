@@ -103,10 +103,15 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       if (leadId) {
         const lead = leads.find(lead => lead.id === leadId);
         if (lead) {
+          console.log("Lead carregado no modal:", lead);
           const { id: _, ...leadData } = lead;
+          // Garantir que is_public seja um booleano
+          const is_public = lead.is_public === true ? true : false;
+          console.log("Flag is_public definida como:", is_public);
+          
           const newFormData = {
             ...leadData,
-            is_public: lead.is_public === true
+            is_public: is_public
           };
           setFormData(newFormData);
           formStorage.save(FORM_STORAGE_KEY, newFormData);
@@ -169,19 +174,29 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   const handleSwitchChange = (checked: boolean) => {
     console.log("Switch alterado para:", checked);
+    // Garantir que is_public seja um booleano
+    const is_public = checked === true ? true : false;
     setFormData(prev => ({
       ...prev,
-      is_public: checked
+      is_public: is_public
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Garantir que is_public seja um booleano antes de enviar
+      const dataToSave = {
+        ...formData,
+        is_public: formData.is_public === true ? true : false
+      };
+      
+      console.log("Salvando lead com is_public:", dataToSave.is_public);
+      
       if (leadId) {
-        await updateLead(leadId, formData);
+        await updateLead(leadId, dataToSave);
       } else {
-        await addLead(formData);
+        await addLead(dataToSave);
       }
       formStorage.clear(FORM_STORAGE_KEY); // Limpa os dados após salvar com sucesso
       onOpenChange(false);

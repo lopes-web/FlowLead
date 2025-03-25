@@ -152,6 +152,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Log para debug - verificar se is_public está sendo passado corretamente
+      if (lead.is_public !== undefined) {
+        console.log(`updateLead - alterando is_public de ${currentLead.is_public} para ${lead.is_public}`);
+      }
+
       if (isOffline) {
         setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
         const updatedLeads = leads.map((l: Lead) => l.id === id ? { ...l, ...lead } : l);
@@ -166,21 +171,28 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       const { created_at, updated_at, tipo_projeto, ultimo_contato, ...restLead } = lead;
 
+      // Garantir que is_public seja tratado como booleano, se estiver presente
       const updates = {
         ...restLead,
         ...(tipo_projeto && { tipoprojeto: tipo_projeto }),
-        ...(ultimo_contato && { ultimocontato: ultimo_contato })
+        ...(ultimo_contato && { ultimocontato: ultimo_contato }),
+        ...(lead.is_public !== undefined && { is_public: lead.is_public === true })
       };
 
-      const { error } = await supabase
+      console.log("Enviando atualização para o Supabase:", updates);
+
+      const { data, error } = await supabase
         .from("leads")
         .update(updates)
-        .eq("id", id);
+        .eq("id", id)
+        .select();
 
       if (error) {
         console.error("Erro ao atualizar lead:", error);
         return;
       }
+
+      console.log("Resposta do Supabase após atualização:", data);
 
       // Atualiza o estado local e recarrega os leads para garantir sincronização
       setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === id ? { ...l, ...lead } : l));
@@ -236,12 +248,15 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
   async function togglePublic(id: string, isPublic: boolean) {
     try {
+      console.log(`togglePublic iniciado - ID: ${id}, tornar para isPublic: ${isPublic}`);
+      
       if (isOffline) {
         console.error("Não é possível alterar a visibilidade do lead no modo offline");
         return;
       }
 
       // Verificar se o lead existe e se o usuário tem permissão para alterá-lo
+      console.log(`Buscando lead no Supabase com ID: ${id}`);
       const { data: leadData, error: fetchError } = await supabase
         .from("leads")
         .select("user_id, is_public")
@@ -253,9 +268,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      console.log(`Lead encontrado:`, leadData);
+
       // Se o lead não for público e não pertencer ao usuário atual, não permitir a alteração
       if (leadData.is_public === false && leadData.user_id !== user?.id) {
-        console.error("Sem permissão para alterar este lead");
+        console.error(`Sem permissão: lead.is_public=${leadData.is_public}, lead.user_id=${leadData.user_id}, user.id=${user?.id}`);
         return;
       }
 
@@ -265,30 +282,42 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       // Se estiver tornando o lead privado e o usuário estiver logado, atribuí-lo ao usuário atual
       if (!isPublic && user) {
         updates.user_id = user.id;
+        console.log(`Tornando lead privado e atribuindo ao usuário: ${user.id}`);
+      } else {
+        console.log(`Tornando lead público: is_public=${isPublic}`);
       }
 
-      console.log("Atualizando lead para:", updates);
+      console.log("Enviando atualização para o Supabase:", updates);
 
-      const { error } = await supabase
+      const { data: updateData, error } = await supabase
         .from("leads")
         .update(updates)
-        .eq("id", id);
+        .eq("id", id)
+        .select();
 
       if (error) {
         console.error("Erro ao alterar visibilidade do lead:", error);
         return;
       }
 
+      console.log("Resposta do Supabase após atualização:", updateData);
+
       // Atualiza o estado local
-      setLeads((prev: Lead[]) => prev.map((l: Lead) => 
-        l.id === id ? { 
-          ...l, 
-          is_public: isPublic,
-          ...((!isPublic && user) ? { user_id: user.id } : {})
-        } : l
-      ));
+      setLeads((prev: Lead[]) => {
+        const updatedLeads = prev.map((l: Lead) => 
+          l.id === id ? { 
+            ...l, 
+            is_public: isPublic,
+            ...((!isPublic && user) ? { user_id: user.id } : {})
+          } : l
+        );
+        console.log(`Estado local atualizado para o lead ${id}:`, updatedLeads.find(l => l.id === id));
+        return updatedLeads;
+      });
       
+      console.log("Recarregando leads do servidor...");
       await fetchLeads(); // Recarrega os leads para garantir sincronização
+      console.log("togglePublic concluído com sucesso");
     } catch (error) {
       console.error("Erro ao alterar visibilidade do lead:", error);
     }
