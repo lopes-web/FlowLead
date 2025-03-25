@@ -19,6 +19,8 @@ import {
 import { LeadStatus, LeadQualityTag } from "@/types/lead";
 import { useLeads } from "@/contexts/LeadContext";
 import { X, Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 type LeadFormData = {
   nome: string;
@@ -153,14 +155,37 @@ export function LeadDialog({
     });
   };
 
+  const handleSwitchChange = (checked: boolean) => {
+    console.log("Switch privacidade alterado para:", checked);
+    setFormData({
+      ...formData,
+      is_public: checked
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#1c2132] border-[#2e3446] text-white max-w-lg">
         <DialogHeader>
-          <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
-          </DialogDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <DialogTitle>{leadId ? "Editar Lead" : "Novo Lead"}</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                {leadId ? "Atualize as informações do lead" : "Preencha as informações do novo lead"}
+              </DialogDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="lead-is-public" className="text-sm text-gray-400">
+                {formData.is_public ? "Público" : "Privado"}
+              </Label>
+              <Switch
+                id="lead-is-public"
+                checked={formData.is_public === true}
+                onCheckedChange={handleSwitchChange}
+                className="data-[state=checked]:bg-green-500"
+              />
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

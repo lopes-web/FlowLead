@@ -253,24 +253,21 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Usuário só pode alterar leads sem dono (user_id = null) ou seus próprios leads
-      if (leadData.user_id !== null && leadData.user_id !== user?.id) {
+      // Se o lead não for público e não pertencer ao usuário atual, não permitir a alteração
+      if (leadData.is_public === false && leadData.user_id !== user?.id) {
         console.error("Sem permissão para alterar este lead");
         return;
       }
 
-      // Apenas atualiza a flag is_public, sem alterar o user_id
-      // Isso permite que leads públicos permaneçam editáveis por todos
+      // Preparar os updates - sempre atualiza a flag is_public
       let updates: { is_public: boolean; user_id?: string | null } = { is_public: isPublic };
       
-      // Se estamos tornando o lead privado e ele não tem dono, atribuir ao usuário atual
-      if (!isPublic && leadData.user_id === null && user) {
+      // Se estiver tornando o lead privado e o usuário estiver logado, atribuí-lo ao usuário atual
+      if (!isPublic && user) {
         updates.user_id = user.id;
       }
-      
-      // Se estamos tornando o lead público novamente e ele pertence ao usuário atual,
-      // podemos opcional remover o user_id para torná-lo completamente público
-      // Isso é opcional e depende da lógica de negócios desejada
+
+      console.log("Atualizando lead para:", updates);
 
       const { error } = await supabase
         .from("leads")
@@ -287,7 +284,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         l.id === id ? { 
           ...l, 
           is_public: isPublic,
-          ...((!isPublic && leadData.user_id === null && user) ? { user_id: user.id } : {})
+          ...((!isPublic && user) ? { user_id: user.id } : {})
         } : l
       ));
       

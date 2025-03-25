@@ -168,6 +168,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   };
 
   const handleSwitchChange = (checked: boolean) => {
+    console.log("Switch alterado para:", checked);
     setFormData(prev => ({
       ...prev,
       is_public: checked
@@ -259,7 +260,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 </Label>
                 <Switch
                   id="is_public"
-                  checked={formData.is_public}
+                  checked={formData.is_public === true}
                   onCheckedChange={handleSwitchChange}
                   className="data-[state=checked]:bg-green-500"
                 />

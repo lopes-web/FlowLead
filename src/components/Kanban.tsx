@@ -220,7 +220,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  if (canEdit) handleTogglePublic(lead.id, true);
+                  if (canEdit) handleTogglePublic(lead.id, false);
                 }}
                 onMouseDown={preventDrag}
                 onTouchStart={preventDrag}
@@ -252,7 +252,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                if (canEdit) handleTogglePublic(lead.id, false);
+                if (canEdit) handleTogglePublic(lead.id, true);
               }}
               onMouseDown={preventDrag}
               onTouchStart={preventDrag}
