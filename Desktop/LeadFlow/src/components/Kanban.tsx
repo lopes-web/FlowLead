@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLeads } from "@/contexts/LeadContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,11 +22,13 @@ import {
   Eye,
   EyeOff,
   Lock,
-  Unlock
+  Unlock,
+  Clock
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LeadFilters as LeadFiltersComponent, type LeadFilters } from "./LeadFilters";
 import { LossReasonDialog } from "./LossReasonDialog";
+import { supabase } from "@/lib/supabase";
 
 interface KanbanProps {
   onEditLead: (id: string) => void;
@@ -79,6 +81,40 @@ export function Kanban({ onEditLead }: KanbanProps) {
     status: "todos",
     motivo_perda: "todos",
   });
+
+  // Adicione essas funções para gerenciar os usuários atribuídos ao redesign
+  const [userCache, setUserCache] = useState<Record<string, { name: string, avatar_url?: string }>>({});
+
+  // Buscar informações do usuário pelo ID
+  const getUserInfo = async (userId: string) => {
+    if (userCache[userId]) {
+      return userCache[userId];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, email, raw_user_meta_data')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      const name = data?.raw_user_meta_data?.name || data?.email?.split('@')[0] || 'Usuário';
+      const avatar_url = data?.raw_user_meta_data?.avatar_url;
+      
+      // Salvar no cache para não precisar buscar novamente
+      setUserCache(prev => ({
+        ...prev,
+        [userId]: { name, avatar_url }
+      }));
+      
+      return { name, avatar_url };
+    } catch (error) {
+      console.error("Erro ao buscar informações do usuário:", error);
+      return { name: "Usuário" };
+    }
+  };
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -478,20 +514,34 @@ export function Kanban({ onEditLead }: KanbanProps) {
                                   <TooltipTrigger asChild>
                                     <div className="ml-1">
                                       <Avatar className={`h-5 w-5 ${lead.redesign_assigned_to === user?.id ? 'ring-2 ring-[#9b87f5]' : ''}`}>
-                                        <AvatarImage src={""} />
+                                        <AvatarImage src={userCache[lead.redesign_assigned_to]?.avatar_url || ""} />
                                         <AvatarFallback className={`${getAvatarColor(lead.redesign_assigned_to)} text-[10px]`}>
-                                          {lead.redesign_assigned_to === user?.id ? 'EU' : 'RD'}
+                                          {userCache[lead.redesign_assigned_to]?.name?.substring(0, 2).toUpperCase() || 'RD'}
                                         </AvatarFallback>
                                       </Avatar>
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>{lead.redesign_assigned_to === user?.id ? 'Atribuído a mim' : 'Atribuído a outro usuário'}</p>
-                                    {lead.redesign_deadline && (
-                                      <p className="text-xs mt-1">
-                                        Prazo: {new Date(lead.redesign_deadline).toLocaleDateString('pt-BR')}
+                                    <div className="space-y-1">
+                                      <p className="font-medium">
+                                        {lead.redesign_assigned_to === user?.id ? 
+                                          'Redesign atribuído a mim' : 
+                                          `Atribuído a ${userCache[lead.redesign_assigned_to]?.name || 'outro usuário'}`
+                                        }
                                       </p>
-                                    )}
+                                      {lead.redesign_deadline && (
+                                        <p className="text-xs flex items-center text-gray-300">
+                                          <Calendar className="h-3 w-3 mr-1" />
+                                          Prazo: {new Date(lead.redesign_deadline).toLocaleDateString('pt-BR')}
+                                        </p>
+                                      )}
+                                      {lead.redesign_deadline && (
+                                        <CountdownTimer 
+                                          deadline={new Date(lead.redesign_deadline)} 
+                                          isMyTask={lead.redesign_assigned_to === user?.id}
+                                        />
+                                      )}
+                                    </div>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -556,5 +606,59 @@ export function Kanban({ onEditLead }: KanbanProps) {
         onConfirm={handleConfirmArchive}
       />
     </div>
+  );
+}
+
+interface CountdownTimerProps {
+  deadline: Date;
+  isMyTask: boolean;
+}
+
+function CountdownTimer({ deadline, isMyTask }: CountdownTimerProps) {
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [isOverdue, setIsOverdue] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const difference = deadline.getTime() - now.getTime();
+      
+      if (difference <= 0) {
+        setIsOverdue(true);
+        const overdueDiff = Math.abs(difference);
+        
+        const days = Math.floor(overdueDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((overdueDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        
+        if (days > 0) {
+          setTimeLeft(`${days}d ${hours}h atrasado`);
+        } else {
+          setTimeLeft(`${hours}h atrasado`);
+        }
+      } else {
+        setIsOverdue(false);
+        
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        
+        if (days > 0) {
+          setTimeLeft(`${days}d ${hours}h restantes`);
+        } else {
+          setTimeLeft(`${hours}h restantes`);
+        }
+      }
+    };
+    
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 60000); // Atualiza a cada minuto
+    
+    return () => clearInterval(timer);
+  }, [deadline]);
+  
+  return (
+    <p className={`text-xs flex items-center ${isOverdue ? (isMyTask ? 'text-red-400' : 'text-orange-400') : 'text-green-400'}`}>
+      <Clock className="h-3 w-3 mr-1" />
+      {timeLeft}
+    </p>
   );
 }

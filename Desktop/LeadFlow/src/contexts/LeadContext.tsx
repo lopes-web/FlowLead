@@ -14,6 +14,7 @@ interface LeadContextType {
   updateLead: (id: string, lead: Partial<Lead>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   togglePublic: (id: string, isPublic: boolean) => Promise<void>;
+  assignRedesign: (id: string, userId: string | null, deadline: string | null) => Promise<void>;
   isOffline: boolean;
 }
 
@@ -449,8 +450,185 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Adicione a função para atribuir redesign a um lead
+  async function assignRedesign(id: string, userId: string | null, deadline: string | null) {
+    try {
+      console.log(`Atribuindo redesign para o lead ${id} ao usuário ${userId || 'nenhum'}`);
+      
+      // Encontrar o lead atual para referência
+      const currentLead = leads.find(l => l.id === id);
+      if (!currentLead) {
+        console.error("Lead não encontrado para atribuir redesign");
+        toast.error("Lead não encontrado.");
+        return;
+      }
+      
+      if (isOffline) {
+        // Atualizar o estado local
+        setLeads((prev: Lead[]) => prev.map((l: Lead) => 
+          l.id === id 
+            ? { 
+                ...l, 
+                redesign_assigned_to: userId, 
+                redesign_deadline: deadline,
+                // Se estiver atribuindo um redesign, adiciona a tag "redesign" automaticamente
+                tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+              } 
+            : l
+        ));
+        
+        // Atualizar o armazenamento offline
+        const updatedLeads = leads.map((l: Lead) => 
+          l.id === id 
+            ? { 
+                ...l, 
+                redesign_assigned_to: userId, 
+                redesign_deadline: deadline,
+                tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+              } 
+            : l
+        );
+        
+        offlineStorage.saveLeads(updatedLeads);
+        offlineStorage.addPendingAction({
+          type: 'update',
+          data: { 
+            id, 
+            redesign_assigned_to: userId, 
+            redesign_deadline: deadline,
+            tags: userId ? (currentLead.tags.includes("redesign") ? currentLead.tags : [...currentLead.tags, "redesign"]) : currentLead.tags
+          },
+          timestamp: Date.now()
+        });
+        
+        return;
+      }
+      
+      // Criar o objeto de atualizações
+      const updates: any = {
+        redesign_assigned_to: userId,
+        redesign_deadline: deadline,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Se estiver atribuindo um redesign, adiciona a tag "redesign" automaticamente
+      if (userId && !currentLead.tags.includes("redesign")) {
+        updates.tags = [...currentLead.tags, "redesign"];
+      }
+      
+      console.log("Enviando atualizações para o Supabase:", updates);
+      
+      // Enviar atualização para o Supabase
+      const { data, error } = await supabase
+        .from("leads")
+        .update(updates)
+        .eq("id", id)
+        .select();
+      
+      if (error) {
+        console.error("Erro ao atribuir redesign:", error);
+        toast.error("Erro ao atribuir redesign. Por favor, tente novamente.");
+        return;
+      }
+      
+      console.log("Resposta do Supabase após atribuição de redesign:", data);
+      
+      // Atualizar o estado local
+      setLeads((prev: Lead[]) => prev.map((l: Lead) => 
+        l.id === id 
+          ? { 
+              ...l, 
+              redesign_assigned_to: userId, 
+              redesign_deadline: deadline,
+              tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+            } 
+          : l
+      ));
+      
+      // Obter informações dos usuários para as notificações
+      let assignedUserName = "outro designer";
+      let assignerName = user?.email || "Alguém";
+      
+      try {
+        if (userId) {
+          const { data: userData } = await supabase
+            .from("users")
+            .select("email, raw_user_meta_data")
+            .eq("id", userId)
+            .single();
+          
+          if (userData) {
+            assignedUserName = userData.raw_user_meta_data?.name || userData.email || "outro designer";
+          }
+        }
+        
+        assignerName = user?.user_metadata?.name || user?.email || "Alguém";
+      } catch (err) {
+        console.error("Erro ao buscar informações de usuário para notificação:", err);
+      }
+      
+      // Determinar o tipo de notificação e mensagem
+      let notificationType = "redesign_assigned";
+      let notificationTitle = "Redesign atribuído";
+      let notificationMessage = "";
+      
+      if (userId) {
+        if (userId === user?.id) {
+          // Usuário está atribuindo a si mesmo
+          notificationType = "redesign_self_assigned";
+          notificationMessage = `${assignerName} assumiu o redesign de "${currentLead.nome}"`;
+        } else {
+          // Usuário está atribuindo a outro
+          notificationMessage = `${assignerName} atribuiu o redesign de "${currentLead.nome}" para ${assignedUserName}`;
+        }
+      } else if (currentLead.redesign_assigned_to) {
+        // Está removendo a atribuição
+        notificationType = "redesign_unassigned";
+        notificationTitle = "Redesign removido";
+        notificationMessage = `${assignerName} removeu a atribuição de redesign de "${currentLead.nome}"`;
+      } else {
+        // Só está atualizando o prazo, sem mudar a atribuição
+        notificationType = "redesign_updated";
+        notificationTitle = "Redesign atualizado";
+        notificationMessage = `${assignerName} atualizou o redesign de "${currentLead.nome}"`;
+      }
+      
+      // Adicionar notificação sobre a atribuição de redesign
+      addNotification(
+        notificationType,
+        notificationTitle,
+        notificationMessage,
+        {
+          leadId: id,
+          leadName: currentLead.nome,
+          userId: user?.id,
+          assignedToId: userId,
+          deadline: deadline
+        }
+      );
+      
+      // Mostrar toast de confirmação
+      if (userId) {
+        if (userId === user?.id) {
+          toast.success(`Você assumiu o redesign de "${currentLead.nome}"`);
+        } else {
+          toast.success(`Redesign de "${currentLead.nome}" atribuído para ${assignedUserName}`);
+        }
+      } else {
+        toast.success(`Atribuição de redesign removida de "${currentLead.nome}"`);
+      }
+      
+      // Recarregar os leads para garantir sincronização
+      await fetchLeads();
+      
+    } catch (error) {
+      console.error("Erro ao atribuir redesign:", error);
+      toast.error("Ocorreu um erro ao atribuir o redesign.");
+    }
+  }
+
   return (
-    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, togglePublic, isOffline }}>
+    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, togglePublic, assignRedesign, isOffline }}>
       {children}
     </LeadContext.Provider>
   );

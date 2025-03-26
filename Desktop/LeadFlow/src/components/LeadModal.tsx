@@ -25,9 +25,11 @@ import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
-import { Lock, Unlock, Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle } from "lucide-react";
+import { Lock, Unlock, Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle, X, Plus, UserMinus } from "lucide-react";
 import { cn, formStorage } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const FORM_STORAGE_KEY = 'leadform';
 
@@ -48,8 +50,15 @@ interface LeadModalProps {
   leadId?: string;
 }
 
+interface UserOption {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+}
+
 export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
-  const { leads, addLead, updateLead } = useLeads();
+  const { leads, addLead, updateLead, assignRedesign } = useLeads();
   const { createProjectFromLead } = useProjects();
   const { user } = useAuth();
   const whatsappRef = useRef<HTMLInputElement>(null);
@@ -99,6 +108,41 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     "redesign"
   ];
 
+  const [users, setUsers] = useState<UserOption[]>([]);
+
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) {
+        console.error("Erro ao carregar usuários:", error);
+        return;
+      }
+      
+      if (data) {
+        const formattedUsers = data.map(user => ({
+          id: user.id,
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
+          email: user.email || '',
+          avatar_url: user.user_metadata?.avatar_url
+        }));
+        
+        setUsers(formattedUsers);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+      // Fallback: Carregar apenas o usuário atual se o admin listUsers falhar
+      if (user) {
+        setUsers([{
+          id: user.id,
+          name: user?.user_metadata?.name || user.email?.split('@')[0] || 'Você',
+          email: user.email || '',
+          avatar_url: user?.user_metadata?.avatar_url
+        }]);
+      }
+    }
+  };
+
   // Efeito para carregar dados do lead quando o modal é aberto
   useEffect(() => {
     if (open) {
@@ -141,6 +185,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       formStorage.save(FORM_STORAGE_KEY, formData);
     }
   }, [formData, open]);
+
+  // Use o useEffect para carregar os usuários ao abrir o modal
+  useEffect(() => {
+    if (open) {
+      loadUsers();
+    }
+  }, [open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -188,26 +239,48 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
-      // Normalizar todos os valores antes de enviar
-      const dataToSave = {
-        ...formData,
-        orcamento: typeof formData.orcamento === 'string' 
-          ? parseFloat(formData.orcamento.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0 
-          : formData.orcamento || 0,
-        is_public: formData.is_public === true
-      };
+      const cleanedFormData = {...formData};
       
-      console.log("Salvando lead com is_public:", dataToSave.is_public, "tipo:", typeof dataToSave.is_public);
+      // Formatar o orçamento corretamente para número
+      if (typeof cleanedFormData.orcamento === "string") {
+        cleanedFormData.orcamento = Number(cleanedFormData.orcamento.replace(/\D/g, "")) / 100;
+      }
+      
+      // Resetar motivo de perda se o status não for "perdido"
+      if (cleanedFormData.status !== "perdido") {
+        cleanedFormData.motivo_perda = null;
+        cleanedFormData.detalhes_perda = null;
+      }
       
       if (leadId) {
-        await updateLead(leadId, dataToSave);
+        // Separar os dados de redesign para usar a função dedicada
+        const { redesign_assigned_to, redesign_deadline, ...leadData } = cleanedFormData;
+        
+        // Atualizar as informações básicas do lead
+        await updateLead(leadId, leadData);
+        
+        // Verificar se houve alteração na atribuição de redesign
+        const currentLead = leads.find(l => l.id === leadId);
+        if (
+          currentLead && 
+          (currentLead.redesign_assigned_to !== redesign_assigned_to || 
+           currentLead.redesign_deadline !== redesign_deadline)
+        ) {
+          // Chamar a função específica para atribuir redesign
+          await assignRedesign(leadId, redesign_assigned_to, redesign_deadline);
+        }
+        
+        toast.success("Lead atualizado com sucesso!");
       } else {
-        await addLead(dataToSave);
+        await addLead(cleanedFormData);
+        toast.success("Lead adicionado com sucesso!");
       }
-      formStorage.clear(FORM_STORAGE_KEY); // Limpa os dados após salvar com sucesso
+      
+      // Resetar o formulário e fechar o modal
+      resetForm();
       onOpenChange(false);
-      toast.success(leadId ? "Lead atualizado com sucesso!" : "Lead adicionado com sucesso!");
     } catch (error) {
       console.error("Erro ao salvar lead:", error);
       toast.error("Erro ao salvar lead. Por favor, tente novamente.");
@@ -262,6 +335,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     }
   };
 
+  const getAvatarColor = (id: string) => {
+    // Implemente a lógica para determinar a cor do avatar com base no ID do usuário
+    return "bg-gray-500";
+  };
+
   const renderFormContent = () => {
     return (
       <div className="space-y-4 py-2 pb-4">
@@ -278,7 +356,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
         {/* ... existing code ... */}
 
-        {/* Nova seção de Redesign */}
+        {/* Nova seção de Redesign - melhorada */}
         <div className="space-y-4 pt-4 border-t border-[#2e3446]">
           <h3 className="text-base font-medium text-white flex items-center gap-2">
             <FileText className="h-5 w-5 text-[#9b87f5]" />
@@ -295,10 +373,23 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 <SelectTrigger className="bg-[#1c2132] border-[#2e3446]">
                   <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1c2132] border-[#2e3446]">
+                <SelectContent className="bg-[#1c2132] border-[#2e3446] max-h-60">
                   <SelectItem value="">Não atribuído</SelectItem>
-                  {/* Aqui deve vir a lista de usuários - será implementada na próxima etapa */}
-                  <SelectItem value={user?.id || ""}>Eu ({user?.email})</SelectItem>
+                  
+                  {/* Lista de usuários carregados do banco de dados */}
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={u.avatar_url || ""} />
+                          <AvatarFallback className={`${getAvatarColor(u.id)} text-xs`}>
+                            {u.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {u.id === user?.id ? `Eu (${u.name})` : u.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -321,18 +412,44 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             </div>
           </div>
           
-          {formData.tags.includes("redesign") ? null : (
-            <div className="pt-2">
+          <div className="pt-2 flex flex-wrap gap-2">
+            {formData.tags.includes("redesign") ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-xs bg-[#2e3446] border-[#9b87f5] text-[#9b87f5] hover:bg-[#9b87f5]/20"
+                onClick={() => handleTagToggle("redesign")}
+              >
+                <X className="h-3 w-3 mr-1" /> Remover tag Redesign
+              </Button>
+            ) : (
               <Button
                 type="button"
                 variant="outline"
                 className="text-xs bg-[#1c2132] border-[#2e3446] hover:bg-[#2e3446] hover:text-white"
                 onClick={() => handleTagToggle("redesign")}
               >
-                + Marcar como Redesign
+                <Plus className="h-3 w-3 mr-1" /> Marcar como Redesign
               </Button>
-            </div>
-          )}
+            )}
+            
+            {formData.redesign_assigned_to && (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-xs bg-[#1c2132] border-[#2e3446] hover:bg-[#2e3446] hover:text-white"
+                onClick={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    redesign_assigned_to: null,
+                    redesign_deadline: null
+                  }));
+                }}
+              >
+                <UserMinus className="h-3 w-3 mr-1" /> Remover atribuição
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* ... rest of the existing code ... */}

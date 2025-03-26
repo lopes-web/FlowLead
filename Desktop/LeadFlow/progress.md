@@ -57,6 +57,8 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Status inicial automático como "Não Contatado"
 - Modal de edição com layout otimizado
 - Captura de motivo de perda ao arquivar leads
+- Funcionalidade de toggle público/privado com ícone de cadeado
+- Permissões baseadas no proprietário do lead
 
 ### Dashboard Analítico
 - Métricas em tempo real:
@@ -138,6 +140,31 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Opção de leads públicos ou privados
 - Indicadores visuais de propriedade de leads
 
+### Sistema de Gerenciamento de Redesigns
+- Atribuição de redesigns a usuários específicos
+- Interface completa para gerenciar atribuições
+- Seleção de responsável pelo redesign a partir da lista de usuários
+- Definição de prazo para entrega dos redesigns
+- Sistema visual de badges nos cards de leads:
+  - Indicador visual de redesign nos cards
+  - Avatar do usuário responsável no card
+  - Exibição do prazo de entrega
+  - Contador visual de tempo restante/atrasado
+- Código de cores para prazos:
+  - Verde para prazos em dia
+  - Laranja para prazos atrasados (outros usuários)
+  - Vermelho para prazos atrasados (próprio usuário)
+- Filtros específicos para redesigns:
+  - Visualizar todos os leads
+  - Apenas leads com redesign
+  - Apenas redesigns atribuídos ao usuário atual
+  - Apenas leads sem redesign
+- Notificações para eventos de redesign:
+  - Atribuição de redesign a outro usuário
+  - Auto-atribuição de redesign
+  - Remoção de atribuição de redesign
+  - Atualização de prazo de redesign
+
 ### Melhorias Recentes
 - Unificação do sistema de navegação
   - Navegação consistente entre todas as páginas
@@ -157,6 +184,11 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Login e registro com tema escuro
   - Melhor contraste e legibilidade
   - Cores consistentes com a identidade visual
+- Correção do sistema de toggle de visibilidade de leads
+  - Remoção de trigger que impedia mudança de estado
+  - Correção das políticas de segurança RLS
+  - Tratamento adequado do campo is_public como booleano
+  - Melhoria na UI com feedback visual
 
 ## Estrutura do Banco de Dados
 
@@ -232,6 +264,8 @@ LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [x] Implementar sistema de notificações
 - [x] Adicionar edição de perfil de usuário
 - [x] Melhorar design dos gráficos do dashboard
+- [x] Corrigir funcionalidade de toggle público/privado de leads
+- [x] Implementar sistema de atribuição de redesigns
 - [ ] Adicionar histórico de alterações
 - [ ] Melhorar sistema de tags
 - [ ] Implementar busca avançada
