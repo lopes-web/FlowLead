@@ -124,6 +124,27 @@ export function Kanban({ onEditLead }: KanbanProps) {
     }
   };
 
+  // Carregar informações de usuários para redesigns quando o componente montar
+  useEffect(() => {
+    // Encontrar todos os IDs de usuários atribuídos a redesigns
+    const userIds = leads
+      .filter(lead => lead.redesign_assigned_to)
+      .map(lead => lead.redesign_assigned_to)
+      .filter(Boolean) as string[];
+    
+    // Remover duplicatas
+    const uniqueUserIds = [...new Set(userIds)];
+    
+    // Carregar informações para cada usuário que ainda não está no cache
+    uniqueUserIds.forEach(userId => {
+      if (!userCache[userId]) {
+        getUserInfo(userId);
+      }
+    });
+    
+    console.log("Carregando informações para usuários de redesign:", uniqueUserIds);
+  }, [leads, userCache]);
+
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       const matchesSearch = lead.nome.toLowerCase().includes(filters.search.toLowerCase()) ||
