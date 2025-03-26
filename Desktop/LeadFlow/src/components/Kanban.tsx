@@ -402,11 +402,30 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   // Adicionar função para abrir o modal de redesign
   const handleRedesignClick = (lead: { id: string; nome: string }) => {
-    console.log("Clique no botão de redesign", lead);
+    console.log("Clique no botão de redesign para:", lead);
     setLeadForRedesign(lead);
-    setRedesignModalOpen(true);
-    console.log("Estado após abertura:", { leadForRedesign: lead, modalOpen: true });
+    setTimeout(() => {
+      console.log("Estado depois de setLeadForRedesign:", { lead, leadForRedesign });
+      setRedesignModalOpen(true);
+      console.log("Modal de redesign deveria estar aberto agora:", { redesignModalOpen: true });
+    }, 0);
   };
+
+  // Adicionar log no useEffect para carregar o modal
+  useEffect(() => {
+    if (redesignModalOpen) {
+      console.log("Modal de redesign está aberto com leadForRedesign:", leadForRedesign);
+    }
+  }, [redesignModalOpen, leadForRedesign]);
+
+  // Envolver o modal em um log para debug
+  useEffect(() => {
+    console.log("Estado atual modal redesign:", { 
+      redesignModalOpen, 
+      leadForRedesign,
+      modalRenderizado: Boolean(leadForRedesign && redesignModalOpen)
+    });
+  }, [redesignModalOpen, leadForRedesign]);
 
   return (
     <div className="flex flex-col space-y-4">
