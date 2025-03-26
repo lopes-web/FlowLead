@@ -3,7 +3,7 @@ import { useLeads } from "@/contexts/LeadContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LeadStatus } from "@/types/lead";
+import { LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
 import { DeleteLeadDialog } from "./DeleteLeadDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -382,6 +382,23 @@ export function Kanban({ onEditLead }: KanbanProps) {
   const filteredStatuses = Object.keys(statusConfig).filter(status => 
     status !== "perdido" || showPerdidos
   ) as LeadStatus[];
+
+  // Função para obter a cor da tag
+  const getTagColor = (tag: LeadQualityTag) => {
+    const colorMap: Record<LeadQualityTag, string> = {
+      quente: "bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30",
+      morno: "bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30",
+      frio: "bg-blue-500/20 text-blue-500 border-blue-500/30 hover:bg-blue-500/30",
+      prioridade_alta: "bg-purple-500/20 text-purple-500 border-purple-500/30 hover:bg-purple-500/30",
+      prioridade_media: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30 hover:bg-indigo-500/30",
+      prioridade_baixa: "bg-teal-500/20 text-teal-500 border-teal-500/30 hover:bg-teal-500/30",
+      decisor: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/30",
+      influenciador: "bg-cyan-500/20 text-cyan-500 border-cyan-500/30 hover:bg-cyan-500/30",
+      redesign: "bg-[#9b87f5]/20 text-[#9b87f5] border-[#9b87f5]/30 hover:bg-[#9b87f5]/30"
+    };
+
+    return colorMap[tag] || "bg-gray-500/20 text-gray-500 border-gray-500/30 hover:bg-gray-500/30";
+  };
 
   // Adicionar função para abrir o modal de redesign
   const handleRedesignClick = (lead: { id: string; nome: string }) => {
