@@ -258,11 +258,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       
       if (isOffline) {
         console.log("Modo offline detectado, processando alteração offline...");
-        setLeads(prev => prev.map(l => 
+        setLeads((prev) => prev.map((l) => 
           l.id === id ? { ...l, is_public: newPublicState } : l
         ));
         
-        const updatedLeads = leads.map(l => 
+        const updatedLeads = leads.map((l) => 
           l.id === id ? { ...l, is_public: newPublicState } : l
         );
         
@@ -284,6 +284,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       if (leadError) {
         console.error("Erro ao buscar informações do lead:", leadError);
+        toast.error("Erro ao buscar informações do lead.");
         return;
       }
 
@@ -299,11 +300,10 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       // Criar updates com valores explícitos para garantir tipo correto
       const updates = {
-        // Usar explicitamente true ou false, nunca null ou undefined
+        // Aqui é crucial usar newPublicState, não isPublic, para garantir o valor correto
         is_public: newPublicState,
         // Se estiver tornando privado e há usuário logado, associar ao usuário
         ...((!newPublicState && user) ? { user_id: user.id } : {}),
-        // Atualizar timestamp
         updated_at: new Date().toISOString()
       };
       
@@ -326,9 +326,9 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         console.log(`Novo estado is_public: ${data[0].is_public}, tipo: ${typeof data[0].is_public}`);
       }
 
-      // Atualiza o estado local de forma imediata
-      setLeads((prev: Lead[]) => {
-        const updatedLeads = prev.map((l: Lead) => 
+      // Atualiza o estado local primeiramente
+      setLeads((prev) => {
+        const updatedLeads = prev.map((l) => 
           l.id === id ? { 
             ...l, 
             is_public: newPublicState, 
@@ -336,7 +336,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
           } : l
         );
         
-        const updatedLead = updatedLeads.find(l => l.id === id);
+        const updatedLead = updatedLeads.find((l) => l.id === id);
         console.log(`Estado local atualizado para o lead ${id}:`, updatedLead);
         console.log(`Novo estado local is_public: ${updatedLead?.is_public}, tipo: ${typeof updatedLead?.is_public}`);
         
@@ -346,7 +346,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       // Indicar ao usuário que a operação foi bem-sucedida
       toast.success(`Lead ${newPublicState ? "público" : "privado"} atualizado com sucesso.`);
       
-      // Recarregar leads do servidor para garantir sincronização
+      // Recarregar leads do servidor para garantir sincronização completa
       console.log("Recarregando leads do servidor...");
       await fetchLeads();
       console.log("togglePublic concluído com sucesso");

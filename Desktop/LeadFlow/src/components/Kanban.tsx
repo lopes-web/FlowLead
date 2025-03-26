@@ -159,28 +159,50 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   const handleTogglePublic = async (leadId: string, newPublicState: boolean) => {
     try {
-      console.log(`handleTogglePublic - leadId: ${leadId}, novo estado: ${newPublicState}`);
+      console.log(`handleTogglePublic - leadId: ${leadId}, novo estado desejado: ${newPublicState}, tipo: ${typeof newPublicState}`);
       
       // Encontra o lead no estado local para debug
-      const leadBeforeUpdate = leads.find(l => l.id === leadId);
+      const leadBeforeUpdate = leads.find((l) => l.id === leadId);
+      
+      // O estado atual é crucial para entender o problema
+      const currentState = leadBeforeUpdate?.is_public === true;
+      
       console.log(`Estado atual do lead antes da atualização:`, {
         id: leadId,
-        is_public: leadBeforeUpdate?.is_public,
+        is_public: currentState,
+        is_public_raw: leadBeforeUpdate?.is_public,
+        tipo: typeof leadBeforeUpdate?.is_public,
         user_id: leadBeforeUpdate?.user_id
       });
 
-      // Chama a função togglePublic com o novo estado desejado
-      await togglePublic(leadId, newPublicState);
+      // Verificar se estamos realmente alternando o estado
+      if (currentState === newPublicState) {
+        console.warn(`Estado não vai mudar - atual: ${currentState}, desejado: ${newPublicState}`);
+      }
+
+      // Forçar o booleano explícito aqui também é importante
+      await togglePublic(leadId, newPublicState === true);
       
-      // Verificar se o estado foi atualizado corretamente
+      // Verificar se o estado foi atualizado corretamente depois de um tempo
       setTimeout(() => {
-        const leadAfterUpdate = leads.find(l => l.id === leadId);
+        const leadAfterUpdate = leads.find((l) => l.id === leadId);
+        const newState = leadAfterUpdate?.is_public === true;
+        
         console.log(`Estado do lead após atualização:`, {
           id: leadId,
-          is_public: leadAfterUpdate?.is_public,
+          is_public: newState,
+          is_public_raw: leadAfterUpdate?.is_public,
+          tipo: typeof leadAfterUpdate?.is_public,
           user_id: leadAfterUpdate?.user_id
         });
-      }, 500);
+        
+        // Verificar se o estado realmente mudou como esperado
+        if (currentState === newState) {
+          console.error("❌ O estado não mudou como esperado!");
+        } else {
+          console.log("✅ O estado foi alterado com sucesso!");
+        }
+      }, 1000); // Aumentamos o tempo para garantir que fetchLeads tenha terminado
     } catch (error) {
       console.error('Erro ao alterar visibilidade do lead:', error);
     }
@@ -378,10 +400,13 @@ export function Kanban({ onEditLead }: KanbanProps) {
                                   className="h-6 w-6 p-0 rounded-full"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    // Força a conversão para booleano com !!
+                                    // Garantir que o estado atual seja um booleano
                                     const isCurrentlyPublic = lead.is_public === true;
-                                    console.log(`Alterando visibilidade do lead ${lead.id}, estado atual: ${isCurrentlyPublic}, mudando para: ${!isCurrentlyPublic}`);
-                                    handleTogglePublic(lead.id, !isCurrentlyPublic);
+                                    // Queremos alterar para o oposto do estado atual
+                                    const newState = !isCurrentlyPublic;
+                                    console.log(`Alterando visibilidade do lead ${lead.id}, estado atual: ${isCurrentlyPublic}, mudando para: ${newState}`);
+                                    // Chamar a função com o novo estado explícito
+                                    handleTogglePublic(lead.id, newState);
                                   }}
                                 >
                                   {lead.is_public === true ? 
