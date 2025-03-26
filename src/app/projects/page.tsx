@@ -25,7 +25,7 @@ export default function ProjectsPage() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
-              LeadFlow
+              FlowLead
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">

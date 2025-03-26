@@ -87,7 +87,7 @@ export function Register() {
             <Zap className="h-6 w-6 text-white" />
           </div>
           <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
-            LeadFlow
+            FlowLead
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-white">
             Crie sua conta

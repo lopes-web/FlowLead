@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'LeadFlow CRM',
-        short_name: 'LeadFlow',
+        name: 'FlowLead CRM',
+        short_name: 'FlowLead',
         description: 'CRM para gerenciamento de leads e prospecção',
         theme_color: '#ffffff',
         icons: [

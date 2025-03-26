@@ -1,8 +1,8 @@
-# LeadFlow - Sistema de Gestão de Leads
+# FlowLead - Sistema de Gestão de Leads
 
 ## Sobre o Projeto
 
-LeadFlow é um sistema de gestão de leads desenvolvido para ajudar empresas a gerenciar seus potenciais clientes de forma eficiente. O sistema utiliza uma interface Kanban moderna e intuitiva para visualizar e gerenciar o progresso dos leads através de diferentes estágios do funil de vendas.
+FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a gerenciar seus potenciais clientes de forma eficiente. O sistema utiliza uma interface Kanban moderna e intuitiva para visualizar e gerenciar o progresso dos leads através de diferentes estágios do funil de vendas.
 
 ## Tecnologias Utilizadas
 
