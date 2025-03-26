@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { Lead, LeadStatus } from "@/types/lead";
+import type { Lead, LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
@@ -18,8 +18,6 @@ interface LeadContextType {
   assignRedesign: (id: string, userId: string | null, deadline: string | null) => Promise<void>;
   isOffline: boolean;
 }
-
-type LeadLossReason = string | null;
 
 const LeadContext = createContext<LeadContextType | undefined>(undefined);
 
@@ -474,7 +472,11 @@ export function LeadProvider({ children }: { children: ReactNode }) {
                 redesign_assigned_to: userId, 
                 redesign_deadline: deadline,
                 // Se estiver atribuindo um redesign, adiciona a tag "redesign" automaticamente
-                tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+                tags: userId 
+                  ? (l.tags.includes("redesign" as LeadQualityTag) 
+                      ? l.tags 
+                      : [...l.tags, "redesign" as LeadQualityTag]) 
+                  : l.tags
               } 
             : l
         ));
@@ -486,7 +488,11 @@ export function LeadProvider({ children }: { children: ReactNode }) {
                 ...l, 
                 redesign_assigned_to: userId, 
                 redesign_deadline: deadline,
-                tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+                tags: userId 
+                  ? (l.tags.includes("redesign" as LeadQualityTag) 
+                      ? l.tags 
+                      : [...l.tags, "redesign" as LeadQualityTag]) 
+                  : l.tags
               } 
             : l
         );
@@ -498,7 +504,11 @@ export function LeadProvider({ children }: { children: ReactNode }) {
             id, 
             redesign_assigned_to: userId, 
             redesign_deadline: deadline,
-            tags: userId ? (currentLead.tags.includes("redesign") ? currentLead.tags : [...currentLead.tags, "redesign"]) : currentLead.tags
+            tags: userId 
+              ? (currentLead.tags.includes("redesign" as LeadQualityTag) 
+                  ? currentLead.tags 
+                  : [...currentLead.tags, "redesign" as LeadQualityTag]) 
+              : currentLead.tags
           },
           timestamp: Date.now()
         });
@@ -514,8 +524,8 @@ export function LeadProvider({ children }: { children: ReactNode }) {
       };
       
       // Se estiver atribuindo um redesign, adiciona a tag "redesign" automaticamente
-      if (userId && !currentLead.tags.includes("redesign")) {
-        updates.tags = [...currentLead.tags, "redesign"];
+      if (userId && !currentLead.tags.includes("redesign" as LeadQualityTag)) {
+        updates.tags = [...currentLead.tags, "redesign" as LeadQualityTag];
       }
       
       console.log("Enviando atualizações para o Supabase:", updates);
@@ -542,7 +552,11 @@ export function LeadProvider({ children }: { children: ReactNode }) {
               ...l, 
               redesign_assigned_to: userId, 
               redesign_deadline: deadline,
-              tags: userId ? (l.tags.includes("redesign") ? l.tags : [...l.tags, "redesign"]) : l.tags
+              tags: userId 
+                ? (l.tags.includes("redesign" as LeadQualityTag) 
+                    ? l.tags 
+                    : [...l.tags, "redesign" as LeadQualityTag]) 
+                : l.tags
             } 
           : l
       ));

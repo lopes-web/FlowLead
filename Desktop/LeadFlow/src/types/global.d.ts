@@ -18,6 +18,35 @@ declare module 'react' {
   export interface CSSProperties {
     [key: string]: any;
   }
+
+  // Hooks e funções do React
+  export function useState<T>(initialState: T | (() => T)): [T, (newState: T | ((prevState: T) => T)) => void];
+  export function useEffect(effect: () => void | (() => void), deps?: ReadonlyArray<any>): void;
+  export function createContext<T>(defaultValue: T): React.Context<T>;
+  export function useContext<T>(context: React.Context<T>): T;
+  
+  export interface Context<T> {
+    Provider: Provider<T>;
+    Consumer: Consumer<T>;
+    displayName?: string;
+  }
+  
+  export interface Provider<T> {
+    (props: ProviderProps<T>): ReactElement | null;
+  }
+  
+  export interface Consumer<T> {
+    (props: ConsumerProps<T>): ReactElement | null;
+  }
+  
+  export interface ProviderProps<T> {
+    value: T;
+    children?: ReactNode;
+  }
+  
+  export interface ConsumerProps<T> {
+    children: (value: T) => ReactNode;
+  }
 }
 
 declare module 'react/jsx-runtime' {
