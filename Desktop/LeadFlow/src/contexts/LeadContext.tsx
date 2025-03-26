@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Lead } from "@/types/lead";
+import type { ReactNode } from "react";
+import type { Lead, LeadStatus } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
@@ -18,9 +19,11 @@ interface LeadContextType {
   isOffline: boolean;
 }
 
+type LeadLossReason = string | null;
+
 const LeadContext = createContext<LeadContextType | undefined>(undefined);
 
-export function LeadProvider({ children }: { children: React.ReactNode }) {
+export function LeadProvider({ children }: { children: ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const isOffline = useOffline();
   const { user } = useAuth();
@@ -59,7 +62,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
 
       console.log("Leads carregados:", data);
 
-      const formattedLeads = data.map(lead => ({
+      const formattedLeads = data.map((lead: any) => ({
         ...lead,
         created_at: lead.created_at,
         updated_at: lead.updated_at,
@@ -80,7 +83,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isOffline) {
         const tempId = `temp_${Date.now()}`;
-        const newLead = { ...lead, id: tempId };
+        const newLead = { ...lead, id: tempId } as Lead;
         setLeads((prev: Lead[]) => [newLead, ...prev]);
         offlineStorage.saveLeads([newLead, ...leads]);
         offlineStorage.addPendingAction({
@@ -121,7 +124,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
         updated_at: data[0].updated_at,
         tipo_projeto: data[0].tipoprojeto,
         ultimo_contato: data[0].ultimocontato,
-      };
+      } as Lead;
 
       setLeads((prevLeads: Lead[]) => [formattedLead, ...prevLeads]);
       offlineStorage.saveLeads([formattedLead, ...leads]);
@@ -149,7 +152,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
   async function updateLead(id: string, lead: Partial<Lead>) {
     try {
       // Encontrar o lead atual para comparação
-      const currentLead = leads.find(l => l.id === id);
+      const currentLead = leads.find((l: Lead) => l.id === id);
       if (!currentLead) {
         console.error("Lead não encontrado para atualização");
         return;
@@ -259,11 +262,11 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       
       if (isOffline) {
         console.log("Modo offline detectado, processando alteração offline...");
-        setLeads((prev) => prev.map((l) => 
+        setLeads((prev: Lead[]) => prev.map((l: Lead) => 
           l.id === id ? { ...l, is_public: newPublicState } : l
         ));
         
-        const updatedLeads = leads.map((l) => 
+        const updatedLeads = leads.map((l: Lead) => 
           l.id === id ? { ...l, is_public: newPublicState } : l
         );
         
@@ -328,8 +331,8 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Atualiza o estado local primeiramente
-      setLeads((prev) => {
-        const updatedLeads = prev.map((l) => 
+      setLeads((prev: Lead[]) => {
+        const updatedLeads = prev.map((l: Lead) => 
           l.id === id ? { 
             ...l, 
             is_public: newPublicState, 
@@ -337,7 +340,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
           } : l
         );
         
-        const updatedLead = updatedLeads.find((l) => l.id === id);
+        const updatedLead = updatedLeads.find((l: Lead) => l.id === id);
         console.log(`Estado local atualizado para o lead ${id}:`, updatedLead);
         console.log(`Novo estado local is_public: ${updatedLead?.is_public}, tipo: ${typeof updatedLead?.is_public}`);
         
@@ -362,7 +365,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       console.log("Iniciando processo de exclusão do lead:", id);
       
       // Encontrar o lead atual para a notificação
-      const leadToDelete = leads.find(l => l.id === id);
+      const leadToDelete = leads.find((l: Lead) => l.id === id);
       console.log("Lead encontrado para exclusão:", leadToDelete);
       
       if (isOffline) {
@@ -450,13 +453,12 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Adicione a função para atribuir redesign a um lead
   async function assignRedesign(id: string, userId: string | null, deadline: string | null) {
     try {
       console.log(`Atribuindo redesign para o lead ${id} ao usuário ${userId || 'nenhum'}`);
       
       // Encontrar o lead atual para referência
-      const currentLead = leads.find(l => l.id === id);
+      const currentLead = leads.find((l: Lead) => l.id === id);
       if (!currentLead) {
         console.error("Lead não encontrado para atribuir redesign");
         toast.error("Lead não encontrado.");
@@ -505,7 +507,7 @@ export function LeadProvider({ children }: { children: React.ReactNode }) {
       }
       
       // Criar o objeto de atualizações
-      const updates: any = {
+      const updates: Record<string, any> = {
         redesign_assigned_to: userId,
         redesign_deadline: deadline,
         updated_at: new Date().toISOString()
