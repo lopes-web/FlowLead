@@ -23,11 +23,14 @@ import {
   EyeOff,
   Lock,
   Unlock,
-  Clock
+  Clock,
+  Palette
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LeadFilters as LeadFiltersComponent, type LeadFilters } from "./LeadFilters";
 import { LossReasonDialog } from "./LossReasonDialog";
+import { RedesignAssignModal } from "./RedesignAssignModal";
+import { CountdownTimer } from "./CountdownTimer";
 import { supabase } from "@/lib/supabase";
 
 interface KanbanProps {
@@ -80,7 +83,12 @@ export function Kanban({ onEditLead }: KanbanProps) {
     search: "",
     status: "todos",
     motivo_perda: "todos",
+    redesign: "todos"
   });
+  
+  // Estado para o modal de atribuição de redesign
+  const [redesignModalOpen, setRedesignModalOpen] = useState(false);
+  const [leadForRedesign, setLeadForRedesign] = useState<{ id: string; nome: string } | null>(null);
 
   // Adicione essas funções para gerenciar os usuários atribuídos ao redesign
   const [userCache, setUserCache] = useState<Record<string, { name: string, avatar_url?: string }>>({});
@@ -354,6 +362,12 @@ export function Kanban({ onEditLead }: KanbanProps) {
     status !== "perdido" || showPerdidos
   ) as LeadStatus[];
 
+  // Adicionar função para abrir o modal de redesign
+  const handleRedesignClick = (lead: { id: string; nome: string }) => {
+    setLeadForRedesign(lead);
+    setRedesignModalOpen(true);
+  };
+
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex items-center justify-between">
@@ -457,6 +471,37 @@ export function Kanban({ onEditLead }: KanbanProps) {
                             </Tooltip>
                           </TooltipProvider>
                           
+                          {/* Botão de redesign */}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRedesignClick({
+                                      id: lead.id, 
+                                      nome: lead.nome
+                                    });
+                                  }}
+                                >
+                                  <Palette className={`h-3.5 w-3.5 ${lead.redesign_assigned_to ? 'text-[#9b87f5]' : 'text-gray-400'}`} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {lead.redesign_assigned_to 
+                                    ? (lead.redesign_assigned_to === user?.id 
+                                        ? "Gerenciar meu redesign" 
+                                        : "Gerenciar redesign atribuído") 
+                                    : "Atribuir redesign"}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
                           {/* Botão de edição */}
                           <Button
                             variant="ghost"
@@ -499,7 +544,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
                       </div>
 
                       {/* Redesign badge - mostrar apenas se tiver tag redesign ou responsável atribuído */}
-                      {(lead.tags.includes("redesign") || lead.redesign_assigned_to) && (
+                      {(lead.tags?.includes("redesign") || lead.redesign_assigned_to) && (
                         <div className="mb-2 flex flex-wrap gap-1 items-center">
                           <Badge 
                             className="bg-[#9b87f5]/20 text-[#9b87f5] border-[#9b87f5]/30 hover:bg-[#9b87f5]/30"
@@ -602,63 +647,18 @@ export function Kanban({ onEditLead }: KanbanProps) {
       <LossReasonDialog
         open={lossReasonDialogOpen}
         onOpenChange={setLossReasonDialogOpen}
-        leadNome={leadToArchive?.nome || ""}
         onConfirm={handleConfirmArchive}
       />
-    </div>
-  );
-}
-
-interface CountdownTimerProps {
-  deadline: Date;
-  isMyTask: boolean;
-}
-
-function CountdownTimer({ deadline, isMyTask }: CountdownTimerProps) {
-  const [timeLeft, setTimeLeft] = useState<string>("");
-  const [isOverdue, setIsOverdue] = useState<boolean>(false);
-  
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const difference = deadline.getTime() - now.getTime();
       
-      if (difference <= 0) {
-        setIsOverdue(true);
-        const overdueDiff = Math.abs(difference);
-        
-        const days = Math.floor(overdueDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((overdueDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        
-        if (days > 0) {
-          setTimeLeft(`${days}d ${hours}h atrasado`);
-        } else {
-          setTimeLeft(`${hours}h atrasado`);
-        }
-      } else {
-        setIsOverdue(false);
-        
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        
-        if (days > 0) {
-          setTimeLeft(`${days}d ${hours}h restantes`);
-        } else {
-          setTimeLeft(`${hours}h restantes`);
-        }
-      }
-    };
-    
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 60000); // Atualiza a cada minuto
-    
-    return () => clearInterval(timer);
-  }, [deadline]);
-  
-  return (
-    <p className={`text-xs flex items-center ${isOverdue ? (isMyTask ? 'text-red-400' : 'text-orange-400') : 'text-green-400'}`}>
-      <Clock className="h-3 w-3 mr-1" />
-      {timeLeft}
-    </p>
+      {/* Modal de atribuição de redesign */}
+      {leadForRedesign && (
+        <RedesignAssignModal
+          open={redesignModalOpen}
+          onOpenChange={setRedesignModalOpen}
+          leadId={leadForRedesign.id}
+          leadName={leadForRedesign.nome}
+        />
+      )}
+    </div>
   );
 }
