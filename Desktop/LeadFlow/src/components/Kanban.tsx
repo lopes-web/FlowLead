@@ -3,7 +3,7 @@ import { useLeads } from "@/contexts/LeadContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
+import { LeadStatus, LeadLossReason, LeadQualityTag, Lead } from "@/types/lead";
 import { DeleteLeadDialog } from "./DeleteLeadDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -32,6 +32,7 @@ import { LossReasonDialog } from "./LossReasonDialog";
 import { RedesignAssignModal } from "./RedesignAssignModal";
 import { CountdownTimer } from "./CountdownTimer";
 import { supabase } from "@/lib/supabase";
+import { toast } from "react-hot-toast";
 
 interface KanbanProps {
   onEditLead: (id: string) => void;
@@ -71,7 +72,7 @@ const statusConfig: Record<LeadStatus, { label: string; color: string; icon: Rea
 };
 
 export function Kanban({ onEditLead }: KanbanProps) {
-  const { leads, updateLead, deleteLead, togglePublic } = useLeads();
+  const { leads, updateLead, deleteLead, togglePublic, setLeads } = useLeads();
   const { user } = useAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [lossReasonDialogOpen, setLossReasonDialogOpen] = useState(false);
@@ -158,21 +159,21 @@ export function Kanban({ onEditLead }: KanbanProps) {
     });
   }, [leads, filters]);
 
-  const handleDragStart = (e: React.DragEvent, leadId: string, status: LeadStatus) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, leadId: string, status: LeadStatus) => {
     e.dataTransfer.setData("text/plain", leadId);
     setDraggedStatus(status);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.classList.add('bg-[#1c2132]');
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.currentTarget.classList.remove('bg-[#1c2132]');
   };
 
-  const handleDrop = async (e: React.DragEvent, newStatus: LeadStatus) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, newStatus: LeadStatus) => {
     e.preventDefault();
     e.currentTarget.classList.remove('bg-[#1c2132]');
     const leadId = e.dataTransfer.getData("text/plain");
@@ -224,52 +225,29 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   const handleTogglePublic = async (leadId: string, newPublicState: boolean) => {
     try {
-      console.log(`handleTogglePublic - leadId: ${leadId}, novo estado desejado: ${newPublicState}, tipo: ${typeof newPublicState}`);
+      // Forçar o tipo booleano para evitar problemas com null ou undefined
+      const isPublic = newPublicState === true;
       
-      // Encontra o lead no estado local para debug
-      const leadBeforeUpdate = leads.find((l) => l.id === leadId);
-      
-      // O estado atual é crucial para entender o problema
-      const currentState = leadBeforeUpdate?.is_public === true;
-      
-      console.log(`Estado atual do lead antes da atualização:`, {
-        id: leadId,
-        is_public: currentState,
-        is_public_raw: leadBeforeUpdate?.is_public,
-        tipo: typeof leadBeforeUpdate?.is_public,
-        user_id: leadBeforeUpdate?.user_id
+      console.log(`Alterando visibilidade do lead ${leadId}:`, {
+        estado_atual: leads.find(l => l.id === leadId)?.is_public,
+        novo_estado: isPublic
       });
 
-      // Verificar se estamos realmente alternando o estado
-      if (currentState === newPublicState) {
-        console.warn(`Estado não vai mudar - atual: ${currentState}, desejado: ${newPublicState}`);
-      }
-
-      // Forçar o booleano explícito aqui também é importante
-      await togglePublic(leadId, newPublicState === true);
+      await togglePublic(leadId, isPublic);
       
-      // Verificar se o estado foi atualizado corretamente depois de um tempo
-      setTimeout(() => {
-        const leadAfterUpdate = leads.find((l) => l.id === leadId);
-        const newState = leadAfterUpdate?.is_public === true;
-        
-        console.log(`Estado do lead após atualização:`, {
-          id: leadId,
-          is_public: newState,
-          is_public_raw: leadAfterUpdate?.is_public,
-          tipo: typeof leadAfterUpdate?.is_public,
-          user_id: leadAfterUpdate?.user_id
-        });
-        
-        // Verificar se o estado realmente mudou como esperado
-        if (currentState === newState) {
-          console.error("❌ O estado não mudou como esperado!");
-        } else {
-          console.log("✅ O estado foi alterado com sucesso!");
-        }
-      }, 1000); // Aumentamos o tempo para garantir que fetchLeads tenha terminado
+      // Atualizar o estado local imediatamente para feedback visual
+      setLeads((prev: Lead[]) => prev.map((lead: Lead) => 
+        lead.id === leadId 
+          ? { ...lead, is_public: isPublic } 
+          : lead
+      ));
+
+      // Mostrar feedback ao usuário
+      toast.success(`Lead ${isPublic ? "público" : "privado"} atualizado com sucesso.`);
+      
     } catch (error) {
       console.error('Erro ao alterar visibilidade do lead:', error);
+      toast.error("Erro ao alterar visibilidade do lead. Por favor, tente novamente.");
     }
   };
 
@@ -303,7 +281,7 @@ export function Kanban({ onEditLead }: KanbanProps) {
   };
 
   // Função para renderizar o ícone de visibilidade do lead
-  const renderVisibilityIcon = (lead: any) => {
+  const renderVisibilityIcon = (lead: Lead) => {
     // Verificar quem pode editar este lead
     // Um lead público pode ser editado por qualquer usuário
     // Um lead privado só pode ser editado pelo seu proprietário

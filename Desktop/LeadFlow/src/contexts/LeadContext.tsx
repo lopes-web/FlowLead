@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast";
 
 interface LeadContextType {
   leads: Lead[];
+  setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
   addLead: (lead: Omit<Lead, "id">) => Promise<void>;
   updateLead: (id: string, lead: Partial<Lead>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
@@ -660,7 +661,7 @@ export function LeadProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead, togglePublic, assignRedesign, isOffline }}>
+    <LeadContext.Provider value={{ leads, setLeads, addLead, updateLead, deleteLead, togglePublic, assignRedesign, isOffline }}>
       {children}
     </LeadContext.Provider>
   );
