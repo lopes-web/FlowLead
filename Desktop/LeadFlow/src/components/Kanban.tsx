@@ -385,8 +385,10 @@ export function Kanban({ onEditLead }: KanbanProps) {
 
   // Adicionar função para abrir o modal de redesign
   const handleRedesignClick = (lead: { id: string; nome: string }) => {
+    console.log("Clique no botão de redesign", lead);
     setLeadForRedesign(lead);
     setRedesignModalOpen(true);
+    console.log("Estado após abertura:", { leadForRedesign: lead, modalOpen: true });
   };
 
   return (
