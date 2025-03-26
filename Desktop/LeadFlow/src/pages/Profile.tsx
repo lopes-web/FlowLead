@@ -272,7 +272,7 @@ export function Profile() {
               </div>
               <CardTitle className="text-xl">{user.email}</CardTitle>
               <CardDescription>
-                {user.user_metadata?.name || "Usuário LeadFlow"}
+                {user.user_metadata?.name || "Usuário FlowLead"}
               </CardDescription>
             </CardHeader>
             <CardContent>
