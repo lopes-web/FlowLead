@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { Lead, LeadStatus, LeadLossReason, LeadQualityTag } from "@/types/lead";
+import type { Lead, LeadQualityTag } from "@/types/lead";
 import { supabase } from "@/lib/supabase";
 import { useOffline } from "@/hooks/use-offline";
 import { offlineStorage } from "@/services/offline-storage";
@@ -19,13 +19,29 @@ interface LeadContextType {
   isOffline: boolean;
 }
 
+// Criando um tipo para o contexto de auth que corresponde à interface no AuthContext
+interface User {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, any>;
+}
+
+interface AuthContextType {
+  user: User | null;
+}
+
+// Criando um tipo para o contexto de notificações que corresponde à interface no NotificationContext
+interface NotificationContextType {
+  addNotification: (type: string, title: string, message: string, data?: any) => Promise<void>;
+}
+
 const LeadContext = createContext<LeadContextType | undefined>(undefined);
 
 export function LeadProvider({ children }: { children: ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const isOffline = useOffline();
-  const { user } = useAuth();
-  const { addNotification } = useNotifications();
+  const { user } = useAuth() as AuthContextType;
+  const { addNotification } = useNotifications() as NotificationContextType;
 
   useEffect(() => {
     if (!isOffline) {
