@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'LeadFlow CRM',
-        short_name: 'LeadFlow',
+        name: 'FlowLead CRM',
+        short_name: 'FlowLead',
         description: 'CRM para gerenciamento de leads e prospecção',
         theme_color: '#ffffff',
         icons: [
@@ -44,4 +44,17 @@ export default defineConfig({
   server: {
     port: 8080,
   },
+  build: {
+    // Força o Vite a não usar cache durante o build
+    cssCodeSplit: true,
+    sourcemap: true,
+    // Adiciona timestamp aos arquivos para evitar cache
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`
+      }
+    }
+  }
 });
