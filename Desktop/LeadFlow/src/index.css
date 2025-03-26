@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -30,10 +32,33 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: 'Figtree', sans-serif !important;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Figtree', sans-serif !important;
   }
+  html {
+    font-family: 'Figtree', sans-serif !important;
+  }
+}
+
+/* Estilos para o Toast */
+:root .react-hot-toast {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+:root .react-hot-toast-success {
+  background-color: hsl(142.1 76.2% 36.3%);
+  color: white;
+}
+
+:root .react-hot-toast-error {
+  background-color: hsl(0 62.8% 30.6%);
+  color: white;
 }
 
 @layer utilities {
