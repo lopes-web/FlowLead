@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "react-hot-toast";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -78,7 +78,7 @@ function App() {
           {/* Redireciona qualquer rota não encontrada para o login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-        <Toaster />
+        <Toaster position="top-right" />
       </NotificationProvider>
     </AuthProvider>
   );
