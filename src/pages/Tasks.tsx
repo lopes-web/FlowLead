@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { TaskDialog } from "@/components/TaskDialog";
 import { 
   PlusCircle, 
   LayoutDashboard, 
@@ -19,7 +20,7 @@ import {
 export function Tasks() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Função para obter as iniciais do email
   const getInitials = (email: string) => {
@@ -88,6 +89,15 @@ export function Tasks() {
                 </Button>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="default"
+                  onClick={() => setModalOpen(true)}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Nova Tarefa
+                </Button>
                 <NotificationDropdown />
                 <Button
                   variant="ghost"
@@ -114,6 +124,11 @@ export function Tasks() {
           </main>
         </div>
       </div>
+
+      <TaskDialog
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </TaskProvider>
   );
 } 
