@@ -9,7 +9,6 @@ import {
   FileSearch,
   AlertTriangle,
   CheckCircle2,
-  Calendar,
   User,
   Pencil,
   Trash2,
@@ -73,7 +72,7 @@ const prioridadeConfig: Record<TaskPriority, { label: string; color: string }> =
 };
 
 export function TaskCard({ task }: TaskCardProps) {
-  const { deleteTask, setSelectedTaskId, setModalOpen } = useTask();
+  const { deleteTask, setSelectedTaskId } = useTask();
   const { users } = useUser();
 
   console.log("RENDER TASK CARD:", {
@@ -86,7 +85,6 @@ export function TaskCard({ task }: TaskCardProps) {
 
   const handleEdit = () => {
     setSelectedTaskId(task.id);
-    setModalOpen(true);
   };
 
   const handleDelete = async () => {
