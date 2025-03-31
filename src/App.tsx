@@ -10,6 +10,7 @@ import { ProjectProvider } from "@/contexts/ProjectContext";
 import { TimeTrackingProvider } from "@/contexts/TimeTrackingContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { Profile } from "@/pages/Profile";
+import { Tasks } from "@/pages/Tasks";
 
 function App() {
   return (
@@ -66,6 +67,12 @@ function App() {
                   </TimeTrackingProvider>
                 </ProjectProvider>
               </LeadProvider>
+            </Layout>
+          } />
+
+          <Route path="/tarefas" element={
+            <Layout>
+              <Tasks />
             </Layout>
           } />
 

@@ -10,7 +10,8 @@ import {
   Timer,
   Zap,
   FolderKanban,
-  UserCircle
+  UserCircle,
+  CheckSquare
 } from "lucide-react";
 import TimeTracking from "./TimeTracking";
 import { useNavigate } from "react-router-dom";
@@ -79,6 +80,15 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
               >
                 <FolderKanban className="h-4 w-4" />
                 Projetos
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/tarefas")}
+                className="gap-2"
+                size="sm"
+              >
+                <CheckSquare className="h-4 w-4" />
+                Tarefas
               </Button>
               <Button
                 variant={view === "timetracking" ? "secondary" : "ghost"}
