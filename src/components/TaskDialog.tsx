@@ -183,7 +183,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-[#3b82f6]" />
+              <ClipboardList className="h-4 w-4 text-white" />
               <Label htmlFor="titulo" className="font-medium">Título*</Label>
             </div>
             <Input
@@ -198,7 +198,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <AlignLeft className="h-4 w-4 text-[#3b82f6]" />
+              <AlignLeft className="h-4 w-4 text-white" />
               <Label htmlFor="descricao" className="font-medium">Descrição</Label>
             </div>
             <Textarea
@@ -213,7 +213,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-[#3b82f6]" />
+                <Activity className="h-4 w-4 text-white" />
                 <Label htmlFor="status" className="font-medium">Status*</Label>
               </div>
               <Select
@@ -249,7 +249,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-[#3b82f6]" />
+                <GripVertical className="h-4 w-4 text-white" />
                 <Label htmlFor="prioridade" className="font-medium">Prioridade*</Label>
               </div>
               <Select
@@ -277,7 +277,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-[#3b82f6]" />
+              <Clock className="h-4 w-4 text-white" />
               <Label htmlFor="data_limite" className="font-medium">Data Limite</Label>
             </div>
             <Popover>
@@ -311,7 +311,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-[#3b82f6]" />
+              <User className="h-4 w-4 text-white" />
               <Label htmlFor="responsavel" className="font-medium">Responsável</Label>
             </div>
             <Input

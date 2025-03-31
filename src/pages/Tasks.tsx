@@ -14,8 +14,15 @@ import {
   Timer,
   Zap,
   FolderKanban,
-  CheckSquare
+  CheckSquare,
+  ListTodo,
+  Play,
+  FileSearch,
+  AlertTriangle,
+  CheckCircle2
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { TaskCard } from "@/components/TaskCard";
 
 export function Tasks() {
   const navigate = useNavigate();
@@ -89,15 +96,6 @@ export function Tasks() {
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="default"
-                  onClick={() => setModalOpen(true)}
-                  className="gap-2"
-                  size="sm"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  Nova Tarefa
-                </Button>
                 <NotificationDropdown />
                 <Button
                   variant="ghost"
@@ -120,7 +118,94 @@ export function Tasks() {
           </div>
 
           <main className="flex-1 overflow-hidden">
-            <TasksKanban />
+            <div className="flex flex-col h-full">
+              <div className="grid grid-cols-5 gap-4 p-4">
+                <div className="bg-[#1c2132] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <ListTodo className="h-5 w-5 text-[#F59E0B]" />
+                      <h2 className="text-lg font-semibold text-[#F59E0B]">Backlog</h2>
+                    </div>
+                    <Badge variant="outline" className="bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30">
+                      {backlogTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {backlogTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-[#1c2132] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Play className="h-5 w-5 text-[#8B5CF6]" />
+                      <h2 className="text-lg font-semibold text-[#8B5CF6]">Em Andamento</h2>
+                    </div>
+                    <Badge variant="outline" className="bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30">
+                      {emAndamentoTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {emAndamentoTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-[#1c2132] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <FileSearch className="h-5 w-5 text-[#EC4899]" />
+                      <h2 className="text-lg font-semibold text-[#EC4899]">Revisão</h2>
+                    </div>
+                    <Badge variant="outline" className="bg-[#EC4899]/10 text-[#EC4899] border-[#EC4899]/30">
+                      {revisaoTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {revisaoTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-[#1c2132] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-[#EF4444]" />
+                      <h2 className="text-lg font-semibold text-[#EF4444]">Bloqueado</h2>
+                    </div>
+                    <Badge variant="outline" className="bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30">
+                      {bloqueadoTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {bloqueadoTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-[#1c2132] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-[#10B981]" />
+                      <h2 className="text-lg font-semibold text-[#10B981]">Concluído</h2>
+                    </div>
+                    <Badge variant="outline" className="bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30">
+                      {concluidoTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {concluidoTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </main>
         </div>
       </div>
