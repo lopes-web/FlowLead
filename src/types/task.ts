@@ -18,9 +18,9 @@ export interface Task {
   status: TaskStatus;
   prioridade: TaskPriority;
   data_limite: string | null;
-  user_id: string | null;
-  projeto_id: string | null;
   responsavel: string | null;
+  projeto_id: string | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
 } 

@@ -7,31 +7,23 @@ import { useToast } from "@/components/ui/use-toast";
 interface TaskContextProps {
   tasks: Task[];
   loading: boolean;
-  createTask: (task: Omit<Task, "id" | "created_at" | "updated_at">) => Promise<Task>;
-  updateTask: (id: string, data: Partial<Task>) => Promise<void>;
+  createTask: (task: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>;
+  updateTask: (id: string, task: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  selectedTaskId: string | undefined;
+  setSelectedTaskId: (id: string | undefined) => void;
+  modalOpen: boolean;
+  setModalOpen: (open: boolean) => void;
 }
 
-export const TaskContext = createContext<TaskContextProps>({
-  tasks: [],
-  loading: false,
-  createTask: async () => {
-    throw new Error("createTask não implementado");
-  },
-  updateTask: async () => {
-    throw new Error("updateTask não implementado");
-  },
-  deleteTask: async () => {
-    throw new Error("deleteTask não implementado");
-  },
-});
+const TaskContext = createContext<TaskContextProps | undefined>(undefined);
 
-export const useTask = () => useContext(TaskContext);
-
-export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+export function TaskProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +39,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data, error } = await supabase
           .from("tasks")
           .select("*")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -104,21 +97,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [user, toast]);
 
-  const createTask = async (newTask: Omit<Task, "id" | "created_at" | "updated_at">) => {
+  const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
-      const now = new Date().toISOString();
-      const taskData = {
-        ...newTask,
-        user_id: user.id,
-        created_at: now,
-        updated_at: now,
-      };
-
       const { data, error } = await supabase
         .from("tasks")
-        .insert(taskData)
+        .insert([{ ...taskData, user_id: user.id }])
         .select()
         .single();
 
@@ -137,24 +122,23 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "A tarefa foi criada com sucesso.",
       });
 
-      return data as Task;
+      setTasks((prev) => [data, ...prev]);
     } catch (error) {
       console.error("Erro ao criar tarefa:", error);
       throw error;
     }
   };
 
-  const updateTask = async (id: string, data: Partial<Task>) => {
+  const updateTask = async (id: string, taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("tasks")
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
+        .update({ ...taskData, user_id: user.id })
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Erro ao atualizar tarefa:", error);
@@ -170,6 +154,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Tarefa atualizada",
         description: "A tarefa foi atualizada com sucesso.",
       });
+
+      setTasks((prev) => prev.map((task) => (task.id === id ? data : task)));
     } catch (error) {
       console.error("Erro ao atualizar tarefa:", error);
       throw error;
@@ -180,7 +166,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
-      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id);
 
       if (error) {
         console.error("Erro ao excluir tarefa:", error);
@@ -196,6 +185,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Tarefa excluída",
         description: "A tarefa foi excluída com sucesso.",
       });
+
+      setTasks((prev) => prev.filter((task) => task.id !== id));
     } catch (error) {
       console.error("Erro ao excluir tarefa:", error);
       throw error;
@@ -210,9 +201,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createTask,
         updateTask,
         deleteTask,
+        selectedTaskId,
+        setSelectedTaskId,
+        modalOpen,
+        setModalOpen,
       }}
     >
       {children}
     </TaskContext.Provider>
   );
-}; 
+}
+
+export function useTask() {
+  const context = useContext(TaskContext);
+  if (!context) {
+    throw new Error("useTask deve ser usado dentro de um TaskProvider");
+  }
+  return context;
+} 
