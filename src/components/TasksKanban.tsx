@@ -267,9 +267,7 @@ export function TasksKanban() {
                     <Card
                       key={task.id}
                       className={`group cursor-move animate-fadeIn bg-[#1c2132] border-[#2e3446] 
-                        hover:border-[#9b87f5] hover:shadow-md transition-all duration-200
-                        ${isMyTask ? 'border-l-4 border-l-[#9b87f5]' : ''}
-                      `}
+                        hover:border-[#3b82f6] hover:shadow-md transition-all duration-200`}
                       draggable
                       onDragStart={(e) => {
                         const target = e.target as HTMLElement;
@@ -281,7 +279,7 @@ export function TasksKanban() {
                         handleDragStart(e, task.id, status as TaskStatus);
                       }}
                     >
-                      <CardContent className="p-4">
+                      <CardContent className="p-3">
                         <div className="flex flex-col gap-3">
                           <div className="flex items-center gap-2">
                             <GripHorizontal className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
