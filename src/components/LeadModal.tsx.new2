@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState, useRef } from "react";
 import { useLeads } from "@/contexts/LeadContext";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/contexts/AuthContext";
 import { Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle } from "lucide-react";
 import { cn, formStorage } from "@/lib/utils";
 import { toast } from "sonner";
@@ -48,6 +50,8 @@ interface LeadModalProps {
 
 export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
   const { leads, addLead, updateLead } = useLeads();
+  
+  const { user } = useAuth();
   const whatsappRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<LeadFormData>(() => {
@@ -544,5 +548,4 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     </Dialog>
   );
 } 
-
 

@@ -52,11 +52,45 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           title: notification.title,
           message: notification.message,
           createdAt: notification.created_at,
-          read: notification.read_by?.includes(user?.id || "") || false,
+          read: notification.read_by?.some((id: string) => String(id) === String(user?.id)) || false,
           data: notification.data
         }));
 
-        setNotifications(formattedNotifications);
+        // Filtrar notificações para mostrar apenas as destinadas ao usuário atual
+        // ou notificações gerais sem usuário específico
+        const filteredNotifications = formattedNotifications.filter(notification => {
+          // Se for notificação de tarefa atribuída, verificar se o usuário atual é o destinatário
+          if (notification.type === "task_assigned") {
+            const assignedToId = notification.data?.assignedTo;
+            const assignedToEmail = notification.data?.assignedToEmail;
+            const assignedToName = notification.data?.assignedToName;
+            const currentUserId = user?.id;
+            const currentUserEmail = user?.email;
+            const currentUserName = user?.user_metadata?.name;
+            
+            // Comparações para verificar se a notificação é para o usuário atual
+            const matchId = assignedToId && currentUserId && 
+                           String(assignedToId).trim() === String(currentUserId).trim();
+            const matchEmail = assignedToEmail && currentUserEmail && 
+                              String(assignedToEmail).toLowerCase() === String(currentUserEmail).toLowerCase();
+            const matchName = assignedToName && currentUserName && 
+                             String(assignedToName).toLowerCase() === String(currentUserName).toLowerCase();
+            
+            // Log detalhado para diagnóstico
+            console.log(`Filtrando notificação ${notification.id} (tipo: ${notification.type}):`, {
+              assignedToId, currentUserId, matchId,
+              assignedToEmail, currentUserEmail, matchEmail,
+              assignedToName, currentUserName, matchName
+            });
+            
+            return matchId || matchEmail || matchName;
+          }
+          
+          // Outras notificações são mostradas para todos por enquanto
+          return true;
+        });
+
+        setNotifications(filteredNotifications);
       }
     } catch (error) {
       console.error("Erro ao buscar notificações:", error);
@@ -83,7 +117,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           title,
           message,
           created_at: new Date().toISOString(),
-          created_by: user.id,
+          created_by: String(user.id),
           read_by: [],
           data
         }]);
@@ -132,8 +166,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
       // Adicionar o usuário atual à lista de leitores se ainda não estiver lá
       const readBy = data.read_by || [];
-      if (!readBy.includes(user.id)) {
-        readBy.push(user.id);
+      if (!readBy.some((id: string) => String(id) === String(user.id))) {
+        readBy.push(String(user.id));
       }
 
       // Atualizar a notificação no Supabase
@@ -181,8 +215,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
           // Adicionar o usuário atual à lista de leitores
           const readBy = data.read_by || [];
-          if (!readBy.includes(user.id)) {
-            readBy.push(user.id);
+          if (!readBy.some((id: string) => String(id) === String(user.id))) {
+            readBy.push(String(user.id));
           }
 
           // Atualizar a notificação no Supabase
@@ -221,8 +255,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
       // Filtrar notificações que têm o usuário atual como criador ou leitor
       const notificationsToDelete = userNotifications.filter(notification => 
-        notification.created_by === user.id || 
-        (notification.read_by && notification.read_by.includes(user.id))
+        String(notification.created_by) === String(user.id) || 
+        (notification.read_by && notification.read_by.some((id: string) => String(id) === String(user.id)))
       );
 
       if (notificationsToDelete.length > 0) {

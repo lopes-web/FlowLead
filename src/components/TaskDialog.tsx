@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTask } from "@/contexts/TaskContext";
+import { useUser } from "@/contexts/UserContext";
 import { TaskPriority, TaskStatus } from "@/types/task";
 import { 
   CalendarIcon, 
@@ -100,6 +101,7 @@ const prioridadeConfig: Record<TaskPriority, { label: string; color: string }> =
 
 export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
   const { tasks, createTask, updateTask } = useTask();
+  const { users, loading: loadingUsers } = useUser();
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [status, setStatus] = useState<TaskStatus>("backlog");
@@ -113,6 +115,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
     if (taskId && open) {
       const task = tasks.find((task) => task.id === taskId);
       if (task) {
+        console.log("Carregando tarefa para edição:", task);
         setTitulo(task.titulo);
         setDescricao(task.descricao || "");
         setStatus(task.status);
@@ -149,9 +152,14 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
         status,
         prioridade,
         data_limite: dataLimite ? dataLimite.toISOString() : null,
-        responsavel: responsavel || null,
+        responsavel: responsavel === "none" ? null : String(responsavel),
         projeto_id: projetoId,
       };
+
+      console.log('Saving task with data:', taskData); // Debug log
+      console.log('Responsável exato sendo salvo:', responsavel);
+      console.log('Tipo do responsável:', typeof responsavel);
+      console.log('Pessoas que deveriam ver esta tarefa:', responsavel === "none" ? "ninguém" : responsavel);
 
       if (taskId) {
         await updateTask(taskId, taskData);
@@ -183,7 +191,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-white" />
+              <ClipboardList className="h-4 w-4 text-gray-400" />
               <Label htmlFor="titulo" className="font-medium">Título*</Label>
             </div>
             <Input
@@ -198,7 +206,7 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <AlignLeft className="h-4 w-4 text-white" />
+              <AlignLeft className="h-4 w-4 text-gray-400" />
               <Label htmlFor="descricao" className="font-medium">Descrição</Label>
             </div>
             <Textarea
@@ -213,131 +221,156 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-white" />
+                <Activity className="h-4 w-4 text-gray-400" />
                 <Label htmlFor="status" className="font-medium">Status*</Label>
               </div>
-              <Select
-                value={status}
-                onValueChange={(value) => setStatus(value as TaskStatus)}
-              >
-                <SelectTrigger
-                  id="status"
-                  className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]"
-                >
+              <Select value={status} onValueChange={(value: TaskStatus) => setStatus(value)}>
+                <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]">
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#222839] border-[#2e3446]">
                   {Object.entries(statusConfig).map(([value, config]) => (
-                    <SelectItem key={value} value={value} className="flex items-center">
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className="text-white focus:bg-[#2e3446] focus:text-white"
+                    >
                       <div className="flex items-center gap-2">
-                        <div className={`p-1 rounded ${config.color}`}>
+                        <div className={cn("p-1 rounded", config.color)}>
                           {config.icon}
                         </div>
-                        <span>{config.label}</span>
+                        {config.label}
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Badge className={`w-fit mt-1 ${statusConfig[status].color}`}>
-                <div className="flex items-center gap-1">
-                  {statusConfig[status].icon}
-                  <span>{statusConfig[status].label}</span>
-                </div>
-              </Badge>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-white" />
+                <GripVertical className="h-4 w-4 text-gray-400" />
                 <Label htmlFor="prioridade" className="font-medium">Prioridade*</Label>
               </div>
-              <Select
-                value={prioridade}
-                onValueChange={(value) => setPrioridade(value as TaskPriority)}
-              >
-                <SelectTrigger
-                  id="prioridade"
-                  className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]"
-                >
+              <Select value={prioridade} onValueChange={(value: TaskPriority) => setPrioridade(value)}>
+                <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]">
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#222839] border-[#2e3446]">
-                  <SelectItem value="baixa">Baixa</SelectItem>
-                  <SelectItem value="media">Média</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
-                  <SelectItem value="urgente">Urgente</SelectItem>
+                  {Object.entries(prioridadeConfig).map(([value, config]) => (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className="text-white focus:bg-[#2e3446] focus:text-white"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Badge className={cn("rounded", config.color)}>
+                          {config.label}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <Badge className={`w-fit mt-1 ${prioridadeConfig[prioridade].color}`}>
-                {prioridadeConfig[prioridade].label}
-              </Badge>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-white" />
-              <Label htmlFor="data_limite" className="font-medium">Data Limite</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <Label htmlFor="data_limite" className="font-medium">Data Limite</Label>
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-[#222839] border-[#2e3446] focus:border-[#3b82f6] hover:bg-[#2e3446]",
+                      !dataLimite && "text-gray-400"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dataLimite ? (
+                      format(dataLimite, "PPP", { locale: ptBR })
+                    ) : (
+                      <span>Selecione uma data</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-[#222839] border-[#2e3446]">
+                  <Calendar
+                    mode="single"
+                    selected={dataLimite}
+                    onSelect={setDataLimite}
+                    initialFocus
+                    locale={ptBR}
+                    className="bg-[#222839]"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal bg-[#222839] border-[#2e3446] hover:bg-[#2e3446]",
-                    !dataLimite && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dataLimite ? (
-                    format(dataLimite, "PPP", { locale: ptBR })
-                  ) : (
-                    <span>Selecionar data</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-[#222839] border-[#2e3446]">
-                <Calendar
-                  mode="single"
-                  selected={dataLimite}
-                  onSelect={setDataLimite}
-                  initialFocus
-                  className="bg-[#222839]"
-                />
-              </PopoverContent>
-            </Popover>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-gray-400" />
+                <Label htmlFor="responsavel" className="font-medium">Responsável</Label>
+              </div>
+              <Select 
+                value={responsavel || undefined} 
+                onValueChange={(value) => {
+                  console.log("Responsável selecionado:", value);
+                  setResponsavel(value);
+                }}
+              >
+                <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]">
+                  <SelectValue placeholder="Selecione o responsável" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#222839] border-[#2e3446]">
+                  <SelectItem 
+                    value="none"
+                    className="text-white focus:bg-[#2e3446] focus:text-white"
+                  >
+                    Sem responsável
+                  </SelectItem>
+                  {users.map((user) => {
+                    const displayName = user.raw_user_meta_data?.name || user.email;
+                    console.log("User option:", { 
+                      id: user.id, 
+                      type: typeof user.id,
+                      display: displayName, 
+                      meta: user.raw_user_meta_data 
+                    });
+                    return (
+                      <SelectItem
+                        key={user.id}
+                        value={String(user.id)}
+                        className="text-white focus:bg-[#2e3446] focus:text-white"
+                      >
+                        {displayName}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-white" />
-              <Label htmlFor="responsavel" className="font-medium">Responsável</Label>
-            </div>
-            <Input
-              id="responsavel"
-              value={responsavel}
-              onChange={(e) => setResponsavel(e.target.value)}
-              className="bg-[#222839] border-[#2e3446] focus:border-[#3b82f6]"
-              placeholder="Nome do responsável pela tarefa"
-            />
-          </div>
-
-          <DialogFooter className="pt-4 flex gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="bg-[#222839] border-[#2e3446] hover:bg-[#2e3446]"
+              className="bg-transparent border-[#2e3446] hover:bg-[#2e3446] text-white"
             >
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading}
-              className="bg-[#3b82f6] hover:bg-[#2563eb]"
+              className="bg-[#9b87f5] hover:bg-[#8B5CF6] text-white"
             >
-              {loading ? "Salvando..." : taskId ? "Atualizar" : "Criar"}
+              {loading ? "Salvando..." : taskId ? "Salvar Alterações" : "Criar Tarefa"}
             </Button>
           </DialogFooter>
         </form>

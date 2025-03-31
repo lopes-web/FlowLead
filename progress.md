@@ -119,6 +119,8 @@ FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Exclusão de leads
   - Criação de projetos
   - Atualização de projetos
+  - Atribuição de tarefas
+  - Alteração de status de tarefas
 - Interface de notificações com contador de não lidas
 - Marcação automática como lidas ao visualizar
 - Opção para limpar todas as notificações
@@ -126,6 +128,7 @@ FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Tooltips para visualizar mensagens completas
 - Formatação de data relativa (ex: "há 5 minutos")
 - Ícones intuitivos para cada tipo de notificação
+- Notificações clicáveis para tarefas atribuídas
 
 ### Gerenciamento de Usuários
 - Página de perfil do usuário com:
@@ -137,6 +140,29 @@ FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - Controle de acesso a leads e projetos
 - Opção de leads públicos ou privados
 - Indicadores visuais de propriedade de leads
+
+### Sistema de Tarefas
+- Visualização de tarefas em colunas por status:
+  - Backlog
+  - Em Andamento
+  - Revisão
+  - Bloqueado
+  - Concluído
+- Atribuição de responsáveis para tarefas
+- Drag and drop para mover tarefas entre status
+- Prioridades configuráveis:
+  - Baixa
+  - Média
+  - Alta
+  - Urgente
+- Data limite opcional
+- Descrição detalhada com formatação
+- Vinculação com projetos
+- Políticas de segurança para:
+  - Visualização de tarefas próprias
+  - Visualização de tarefas atribuídas
+  - Edição de tarefas próprias
+  - Edição de tarefas atribuídas
 
 ### Melhorias Recentes
 - Unificação do sistema de navegação
@@ -157,6 +183,23 @@ FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a g
   - Login e registro com tema escuro
   - Melhor contraste e legibilidade
   - Cores consistentes com a identidade visual
+- Implementação do sistema de tarefas
+  - Interface Kanban para visualização
+  - Sistema de atribuição de responsáveis
+  - Prioridades e datas limite
+  - Notificações de atribuição
+- Aprimoramento das políticas de segurança
+  - Permissões baseadas em propriedade
+  - Permissões baseadas em atribuição
+  - Controle granular de acesso
+- Melhorias no sistema de notificações
+  - Notificações clicáveis para tarefas
+  - Melhor formatação de mensagens
+  - Indicadores visuais aprimorados
+- Correções e otimizações
+  - Ajustes no sistema de permissões
+  - Melhorias na interface do usuário
+  - Correção de bugs de exibição
 
 ## Estrutura do Banco de Dados
 
@@ -232,6 +275,8 @@ FlowLead é um sistema de gestão de leads desenvolvido para ajudar empresas a g
 - [x] Implementar sistema de notificações
 - [x] Adicionar edição de perfil de usuário
 - [x] Melhorar design dos gráficos do dashboard
+- [x] Implementar sistema de tarefas
+- [x] Adicionar atribuição de responsáveis
 - [ ] Adicionar histórico de alterações
 - [ ] Melhorar sistema de tags
 - [ ] Implementar busca avançada

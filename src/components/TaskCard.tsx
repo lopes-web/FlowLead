@@ -12,9 +12,14 @@ import {
   Calendar,
   User,
   Pencil,
-  Trash2
+  Trash2,
+  Clock,
+  CalendarDays,
+  AlignLeft
 } from "lucide-react";
 import { useTask } from "@/contexts/TaskContext";
+import { useUser } from "@/contexts/UserContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TaskCardProps {
   task: Task;
@@ -69,6 +74,15 @@ const prioridadeConfig: Record<TaskPriority, { label: string; color: string }> =
 
 export function TaskCard({ task }: TaskCardProps) {
   const { deleteTask, setSelectedTaskId, setModalOpen } = useTask();
+  const { users } = useUser();
+
+  console.log("RENDER TASK CARD:", {
+    id: task.id,
+    titulo: task.titulo,
+    descricao: task.descricao,
+    responsavel: task.responsavel,
+    tipo_responsavel: typeof task.responsavel
+  });
 
   const handleEdit = () => {
     setSelectedTaskId(task.id);
@@ -81,10 +95,51 @@ export function TaskCard({ task }: TaskCardProps) {
     }
   };
 
+  // Calcula o tempo restante até a data limite
+  const getTimeRemaining = () => {
+    if (!task.data_limite) return null;
+    
+    const now = new Date();
+    const deadline = new Date(task.data_limite);
+    const diffTime = deadline.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return "Atrasado";
+    if (diffDays === 0) return "Vence hoje";
+    if (diffDays === 1) return "Vence amanhã";
+    return `${diffDays} dias restantes`;
+  };
+
+  const timeRemaining = getTimeRemaining();
+
+  // Encontrar o nome do responsável com base no ID
+  const getResponsibleUserName = () => {
+    if (!task.responsavel) return "Sem responsável";
+    
+    const responsibleUser = users.find(u => u.id === task.responsavel);
+    if (responsibleUser) {
+      return responsibleUser.raw_user_meta_data?.name || responsibleUser.email;
+    }
+    
+    return `ID: ${task.responsavel}`;
+  };
+
   return (
     <div className="bg-[#222839] rounded-lg p-3 space-y-3 border border-[#2e3446] hover:border-[#3b82f6] transition-colors">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-medium text-sm text-white line-clamp-2">{task.titulo}</h3>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h3 className="font-medium text-sm text-white line-clamp-2 cursor-default">
+                {task.titulo}
+              </h3>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+              {task.titulo}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -105,28 +160,63 @@ export function TaskCard({ task }: TaskCardProps) {
         </div>
       </div>
 
+      {/* RESPONSÁVEL - AGORA MOSTRA O NOME BASEADO NO ID */}
+      <div className="flex items-center gap-2 text-xs">
+        <User className="h-3 w-3 text-[#9b87f5]" />
+        <span className="font-semibold text-[#9b87f5]">
+          {getResponsibleUserName()}
+        </span>
+      </div>
+
+      {/* DESCRIÇÃO */}
       {task.descricao && (
-        <p className="text-xs text-gray-400 line-clamp-2">{task.descricao}</p>
+        <div className="flex items-start gap-2 text-xs text-gray-400">
+          <AlignLeft className="h-3 w-3 shrink-0 mt-0.5" />
+          <p className="line-clamp-2 text-gray-300">
+            {task.descricao}
+          </p>
+        </div>
       )}
 
       <div className="flex flex-wrap gap-2">
+        <Badge className={`text-xs ${statusConfig[task.status].color}`}>
+          <div className="flex items-center gap-1">
+            {statusConfig[task.status].icon}
+            <span>{statusConfig[task.status].label}</span>
+          </div>
+        </Badge>
+
         <Badge className={`text-xs ${prioridadeConfig[task.prioridade].color}`}>
           {prioridadeConfig[task.prioridade].label}
         </Badge>
+      </div>
 
+      <div className="flex flex-wrap gap-2 pt-1 border-t border-[#2e3446]">
         {task.data_limite && (
-          <Badge variant="outline" className="text-xs flex items-center gap-1 bg-[#2e3446]/50">
-            <Calendar className="h-3 w-3" />
-            {format(new Date(task.data_limite), "dd/MM/yyyy", { locale: ptBR })}
-          </Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs flex items-center gap-1 bg-[#2e3446]/50 ${
+                    timeRemaining === "Atrasado" ? "text-red-400" : ""
+                  }`}
+                >
+                  <CalendarDays className="h-3 w-3" />
+                  {format(new Date(task.data_limite), "dd/MM/yyyy", { locale: ptBR })}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-[#2e3446] text-white border-[#1c2132]">
+                {timeRemaining}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
 
-        {task.responsavel && (
-          <Badge variant="outline" className="text-xs flex items-center gap-1 bg-[#2e3446]/50">
-            <User className="h-3 w-3" />
-            {task.responsavel}
-          </Badge>
-        )}
+        <Badge variant="outline" className="text-xs flex items-center gap-1 bg-[#2e3446]/50">
+          <Clock className="h-3 w-3" />
+          {format(new Date(task.created_at), "dd/MM/yyyy", { locale: ptBR })}
+        </Badge>
       </div>
     </div>
   );

@@ -4,7 +4,8 @@ export type NotificationType =
   | "lead_deleted" 
   | "lead_status_changed"
   | "project_created"
-  | "project_updated";
+  | "project_updated"
+  | "task_assigned";
 
 export interface Notification {
   id: string;
@@ -21,5 +22,9 @@ export interface Notification {
     userName?: string;
     oldStatus?: string;
     newStatus?: string;
+    taskId?: string;
+    taskTitle?: string;
+    assignedBy?: string;
+    assignedTo?: string;
   };
 } 
