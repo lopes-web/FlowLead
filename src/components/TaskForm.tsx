@@ -47,29 +47,37 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
   const { users } = useUser();
   const task = tasks.find((t) => t.id === taskId);
 
-  const form = useForm<TaskFormData>({
-    resolver: zodResolver(taskFormSchema),
-    defaultValues: {
+  const getDefaultValues = () => {
+    if (task) {
+      return {
+        titulo: task.titulo || "",
+        descricao: task.descricao || "",
+        status: task.status || "backlog",
+        prioridade: task.prioridade || "media",
+        responsavel: task.responsavel || "",
+        data_limite: task.data_limite 
+          ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm") 
+          : "",
+      };
+    }
+    
+    return {
       titulo: "",
       descricao: "",
-      status: "backlog" as TaskStatus,
-      prioridade: "media" as TaskPriority,
+      status: "backlog" as const,
+      prioridade: "media" as const,
       responsavel: "",
       data_limite: "",
-    },
+    };
+  };
+
+  const form = useForm<TaskFormData>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: getDefaultValues(),
   });
 
   useEffect(() => {
-    if (task) {
-      form.reset({
-        titulo: task.titulo,
-        descricao: task.descricao || "",
-        status: task.status,
-        prioridade: task.prioridade,
-        responsavel: task.responsavel || "",
-        data_limite: task.data_limite ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm") : "",
-      });
-    }
+    form.reset(getDefaultValues());
   }, [task, form]);
 
   const onSubmit = async (data: TaskFormData) => {
@@ -127,7 +135,10 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || "backlog"}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o status" />
@@ -152,7 +163,10 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prioridade</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || "media"}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a prioridade" />
@@ -178,7 +192,10 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Responsável</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || ""}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o responsável" />
