@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -26,6 +26,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Define status e prioridade como constantes para evitar problemas
+const STATUS_OPTIONS = [
+  { value: "backlog", label: "Backlog" },
+  { value: "em_andamento", label: "Em Andamento" },
+  { value: "revisao", label: "Revisão" },
+  { value: "bloqueado", label: "Bloqueado" },
+  { value: "concluido", label: "Concluído" }
+];
+
+const PRIORITY_OPTIONS = [
+  { value: "baixa", label: "Baixa" },
+  { value: "media", label: "Média" },
+  { value: "alta", label: "Alta" },
+  { value: "urgente", label: "Urgente" }
+];
+
 const taskFormSchema = z.object({
   titulo: z.string().min(1, "O título é obrigatório"),
   descricao: z.string().optional(),
@@ -47,37 +63,35 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
   const { users } = useUser();
   const task = tasks.find((t) => t.id === taskId);
 
-  const getDefaultValues = () => {
-    if (task) {
-      return {
-        titulo: task.titulo || "",
-        descricao: task.descricao || "",
-        status: task.status || "backlog",
-        prioridade: task.prioridade || "media",
-        responsavel: task.responsavel || "",
-        data_limite: task.data_limite 
-          ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm") 
-          : "",
-      };
-    }
-    
-    return {
-      titulo: "",
-      descricao: "",
-      status: "backlog" as const,
-      prioridade: "media" as const,
-      responsavel: "",
-      data_limite: "",
-    };
+  // Garantir valores padrão seguros
+  const defaultValues: TaskFormData = {
+    titulo: task?.titulo || "",
+    descricao: task?.descricao || "",
+    status: task?.status || "backlog",
+    prioridade: task?.prioridade || "media",
+    responsavel: task?.responsavel || "",
+    data_limite: task?.data_limite
+      ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm")
+      : "",
   };
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: getDefaultValues(),
+    defaultValues,
   });
 
+  // Reset do formulário quando a task mudar
   useEffect(() => {
-    form.reset(getDefaultValues());
+    form.reset({
+      titulo: task?.titulo || "",
+      descricao: task?.descricao || "",
+      status: task?.status || "backlog",
+      prioridade: task?.prioridade || "media",
+      responsavel: task?.responsavel || "",
+      data_limite: task?.data_limite
+        ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm")
+        : "",
+    });
   }, [task, form]);
 
   const onSubmit = async (data: TaskFormData) => {
@@ -129,15 +143,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          {/* Status usando Controller diretamente para maior controle */}
+          <Controller
             control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select 
+                <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value || "backlog"}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -145,11 +160,11 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="backlog">Backlog</SelectItem>
-                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                    <SelectItem value="revisao">Revisão</SelectItem>
-                    <SelectItem value="bloqueado">Bloqueado</SelectItem>
-                    <SelectItem value="concluido">Concluído</SelectItem>
+                    {STATUS_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -157,15 +172,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             )}
           />
 
-          <FormField
+          {/* Prioridade usando Controller diretamente para maior controle */}
+          <Controller
             control={form.control}
             name="prioridade"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prioridade</FormLabel>
-                <Select 
+                <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value || "media"}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -173,10 +189,11 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="baixa">Baixa</SelectItem>
-                    <SelectItem value="media">Média</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="urgente">Urgente</SelectItem>
+                    {PRIORITY_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -186,15 +203,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          {/* Responsável */}
+          <Controller
             control={form.control}
             name="responsavel"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Responsável</FormLabel>
-                <Select 
+                <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value || ""}
+                  value={field.value || ""}
                 >
                   <FormControl>
                     <SelectTrigger>

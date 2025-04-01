@@ -107,11 +107,18 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
   const { tasks, addChecklistItem, toggleChecklistItem, deleteChecklistItem } = useTask();
   const task = tasks.find((t) => t.id === taskId);
 
+  const handleErrorReset = () => {
+    console.log("Resetando após erro no formulário");
+    // Se um erro ocorrer, fechar o modal é uma boa estratégia de recuperação
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[600px] p-0 bg-[#1c2132] border-[#2e3446] text-white">
         <div className="p-6 space-y-6">
           <ErrorBoundary
+            onReset={handleErrorReset}
             fallback={
               <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-md text-red-300">
                 <h3 className="text-lg font-medium text-red-300">Erro ao carregar formulário</h3>
