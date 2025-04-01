@@ -33,7 +33,8 @@ import {
   FileSearch,
   AlertTriangle,
   CheckCircle2,
-  GripVertical
+  GripVertical,
+  XIcon
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -104,19 +105,109 @@ const prioridadeConfig: Record<TaskPriority, { label: string; color: string }> =
 };
 
 export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
-  const { tasks, addChecklistItem, toggleChecklistItem, deleteChecklistItem } = useTask();
+  const { tasks, createTask, updateTask, addChecklistItem, toggleChecklistItem, deleteChecklistItem } = useTask();
+  const { users } = useUser();
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [status, setStatus] = useState<TaskStatus>("backlog");
+  const [prioridade, setPrioridade] = useState<TaskPriority>("media");
+  const [dataLimite, setDataLimite] = useState<Date | undefined>(undefined);
+  const [responsavel, setResponsavel] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  
   const task = tasks.find((t) => t.id === taskId);
 
   const handleErrorReset = () => {
     console.log("Resetando após erro no formulário");
-    // Se um erro ocorrer, fechar o modal é uma boa estratégia de recuperação
     onOpenChange(false);
+  };
+
+  useEffect(() => {
+    if (taskId && open) {
+      const task = tasks.find((task) => task.id === taskId);
+      if (task) {
+        setTitulo(task.titulo);
+        setDescricao(task.descricao || "");
+        setStatus(task.status);
+        setPrioridade(task.prioridade);
+        setDataLimite(
+          task.data_limite ? new Date(task.data_limite) : undefined
+        );
+        setResponsavel(task.responsavel || "");
+      }
+    } else {
+      resetForm();
+    }
+    setFormSubmitted(false);
+  }, [taskId, open, tasks]);
+
+  const resetForm = () => {
+    setTitulo("");
+    setDescricao("");
+    setStatus("backlog");
+    setPrioridade("media");
+    setDataLimite(undefined);
+    setResponsavel("");
+  };
+
+  const handleFormSuccess = () => {
+    setFormSubmitted(true);
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      
+      const data = {
+        titulo,
+        descricao,
+        status,
+        prioridade,
+        data_limite: dataLimite ? dataLimite.toISOString() : null,
+        responsavel: responsavel || null,
+      };
+      
+      if (taskId) {
+        await updateTask(taskId, data);
+      } else {
+        await createTask(data);
+      }
+      
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Erro ao salvar tarefa:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[600px] p-0 bg-[#1c2132] border-[#2e3446] text-white">
-        <div className="p-6 space-y-6">
+        <DialogHeader className="px-6 pt-6 pb-2 flex flex-row items-center justify-between">
+          <DialogTitle className="text-xl font-medium">
+            {taskId ? "Editar Tarefa" : "Nova Tarefa"}
+          </DialogTitle>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => onOpenChange(false)}
+            className="h-8 w-8 rounded-full text-gray-400 hover:text-white hover:bg-[#2e3446]"
+          >
+            <XIcon className="h-4 w-4" />
+          </Button>
+        </DialogHeader>
+        
+        <div className="px-6 pb-6 space-y-5">
+          <DialogDescription className="text-gray-400 text-sm">
+            {taskId ? "Preencha os detalhes abaixo para editar a tarefa." : "Preencha os detalhes abaixo para criar uma nova tarefa."}
+          </DialogDescription>
+          
           <ErrorBoundary
             onReset={handleErrorReset}
             fallback={
@@ -134,12 +225,13 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
               </div>
             }
           >
-            <TaskForm taskId={taskId} onSuccess={() => onOpenChange(false)} />
+            <TaskForm taskId={taskId} onSuccess={handleFormSuccess} />
           </ErrorBoundary>
           
           {taskId && (
             <>
               <Separator className="bg-[#2e3446]" />
+              
               <TaskChecklist
                 items={task?.checklist_items || []}
                 onAddItem={(content) => addChecklistItem(taskId, content)}
@@ -148,6 +240,24 @@ export function TaskDialog({ open, onOpenChange, taskId }: TaskDialogProps) {
               />
             </>
           )}
+          
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              className="border-[#2e3446] text-gray-300 hover:bg-[#2e3446] hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-[#a08af7] hover:bg-[#8a76e4] text-white"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : (taskId ? "Salvar Alterações" : "Criar Tarefa")}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

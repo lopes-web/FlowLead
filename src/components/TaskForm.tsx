@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -19,6 +19,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SimpleSelect } from "@/components/ui/simple-select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { 
+  AlertCircle, 
+  AlignLeft, 
+  CalendarIcon, 
+  User,
+  Hash, 
+  Activity 
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Define status e prioridade como constantes para evitar problemas
 const STATUS_OPTIONS = [
@@ -56,6 +71,9 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
   const { tasks, createTask, updateTask } = useTask();
   const { users } = useUser();
   const task = tasks.find((t) => t.id === taskId);
+  const [date, setDate] = useState<Date | undefined>(
+    task?.data_limite ? new Date(task.data_limite) : undefined
+  );
 
   // Garantir valores padrão seguros
   const defaultValues: TaskFormData = {
@@ -65,7 +83,7 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
     prioridade: task?.prioridade || "media",
     responsavel: task?.responsavel || "",
     data_limite: task?.data_limite
-      ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm")
+      ? format(new Date(task.data_limite), "yyyy-MM-dd")
       : "",
   };
 
@@ -76,6 +94,9 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
 
   // Reset do formulário quando a task mudar
   useEffect(() => {
+    const newDate = task?.data_limite ? new Date(task.data_limite) : undefined;
+    setDate(newDate);
+    
     form.reset({
       titulo: task?.titulo || "",
       descricao: task?.descricao || "",
@@ -83,7 +104,7 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
       prioridade: task?.prioridade || "media",
       responsavel: task?.responsavel || "",
       data_limite: task?.data_limite
-        ? format(new Date(task.data_limite), "yyyy-MM-dd'T'HH:mm")
+        ? format(new Date(task.data_limite), "yyyy-MM-dd")
         : "",
     });
   }, [task, form]);
@@ -110,6 +131,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
     }))
   ];
 
+  // Atualizar o campo de data quando a data selecionada mudar
+  const onDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    if (newDate) {
+      form.setValue("data_limite", format(newDate, "yyyy-MM-dd"));
+    } else {
+      form.setValue("data_limite", "");
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -118,7 +149,10 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
           name="titulo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Título</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                <Hash className="h-4 w-4 text-[#a08af7]" />
+                Título
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Digite o título da tarefa" {...field} />
               </FormControl>
@@ -132,7 +166,10 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
           name="descricao"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                <AlignLeft className="h-4 w-4 text-[#a08af7]" />
+                Descrição
+              </FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Digite uma descrição para a tarefa"
@@ -146,13 +183,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         />
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Status usando SimpleSelect em vez de RadixUI Select */}
+          {/* Status usando SimpleSelect */}
           <FormField
             control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-[#a08af7]" />
+                  Status
+                </FormLabel>
                 <FormControl>
                   <SimpleSelect
                     options={STATUS_OPTIONS}
@@ -166,13 +206,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             )}
           />
 
-          {/* Prioridade usando SimpleSelect em vez de RadixUI Select */}
+          {/* Prioridade usando SimpleSelect */}
           <FormField
             control={form.control}
             name="prioridade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Prioridade</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-[#a08af7]" />
+                  Prioridade
+                </FormLabel>
                 <FormControl>
                   <SimpleSelect
                     options={PRIORITY_OPTIONS}
@@ -188,13 +231,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Responsável usando SimpleSelect em vez de RadixUI Select */}
+          {/* Responsável usando SimpleSelect */}
           <FormField
             control={form.control}
             name="responsavel"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Responsável</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-[#a08af7]" />
+                  Responsável
+                </FormLabel>
                 <FormControl>
                   <SimpleSelect
                     options={userOptions}
@@ -208,25 +254,59 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
             )}
           />
 
+          {/* Data Limite com Popover de Calendário */}
           <FormField
             control={form.control}
             name="data_limite"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data Limite</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" {...field} />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <FormLabel className="flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4 text-[#a08af7]" />
+                  Data Limite
+                </FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal bg-[#1c2132] border-[#2e3446] hover:bg-[#252a3d] text-white",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                        ) : (
+                          <span>Selecione uma data</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-[#1c2132] border-[#2e3446] text-white">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={onDateChange}
+                      initialFocus
+                      className="bg-[#1c2132] text-white"
+                      classNames={{
+                        day_selected: "bg-[#a08af7] text-white hover:bg-[#a08af7] hover:text-white focus:bg-[#a08af7] focus:text-white",
+                        day_today: "bg-[#2e3446] text-white",
+                        day: "text-white hover:bg-[#2e3446]",
+                        day_outside: "text-gray-500 opacity-50",
+                        head_cell: "text-gray-400",
+                        cell: "text-white",
+                        nav_button: "text-gray-400 hover:bg-[#2e3446] hover:text-white",
+                        table: "border-[#2e3446]",
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="flex justify-end">
-          <Button type="submit" className="w-full sm:w-auto">
-            {taskId ? "Salvar Alterações" : "Criar Tarefa"}
-          </Button>
         </div>
       </form>
     </Form>
