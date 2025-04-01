@@ -18,13 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SimpleSelect } from "@/components/ui/simple-select";
 
 // Define status e prioridade como constantes para evitar problemas
 const STATUS_OPTIONS = [
@@ -107,6 +101,15 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
     }
   };
 
+  // Preparar a lista de usuários para o select
+  const userOptions = [
+    { value: "", label: "Sem responsável" },
+    ...users.map(user => ({
+      value: user.id,
+      label: user.raw_user_meta_data?.name || user.email
+    }))
+  ];
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -143,59 +146,41 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         />
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Status usando Controller diretamente para maior controle */}
-          <Controller
+          {/* Status usando SimpleSelect em vez de RadixUI Select */}
+          <FormField
             control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SimpleSelect
+                    options={STATUS_OPTIONS}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Selecione o status"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Prioridade usando Controller diretamente para maior controle */}
-          <Controller
+          {/* Prioridade usando SimpleSelect em vez de RadixUI Select */}
+          <FormField
             control={form.control}
             name="prioridade"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prioridade</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a prioridade" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SimpleSelect
+                    options={PRIORITY_OPTIONS}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Selecione a prioridade"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -203,31 +188,21 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Responsável */}
-          <Controller
+          {/* Responsável usando SimpleSelect em vez de RadixUI Select */}
+          <FormField
             control={form.control}
             name="responsavel"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Responsável</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || ""}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o responsável" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="">Sem responsável</SelectItem>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.raw_user_meta_data?.name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SimpleSelect
+                    options={userOptions}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Selecione o responsável"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
