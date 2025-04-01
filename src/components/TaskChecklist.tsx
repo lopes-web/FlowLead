@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChecklistItem } from "@/types/task";
 import { ClipboardList, Plus, Trash } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TaskChecklistProps {
   items: ChecklistItem[];
@@ -16,6 +17,7 @@ export function TaskChecklist({ items, onAddItem, onToggleItem, onDeleteItem }: 
   const [loading, setLoading] = useState(false);
   const checklistContainerRef = useRef<HTMLDivElement>(null);
   const completedCount = items.filter(item => item.completed).length;
+  const isComplete = items.length > 0 && completedCount === items.length;
 
   // Manter a referência dos itens para evitar re-renders desnecessários
   const itemsRef = useRef(items);
@@ -46,9 +48,12 @@ export function TaskChecklist({ items, onAddItem, onToggleItem, onDeleteItem }: 
   return (
     <div className="mt-4 relative" ref={checklistContainerRef}>
       <div className="flex items-center gap-2 mb-4">
-        <ClipboardList className="h-5 w-5 text-[#9b87f5]" />
-        <h3 className="font-medium text-lg text-white">Checklist</h3>
-        <span className="text-sm text-gray-400 ml-1">
+        <ClipboardList className="h-4 w-4 text-[#9b87f5]" />
+        <h3 className="font-medium text-base text-white">Checklist</h3>
+        <span className={cn(
+          "text-xs ml-1 transition-colors duration-300",
+          isComplete ? "text-[#9b87f5]" : "text-gray-400"
+        )}>
           ({completedCount}/{items.length})
         </span>
       </div>
@@ -56,7 +61,12 @@ export function TaskChecklist({ items, onAddItem, onToggleItem, onDeleteItem }: 
       {/* Barra de progresso */}
       <div className="h-1.5 w-full bg-[#2e3446] rounded-full mb-4 overflow-hidden">
         <div 
-          className="h-full bg-[#9b87f5] rounded-full"
+          className={cn(
+            "h-full rounded-full transition-all duration-500 ease-out",
+            isComplete 
+              ? "bg-[#9b87f5] animate-pulse" 
+              : "bg-[#9b87f5]"
+          )}
           style={{ 
             width: items.length ? `${(completedCount / items.length) * 100}%` : '0%' 
           }}
@@ -73,15 +83,27 @@ export function TaskChecklist({ items, onAddItem, onToggleItem, onDeleteItem }: 
         {items.map((item) => (
           <div 
             key={item.id} 
-            className="flex items-center gap-2 bg-[#1c2132]/50 border border-[#2e3446]/50 p-2 rounded-md"
+            className="flex items-center gap-3 bg-[#1c2132]/80 border border-[#2e3446]/70 p-2 rounded-md"
           >
-            <input
-              type="checkbox"
-              checked={item.completed}
-              onChange={() => onToggleItem(item.id)}
-              className="h-4 w-4 rounded border-gray-400 text-[#9b87f5] focus:ring-[#9b87f5] focus:ring-opacity-50"
-            />
-            <p className={`text-sm flex-1 break-words ${item.completed ? 'line-through text-gray-400' : 'text-gray-200'}`}>
+            <div className="flex-shrink-0 relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={item.completed}
+                onChange={() => onToggleItem(item.id)}
+                className="h-4 w-4 rounded appearance-none bg-[#1a1d2d] border border-[#3a3f50] text-[#9b87f5] focus:ring-[#9b87f5] focus:ring-offset-[#1c2132] focus:ring-offset-2 checked:border-[#9b87f5] checked:bg-[#9b87f5] transition-colors duration-200"
+              />
+              {item.completed && (
+                <svg 
+                  className="absolute inset-0 h-4 w-4 text-white pointer-events-none" 
+                  viewBox="0 0 16 16" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M4 8L7 11L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <p className={`text-sm flex-1 break-words transition-all duration-300 ${item.completed ? 'line-through text-gray-400' : 'text-gray-200'}`}>
               {item.content}
             </p>
             <Button
