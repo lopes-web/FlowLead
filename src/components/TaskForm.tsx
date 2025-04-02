@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useTask } from "@/contexts/TaskContext";
 import { useUser } from "@/contexts/UserContext";
 import { TaskPriority, TaskStatus } from "@/types/task";
@@ -274,7 +275,7 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                          format(new Date(field.value), "dd/MM/yyyy")
                         ) : (
                           <span>Selecione uma data</span>
                         )}
@@ -289,6 +290,7 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
                       onSelect={onDateChange}
                       initialFocus
                       className="bg-[#1c2132] text-white"
+                      locale={ptBR}
                       classNames={{
                         day_selected: "bg-[#a08af7] text-white hover:bg-[#a08af7] hover:text-white focus:bg-[#a08af7] focus:text-white",
                         day_today: "bg-[#2e3446] text-white",
