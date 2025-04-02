@@ -76,7 +76,7 @@ export function TasksKanban() {
   const { user } = useAuth();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState<string | null>(null);
+  const [taskToEdit, setTaskToEdit] = useState<string | undefined>(undefined);
   const [taskToDelete, setTaskToDelete] = useState<{ id: string; titulo: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<TaskStatus | null>(null);
 

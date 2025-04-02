@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useTask } from "@/contexts/TaskContext";
 import { useUser } from "@/contexts/UserContext";
 import { TaskPriority, TaskStatus } from "@/types/task";

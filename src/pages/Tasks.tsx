@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TasksKanban } from "@/components/TasksKanban";
-import { useUser } from "@/contexts/UserContext";
 import { 
   PlusCircle, 
   LayoutDashboard, 
@@ -23,7 +22,6 @@ export default function TasksPage() {
   const { user } = useAuth();
   const { setSelectedTaskId } = useTask();
   const [modalOpen, setModalOpen] = useState(false);
-  const { users } = useUser();
 
   // Função para obter as iniciais do email
   const getInitials = (email: string | null) => {
