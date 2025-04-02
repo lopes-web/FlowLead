@@ -11,16 +11,24 @@ export type TaskPriority =
   | "alta" 
   | "urgente";
 
+export interface ChecklistItem {
+  id: string;
+  task_id: string;
+  content: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Task {
   id: string;
   titulo: string;
-  descricao: string | null;
+  descricao?: string;
   status: TaskStatus;
   prioridade: TaskPriority;
-  data_limite: string | null;
-  responsavel: string | null;
-  projeto_id: string | null;
-  user_id: string;
+  responsavel?: string;
+  data_limite?: string;
   created_at: string;
   updated_at: string;
+  checklist_items?: ChecklistItem[];
 } 

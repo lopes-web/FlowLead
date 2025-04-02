@@ -9,7 +9,6 @@ import { TaskStatus, TaskPriority } from "@/types/task";
 import { TaskDialog } from "./TaskDialog";
 import { DeleteDialog } from "./DeleteTaskDialog";
 import {
-  CalendarDays,
   ListTodo,
   Play,
   FileSearch,
@@ -19,20 +18,10 @@ import {
   Trash2,
   Calendar,
   GripHorizontal,
-  PlusCircle,
   User,
   AlignLeft,
-  Filter,
-  X
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const statusConfig: Record<TaskStatus, { label: string; color: string; icon: React.ReactNode }> = {
   backlog: {
@@ -87,7 +76,7 @@ export function TasksKanban() {
   const { user } = useAuth();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState<string | undefined>(undefined);
+  const [taskToEdit, setTaskToEdit] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<{ id: string; titulo: string } | null>(null);
   const [draggedStatus, setDraggedStatus] = useState<TaskStatus | null>(null);
 
@@ -122,7 +111,7 @@ export function TasksKanban() {
     })));
   }, [tasks, users, user]);
 
-  const getResponsavelName = (responsavelId: string) => {
+  const getResponsavelName = (responsavelId: string | null | undefined) => {
     if (!responsavelId) return "Sem responsável";
     
     const responsavelIdStr = String(responsavelId).trim();
@@ -146,7 +135,7 @@ export function TasksKanban() {
     return `Usuário não encontrado (${responsavelId})`;
   };
 
-  const isCurrentUserResponsible = (taskResponsavel: string | null) => {
+  const isCurrentUserResponsible = (taskResponsavel: string | null | undefined) => {
     if (!user || !taskResponsavel) return false;
     
     const taskResponsavelStr = String(taskResponsavel).trim();
@@ -196,7 +185,7 @@ export function TasksKanban() {
     try {
       const task = tasks.find(t => t.id === taskId);
       if (task) {
-        const { id, created_at, updated_at, user_id, ...taskData } = task;
+        const { id, created_at, updated_at, ...taskData } = task;
         await updateTask(taskId, {
           ...taskData,
           status: newStatus,

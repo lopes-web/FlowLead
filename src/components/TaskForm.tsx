@@ -293,12 +293,16 @@ export function TaskForm({ taskId, onSuccess }: TaskFormProps) {
                       classNames={{
                         day_selected: "bg-[#a08af7] text-white hover:bg-[#a08af7] hover:text-white focus:bg-[#a08af7] focus:text-white",
                         day_today: "bg-[#2e3446] text-white",
-                        day: "text-white hover:bg-[#2e3446]",
-                        day_outside: "text-gray-500 opacity-50",
-                        head_cell: "text-gray-400",
-                        cell: "text-white",
-                        nav_button: "text-gray-400 hover:bg-[#2e3446] hover:text-white",
-                        table: "border-[#2e3446]",
+                        day: "text-white hover:bg-[#2e3446] text-xs",
+                        day_outside: "text-gray-500 opacity-50 hover:bg-[#2e3446] hover:text-gray-400 text-xs",
+                        head_cell: "text-gray-400 text-xs w-8",
+                        cell: "text-white h-7 w-7 p-0 text-xs relative focus-within:relative focus-within:z-20",
+                        nav_button: "bg-[#1c2132] text-gray-400 hover:bg-[#2e3446] hover:text-white border-[#2e3446] h-6 w-6",
+                        caption_label: "text-white text-sm font-medium",
+                        table: "border-[#2e3446] max-w-full",
+                        row: "flex w-full mt-1 justify-center",
+                        months: "flex flex-col space-y-2",
+                        month: "space-y-2 w-full"
                       }}
                     />
                   </PopoverContent>

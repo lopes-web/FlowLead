@@ -30,10 +30,10 @@ import { toast } from "sonner";
 const FORM_STORAGE_KEY = 'leadform';
 
 const statusConfig: Record<LeadStatus, string> = {
-  nao_contatado: "NÃ£o Contatado",
+  nao_contatado: "Não Contatado",
   primeiro_contato: "Primeiro Contato",
   proposta_enviada: "Proposta Enviada",
-  em_negociacao: "Em NegociaÃ§Ã£o",
+  em_negociacao: "Em Negociação",
   fechado: "Fechado",
   perdido: "Perdido"
 };
@@ -57,7 +57,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       return savedData;
     }
     
-    // Se nÃ£o houver dados salvos, usa o estado inicial padrÃ£o
+    // Se não houver dados salvos, usa o estado inicial padrão
     return {
       nome: "",
       email: "",
@@ -93,7 +93,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     "redesign"
   ];
 
-  // Efeito para carregar dados do lead quando o modal Ã© aberto
+  // Efeito para carregar dados do lead quando o modal é aberto
   useEffect(() => {
     if (open) {
       if (leadId) {
@@ -113,7 +113,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
           formStorage.save(FORM_STORAGE_KEY, newFormData);
         }
       } else {
-        // Se nÃ£o houver leadId, tenta restaurar dados salvos
+        // Se não houver leadId, tenta restaurar dados salvos
         const savedData = formStorage.load(FORM_STORAGE_KEY);
         if (savedData) {
           setFormData(savedData);
@@ -122,7 +122,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
     }
   }, [leadId, leads, open]);
 
-  // Efeito para limpar dados quando o modal Ã© fechado
+  // Efeito para limpar dados quando o modal é fechado
   useEffect(() => {
     if (!open) {
       formStorage.clear(FORM_STORAGE_KEY);
@@ -194,7 +194,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
       } else {
         await addLead(dataToSave);
       }
-      formStorage.clear(FORM_STORAGE_KEY); // Limpa os dados apÃ³s salvar com sucesso
+      formStorage.clear(FORM_STORAGE_KEY); // Limpa os dados após salvar com sucesso
       onOpenChange(false);
       toast.success(leadId ? "Lead atualizado com sucesso!" : "Lead adicionado com sucesso!");
     } catch (error) {
@@ -261,13 +261,13 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             {leadId ? "Editar Lead" : "Novo Lead"}
           </DialogTitle>
               <DialogDescription className="text-gray-400 mt-1">
-                {leadId ? "Edite as informaÃ§Ãµes do lead" : "Preencha as informaÃ§Ãµes do novo lead"}
+                {leadId ? "Edite as informações do lead" : "Preencha as informações do novo lead"}
           </DialogDescription>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Label htmlFor="is_public" className="text-sm text-gray-400">
-                  {formData.is_public ? "PÃºblico" : "Privado"}
+                  {formData.is_public ? "Público" : "Privado"}
                 </Label>
                 <Switch
                   id="is_public"
@@ -304,12 +304,14 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
             </div>
 
-            {/* InformaÃ§Ãµes BÃ¡sicas */}
+            {/* Informações Básicas */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium">InformaÃ§Ãµes BÃ¡sicas</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome</Label>
+                <Label htmlFor="nome" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
+                  Nome
+                </Label>
                 <Input
                   id="nome"
                   name="nome"
@@ -321,7 +323,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
+                <Label htmlFor="tipo_projeto" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
+                  Tipo de Projeto
+                </Label>
                 <Select
                   value={formData.tipo_projeto}
                   onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
@@ -338,7 +343,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="orcamento">OrÃ§amento</Label>
+                <Label htmlFor="orcamento" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
+                  Orçamento
+                </Label>
                 <Input
                   id="orcamento"
                   name="orcamento"
@@ -351,7 +359,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
 
               <div className="space-y-2">
-                  <Label htmlFor="origem">Origem</Label>
+                  <Label htmlFor="origem" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-[#9b87f5]" />
+                    Origem
+                  </Label>
                 <Input
                     id="origem"
                     name="origem"
@@ -366,11 +377,10 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
             {/* Contato */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium">InformaÃ§Ãµes de Contato</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
                   <Label htmlFor="whatsapp" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-4 w-4 text-[#9b87f5]" />
                     WhatsApp
                   </Label>
                   <Input
@@ -387,7 +397,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
             <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
+                    <Mail className="h-4 w-4 text-[#9b87f5]" />
                     Email
                 </Label>
                   <Input
@@ -403,7 +413,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
             <div className="space-y-2">
                   <Label htmlFor="instagram" className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4" />
+                    <Instagram className="h-4 w-4 text-[#9b87f5]" />
                     Instagram
                   </Label>
                   <Input
@@ -418,7 +428,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
             <div className="space-y-2">
                   <Label htmlFor="website" className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
+                    <Globe className="h-4 w-4 text-[#9b87f5]" />
                     Website
                   </Label>
                   <Input
@@ -435,8 +445,8 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
             {/* Tags */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Tag className="h-4 w-4" />
+              <Label className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-[#9b87f5]" />
                 Tags
               </Label>
               <div className="flex flex-wrap gap-2">
@@ -458,11 +468,11 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               </div>
             </div>
 
-            {/* AnotaÃ§Ãµes */}
+            {/* Anotações */}
             <div className="space-y-4">
-              <Label htmlFor="anotacoes" className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                AnotaÃ§Ãµes
+              <Label htmlFor="anotacoes" className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[#9b87f5]" />
+                Anotações
               </Label>
               <Textarea
                 id="anotacoes"
@@ -470,16 +480,16 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                 value={formData.anotacoes || ""}
                 onChange={handleChange}
                 className="min-h-[200px] bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                placeholder="Adicione anotaÃ§Ãµes importantes sobre o lead..."
+                placeholder="Adicione anotações importantes sobre o lead..."
               />
             </div>
 
-            {/* InformaÃ§Ãµes de Perda */}
+            {/* Informações de Perda */}
             {formData.status === "perdido" && (
               <div className="space-y-4">
-                <Label className="text-sm font-medium flex items-center gap-2">
+                <Label className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-red-500" />
-                  InformaÃ§Ãµes da Perda
+                  Informações da Perda
                 </Label>
                 <div className="space-y-4">
                   <Select
@@ -490,7 +500,7 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
                       <SelectValue placeholder="Selecione o motivo da perda" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="nao_respondeu">NÃ£o Respondeu</SelectItem>
+                      <SelectItem value="nao_respondeu">Não Respondeu</SelectItem>
                       <SelectItem value="achou_caro">Achou Caro</SelectItem>
                       <SelectItem value="sem_dinheiro">Sem Dinheiro</SelectItem>
                       <SelectItem value="escolheu_concorrente">Escolheu Concorrente</SelectItem>

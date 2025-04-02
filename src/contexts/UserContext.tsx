@@ -1,7 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "./AuthContext";
-import { supabase } from "@/lib/supabase";
 
 interface User {
   id: string;
@@ -15,16 +13,14 @@ interface User {
 interface UserContextProps {
   users: User[];
   loading: boolean;
-  refreshUsers: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const { user } = useAuth();
 
   const loadUsers = async () => {
     if (!user) {
@@ -116,7 +112,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   return (
-    <UserContext.Provider value={{ users, loading, refreshUsers: loadUsers }}>
+    <UserContext.Provider value={{ users, loading }}>
       {children}
     </UserContext.Provider>
   );

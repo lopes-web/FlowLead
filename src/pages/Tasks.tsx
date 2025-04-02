@@ -21,7 +21,8 @@ import {
 export default function TasksPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { setSelectedTaskId, setModalOpen, modalOpen, selectedTaskId } = useTask();
+  const { setSelectedTaskId } = useTask();
+  const [modalOpen, setModalOpen] = useState(false);
   const { users } = useUser();
 
   // Função para obter as iniciais do email
@@ -134,7 +135,7 @@ export default function TasksPage() {
       <TaskDialog
         open={modalOpen}
         onOpenChange={setModalOpen}
-        taskId={selectedTaskId}
+        taskId={undefined}
       />
     </div>
   );

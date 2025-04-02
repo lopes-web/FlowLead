@@ -1,22 +1,25 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskStatus, ChecklistItem } from "@/types/task";
 import { useAuth } from "./AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNotifications } from "./NotificationContext";
 import { useUser } from "./UserContext";
+import { v4 as uuidv4 } from "uuid";
 
 interface TaskContextProps {
   tasks: Task[];
   loading: boolean;
-  createTask: (task: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>;
-  updateTask: (id: string, task: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>;
+  createTask: (task: Partial<Task>) => Promise<void>;
+  updateTask: (id: string, task: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  selectedTaskId: string | undefined;
-  setSelectedTaskId: (id: string | undefined) => void;
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
+  selectedTaskId: string | null;
+  setSelectedTaskId: (id: string | null) => void;
   refreshTasks: () => Promise<void>;
+  updateTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
+  addChecklistItem: (taskId: string, content: string) => Promise<void>;
+  toggleChecklistItem: (taskId: string, itemId: string) => Promise<void>;
+  deleteChecklistItem: (taskId: string, itemId: string) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextProps | undefined>(undefined);
@@ -25,8 +28,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const { users } = useUser();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { addNotification } = useNotifications();
@@ -92,6 +94,35 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         console.log(`  Criador: ${task.user_id}`);
         console.log(`  Status: ${task.status}`);
       });
+      
+      // Buscar os itens de checklist para todas as tarefas do usuário
+      if (userTasks.length > 0) {
+        const taskIds = userTasks.map(task => task.id);
+        console.log("Buscando itens de checklist para tarefas:", taskIds);
+        
+        const { data: checklistItems, error: checklistError } = await supabase
+          .from("checklist_items")
+          .select("*")
+          .in("task_id", taskIds);
+          
+        if (checklistError) {
+          console.error("Erro ao buscar itens de checklist:", checklistError);
+        } else if (checklistItems) {
+          console.log("Itens de checklist encontrados:", checklistItems.length);
+          
+          // Associar os itens de checklist às suas respectivas tarefas
+          const tasksWithChecklist = userTasks.map(task => {
+            const taskChecklistItems = checklistItems.filter(item => item.task_id === task.id);
+            return {
+              ...task,
+              checklist_items: taskChecklistItems
+            };
+          });
+          
+          setTasks(tasksWithChecklist);
+          return; // Retorna aqui para evitar o setTasks abaixo
+        }
+      }
       
       setTasks(userTasks);
       
@@ -209,7 +240,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, toast]);
 
-  const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => {
+  const createTask = async (taskData: Partial<Task>) => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
@@ -292,7 +323,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateTask = async (id: string, taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => {
+  const updateTask = async (id: string, taskData: Partial<Task>) => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
@@ -433,6 +464,150 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateTaskStatus = async (id: string, status: TaskStatus) => {
+    if (!user) throw new Error("Usuário não autenticado");
+
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update({ status })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Erro ao atualizar status da tarefa:", error);
+        toast({
+          title: "Erro ao atualizar status da tarefa",
+          description: "Ocorreu um erro ao atualizar o status da tarefa. Tente novamente mais tarde.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      console.log("Status da tarefa atualizado com sucesso:", data);
+      
+      toast({
+        title: "Status da tarefa atualizado",
+        description: "O status da tarefa foi atualizado com sucesso.",
+      });
+
+      setTasks((prev) => prev.map((task) => (task.id === id ? data : task)));
+    } catch (error) {
+      console.error("Erro ao atualizar status da tarefa:", error);
+      throw error;
+    }
+  };
+
+  const addChecklistItem = async (taskId: string, content: string) => {
+    try {
+      const newItem: ChecklistItem = {
+        id: uuidv4(),
+        task_id: taskId,
+        content,
+        completed: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("checklist_items")
+        .insert(newItem);
+
+      if (error) throw error;
+
+      setTasks(tasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            checklist_items: [...(task.checklist_items || []), newItem],
+          };
+        }
+        return task;
+      }));
+
+      toast({
+        description: "Item adicionado ao checklist",
+      });
+    } catch (error) {
+      console.error("Erro ao adicionar item ao checklist:", error);
+      toast({
+        variant: "destructive",
+        description: "Erro ao adicionar item ao checklist",
+      });
+    }
+  };
+
+  const toggleChecklistItem = async (taskId: string, itemId: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      const item = task?.checklist_items?.find(i => i.id === itemId);
+      
+      if (!task || !item) return;
+
+      const { error } = await supabase
+        .from("checklist_items")
+        .update({ 
+          completed: !item.completed,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      setTasks(tasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            checklist_items: task.checklist_items?.map(item => 
+              item.id === itemId 
+                ? { ...item, completed: !item.completed }
+                : item
+            ),
+          };
+        }
+        return task;
+      }));
+    } catch (error) {
+      console.error("Erro ao atualizar item do checklist:", error);
+      toast({
+        variant: "destructive",
+        description: "Erro ao atualizar item do checklist",
+      });
+    }
+  };
+
+  const deleteChecklistItem = async (taskId: string, itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from("checklist_items")
+        .delete()
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      setTasks(tasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            checklist_items: task.checklist_items?.filter(item => item.id !== itemId),
+          };
+        }
+        return task;
+      }));
+
+      toast({
+        description: "Item removido do checklist",
+      });
+    } catch (error) {
+      console.error("Erro ao remover item do checklist:", error);
+      toast({
+        variant: "destructive",
+        description: "Erro ao remover item do checklist",
+      });
+    }
+  };
+
   return (
     <TaskContext.Provider
       value={{
@@ -443,9 +618,11 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         deleteTask,
         selectedTaskId,
         setSelectedTaskId,
-        modalOpen,
-        setModalOpen,
-        refreshTasks: fetchTasks
+        refreshTasks: fetchTasks,
+        updateTaskStatus,
+        addChecklistItem,
+        toggleChecklistItem,
+        deleteChecklistItem,
       }}
     >
       {children}
