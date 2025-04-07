@@ -23,7 +23,7 @@ import { Lead, LeadStatus, LeadQualityTag } from "@/types/lead";
 import { Badge } from "@/components/ui/badge";
 import { FileUpload } from "@/components/FileUpload";
 import { Switch } from "@/components/ui/switch";
-import { Phone, Mail, Globe, Instagram, Tag, FileText, AlertCircle } from "lucide-react";
+import { FileText } from "lucide-react";
 import { cn, formStorage } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -253,12 +253,12 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[600px] p-0 bg-[#1c2132] border-[#2e3446] text-white overflow-hidden">
+      <DialogContent className="max-w-[800px] p-0 bg-[#1c2132] border-[#2e3446] text-white overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-xl font-medium">
             {leadId ? "Editar Lead" : "Novo Lead"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-400">
             Preencha as informações do novo lead
           </DialogDescription>
         </DialogHeader>
@@ -295,107 +295,137 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
               ))}
             </div>
 
-            <div>
-              <h3 className="text-sm font-medium mb-4">Informações Básicas</h3>
-              <div className="space-y-4">
-                <div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="nome">Nome</Label>
-                  <Input
-                    id="nome"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    placeholder="Digite o nome do lead"
-                  />
                 </div>
+                <Input
+                  id="nome"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  className="bg-[#1c2132] border-[#2e3446]"
+                />
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
-                  <Input
-                    id="tipo_projeto"
-                    name="tipo_projeto"
-                    value={formData.tipo_projeto}
-                    onChange={handleChange}
-                    placeholder="Selecione o tipo de projeto"
-                  />
                 </div>
+                <Select
+                  value={formData.tipo_projeto}
+                  onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
+                >
+                  <SelectTrigger className="bg-[#1c2132] border-[#2e3446]">
+                    <SelectValue placeholder="Selecione o tipo de projeto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="site">Site</SelectItem>
+                    <SelectItem value="landing_page">Landing Page</SelectItem>
+                    <SelectItem value="criativos">Criativos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="orcamento">Orçamento</Label>
-                  <Input
-                    id="orcamento"
-                    name="orcamento"
-                    value={formData.orcamento ? `R$ ${formData.orcamento.toFixed(2)}` : "R$ 0,00"}
-                    onChange={handleChange}
-                    placeholder="R$ 0,00"
-                  />
                 </div>
+                <Input
+                  id="orcamento"
+                  name="orcamento"
+                  value={formData.orcamento ? `R$ ${formData.orcamento.toFixed(2)}` : "R$ 0,00"}
+                  onChange={handleChange}
+                  className="bg-[#1c2132] border-[#2e3446]"
+                  placeholder="R$ 0,00"
+                />
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="origem">Origem</Label>
-                  <Input
-                    id="origem"
-                    name="origem"
-                    value={formData.origem}
-                    onChange={handleChange}
-                    placeholder="Digite a origem do lead"
-                  />
                 </div>
+                <Input
+                  id="origem"
+                  name="origem"
+                  value={formData.origem}
+                  onChange={handleChange}
+                  className="bg-[#1c2132] border-[#2e3446]"
+                />
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-sm font-medium mb-4">Informações de Contato</h3>
-              <div className="space-y-4">
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input
-                    id="whatsapp"
-                    name="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleChange}
-                    placeholder="(00) 00000-0000"
-                    ref={whatsappRef}
-                  />
                 </div>
+                <Input
+                  id="whatsapp"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleWhatsAppChange}
+                  placeholder="(00) 00000-0000"
+                  className="bg-[#1c2132] border-[#2e3446]"
+                  ref={whatsappRef}
+                />
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="exemplo@email.com"
-                  />
                 </div>
+                <Input
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="exemplo@email.com"
+                  className="bg-[#1c2132] border-[#2e3446]"
+                />
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="instagram">Instagram</Label>
-                  <Input
-                    id="instagram"
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleChange}
-                    placeholder="@usuario ou URL completa"
-                  />
                 </div>
+                <Input
+                  id="instagram"
+                  name="instagram"
+                  value={formData.instagram}
+                  onChange={handleChange}
+                  placeholder="@usuario ou URL completa"
+                  className="bg-[#1c2132] border-[#2e3446]"
+                />
+              </div>
 
-                <div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#9b87f5]" />
                   <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleChange}
-                    placeholder="https://exemplo.com"
-                  />
                 </div>
+                <Input
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  placeholder="https://exemplo.com"
+                  className="bg-[#1c2132] border-[#2e3446]"
+                />
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium mb-4">Tags</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-4 w-4 text-[#9b87f5]" />
+                <Label>Tags</Label>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {availableTags.map((tag) => (
                   <Badge
@@ -416,13 +446,17 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium mb-4">Anotações</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-4 w-4 text-[#9b87f5]" />
+                <Label htmlFor="anotacoes">Anotações</Label>
+              </div>
               <Textarea
+                id="anotacoes"
                 name="anotacoes"
                 value={formData.anotacoes}
                 onChange={handleChange}
                 placeholder="Digite suas anotações sobre o lead"
-                className="min-h-[100px]"
+                className="min-h-[100px] bg-[#1c2132] border-[#2e3446]"
               />
             </div>
 
