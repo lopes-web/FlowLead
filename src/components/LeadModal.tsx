@@ -253,303 +253,197 @@ export function LeadModal({ open, onOpenChange, leadId }: LeadModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-[#1c2132] border-[#2e3446] text-white flex flex-col">
-        <DialogHeader className="p-6 pb-4 border-b border-[#2e3446] shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-semibold">
+      <DialogContent className="max-w-[600px] p-0 bg-[#1c2132] border-[#2e3446] text-white overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-2">
+          <DialogTitle className="text-xl font-medium">
             {leadId ? "Editar Lead" : "Novo Lead"}
           </DialogTitle>
-              <DialogDescription className="text-gray-400 mt-1">
-                {leadId ? "Edite as informações do lead" : "Preencha as informações do novo lead"}
+          <DialogDescription>
+            Preencha as informações do novo lead
           </DialogDescription>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="is_public" className="text-sm text-gray-400">
-                  {formData.is_public ? "Público" : "Privado"}
-                </Label>
-                <Switch
-                  id="is_public"
-                  checked={formData.is_public === true}
-                  onCheckedChange={handleSwitchChange}
-                  className="data-[state=checked]:bg-green-500"
-                />
-              </div>
-            </div>
-          </div>
         </DialogHeader>
-
-        <ScrollArea className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-8">
-            {/* Status do Lead */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">Status do Lead</Label>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(statusConfig).map(([status, label]) => (
-                  <Button
-                    key={status}
-                    type="button"
-                    onClick={() => handleSelectChange("status", status)}
-                    className={cn(
-                      "h-9 px-4 rounded-full transition-all",
-                      formData.status === status
-                        ? getStatusColor(status as LeadStatus)
-                        : "bg-[#222839] hover:bg-[#2e3446]"
-                    )}
-                  >
-                    {label}
-                  </Button>
-                ))}
+        
+        <ScrollArea className="max-h-[80vh] px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Status do Lead</h3>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="public" className="text-sm text-gray-400">Privado</Label>
+                <Switch
+                  id="public"
+                  checked={formData.is_public}
+                  onCheckedChange={handleSwitchChange}
+                />
               </div>
             </div>
 
-            {/* Informações Básicas */}
-            <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#9b87f5]" />
-                  Nome
-                </Label>
-                <Input
-                  id="nome"
-                  name="nome"
-                  value={formData.nome}
-                  onChange={handleChange}
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tipo_projeto" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#9b87f5]" />
-                  Tipo de Projeto
-                </Label>
-                <Select
-                  value={formData.tipo_projeto}
-                  onValueChange={(value) => handleSelectChange("tipo_projeto", value)}
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(statusConfig).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => handleSelectChange("status", value)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                    formData.status === value
+                      ? "bg-[#a08af7] text-white"
+                      : "bg-[#252a3d] text-gray-400 hover:bg-[#2e3446] hover:text-white"
+                  )}
                 >
-                    <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
-                    <SelectValue placeholder="Selecione o tipo de projeto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="site">Site</SelectItem>
-                    <SelectItem value="landing_page">Landing Page</SelectItem>
-                    <SelectItem value="criativos">Criativos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {label}
+                </button>
+              ))}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="orcamento" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#9b87f5]" />
-                  Orçamento
-                </Label>
-                <Input
-                  id="orcamento"
-                  name="orcamento"
-                  type="text"
-                  value={formatCurrency(formData.orcamento)}
-                  onChange={handleChange}
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                  required
-                />
-              </div>
+            <div>
+              <h3 className="text-sm font-medium mb-4">Informações Básicas</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleChange}
+                    placeholder="Digite o nome do lead"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                  <Label htmlFor="origem" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-[#9b87f5]" />
-                    Origem
-                  </Label>
-                <Input
+                <div>
+                  <Label htmlFor="tipo_projeto">Tipo de Projeto</Label>
+                  <Input
+                    id="tipo_projeto"
+                    name="tipo_projeto"
+                    value={formData.tipo_projeto}
+                    onChange={handleChange}
+                    placeholder="Selecione o tipo de projeto"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="orcamento">Orçamento</Label>
+                  <Input
+                    id="orcamento"
+                    name="orcamento"
+                    value={formData.orcamento ? `R$ ${formData.orcamento.toFixed(2)}` : "R$ 0,00"}
+                    onChange={handleChange}
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="origem">Origem</Label>
+                  <Input
                     id="origem"
                     name="origem"
                     value={formData.origem}
-                  onChange={handleChange}
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                  required
-                />
+                    onChange={handleChange}
+                    placeholder="Digite a origem do lead"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Contato */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-                  <Label htmlFor="whatsapp" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-[#9b87f5]" />
-                    WhatsApp
-                  </Label>
+            <div>
+              <h3 className="text-sm font-medium mb-4">Informações de Contato</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
                   <Input
-                    ref={whatsappRef}
                     id="whatsapp"
                     name="whatsapp"
                     value={formData.whatsapp}
-                    onChange={handleWhatsAppChange}
+                    onChange={handleChange}
                     placeholder="(00) 00000-0000"
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                    required
+                    ref={whatsappRef}
                   />
-            </div>
+                </div>
 
-            <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-[#9b87f5]" />
-                    Email
-                </Label>
+                <div>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     name="email"
-                    type="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="exemplo@email.com"
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
                   />
-            </div>
+                </div>
 
-            <div className="space-y-2">
-                  <Label htmlFor="instagram" className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4 text-[#9b87f5]" />
-                    Instagram
-                  </Label>
+                <div>
+                  <Label htmlFor="instagram">Instagram</Label>
                   <Input
                     id="instagram"
                     name="instagram"
                     value={formData.instagram}
-                onChange={handleChange}
+                    onChange={handleChange}
                     placeholder="@usuario ou URL completa"
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-              />
-            </div>
+                  />
+                </div>
 
-            <div className="space-y-2">
-                  <Label htmlFor="website" className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-[#9b87f5]" />
-                    Website
-                  </Label>
+                <div>
+                  <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
                     name="website"
                     value={formData.website}
                     onChange={handleChange}
                     placeholder="https://exemplo.com"
-                    className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Tags */}
-            <div className="space-y-4">
-              <Label className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-[#9b87f5]" />
-                Tags
-              </Label>
+            <div>
+              <h3 className="text-sm font-medium mb-4">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {availableTags.map(tag => (
+                {availableTags.map((tag) => (
                   <Badge
                     key={tag}
-                    variant="secondary"
+                    variant="outline"
                     className={cn(
-                      "cursor-pointer transition-all",
+                      "cursor-pointer transition-colors",
                       formData.tags.includes(tag)
-                        ? getTagColor(tag)
-                        : "bg-[#222839] hover:bg-[#2e3446]"
+                        ? "bg-[#a08af7] text-white border-[#a08af7]"
+                        : "bg-transparent text-gray-400 border-[#2e3446] hover:bg-[#2e3446] hover:text-white"
                     )}
                     onClick={() => handleTagToggle(tag)}
                   >
-                    {tag.replace(/_/g, ' ')}
+                    {tag.replace(/_/g, " ")}
                   </Badge>
                 ))}
               </div>
             </div>
 
-            {/* Anotações */}
-            <div className="space-y-4">
-              <Label htmlFor="anotacoes" className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#9b87f5]" />
-                Anotações
-              </Label>
+            <div>
+              <h3 className="text-sm font-medium mb-4">Anotações</h3>
               <Textarea
-                id="anotacoes"
                 name="anotacoes"
-                value={formData.anotacoes || ""}
+                value={formData.anotacoes}
                 onChange={handleChange}
-                className="min-h-[200px] bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                placeholder="Adicione anotações importantes sobre o lead..."
+                placeholder="Digite suas anotações sobre o lead"
+                className="min-h-[100px]"
               />
             </div>
 
-            {/* Informações de Perda */}
-            {formData.status === "perdido" && (
-              <div className="space-y-4">
-                <Label className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  Informações da Perda
-                </Label>
-                <div className="space-y-4">
-                  <Select
-                    value={formData.motivo_perda || ""}
-                    onValueChange={(value) => handleSelectChange("motivo_perda", value)}
-                  >
-                    <SelectTrigger className="bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]">
-                      <SelectValue placeholder="Selecione o motivo da perda" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="nao_respondeu">Não Respondeu</SelectItem>
-                      <SelectItem value="achou_caro">Achou Caro</SelectItem>
-                      <SelectItem value="sem_dinheiro">Sem Dinheiro</SelectItem>
-                      <SelectItem value="escolheu_concorrente">Escolheu Concorrente</SelectItem>
-                      <SelectItem value="projeto_cancelado">Projeto Cancelado</SelectItem>
-                      <SelectItem value="fora_do_escopo">Fora do Escopo</SelectItem>
-                      <SelectItem value="outro">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Textarea
-                    name="detalhes_perda"
-                    value={formData.detalhes_perda || ""}
-                    onChange={handleChange}
-                    placeholder="Descreva os detalhes do motivo da perda..."
-                    className="h-20 bg-[#222839] border-[#2e3446] focus:ring-[#9b87f5] focus:border-[#9b87f5]"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Arquivos */}
-            {leadId && (
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Arquivos</Label>
-                <FileUpload leadId={leadId} />
-              </div>
-            )}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="bg-transparent text-white border-[#2e3446] hover:bg-[#2e3446]"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="bg-[#a08af7] text-white hover:bg-[#8a76e4]"
+              >
+                {leadId ? "Salvar" : "Cadastrar"}
+              </Button>
+            </div>
           </form>
         </ScrollArea>
-
-        <div className="shrink-0 p-6 bg-[#1c2132] border-t border-[#2e3446]">
-          <div className="flex gap-2 justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="min-w-[120px]"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              onClick={handleSubmit}
-              className="min-w-[120px] bg-[#9b87f5] hover:bg-[#8b74f4]"
-            >
-              {leadId ? "Salvar" : "Cadastrar"}
-            </Button>
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
