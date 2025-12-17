@@ -18,28 +18,28 @@ export function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Formulário enviado");
-    
+
     if (!name || !email || !password || !confirmPassword) {
       setError("Por favor, preencha todos os campos");
       return;
     }
-    
+
     if (password !== confirmPassword) {
       setError("As senhas não coincidem");
       return;
     }
-    
+
     if (password.length < 6) {
       setError("A senha deve ter pelo menos 6 caracteres");
       return;
     }
-    
+
     try {
       setError(null);
       setLoading(true);
-      
+
       console.log("Tentando criar conta com:", { email, name });
-      
+
       // Registrar com nome como metadado
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -50,22 +50,22 @@ export function Register() {
           }
         }
       });
-      
+
       console.log("Resposta do registro:", data, error);
-      
+
       if (error) {
         console.error("Erro ao criar conta:", error);
         setError(error.message || "Erro ao criar conta");
         return;
       }
-      
+
       if (data && data.user) {
         console.log("Conta criada com sucesso:", data.user);
         // Redireciona para a página de login após o registro
-        navigate("/login", { 
-          state: { 
-            message: "Conta criada com sucesso! Verifique seu email para confirmar o cadastro." 
-          } 
+        navigate("/login", {
+          state: {
+            message: "Conta criada com sucesso! Verifique seu email para confirmar o cadastro."
+          }
         });
       } else {
         console.error("Dados de usuário não encontrados na resposta:", data);
@@ -80,13 +80,13 @@ export function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0f1117] px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#010907] px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] p-2 rounded-lg">
+          <div className="bg-gradient-to-r from-[#03BC89] to-[#02a87a] p-2 rounded-lg">
             <Zap className="h-6 w-6 text-white" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
+          <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#03BC89] to-[#02a87a] bg-clip-text text-transparent tracking-tight">
             FlowLead
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-white">
@@ -108,7 +108,7 @@ export function Register() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="Seu Nome Completo"
               />
             </div>
@@ -124,7 +124,7 @@ export function Register() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="seu@email.com"
               />
             </div>
@@ -140,7 +140,7 @@ export function Register() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="••••••••"
               />
               <p className="mt-1 text-xs text-gray-400">
@@ -159,14 +159,14 @@ export function Register() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
           {error && (
-            <div className="rounded-md bg-[#1c2132] border border-red-500/30 p-4">
+            <div className="rounded-md bg-[#0a1210] border border-red-500/30 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <AlertCircle className="h-5 w-5 text-red-500" />
@@ -181,7 +181,7 @@ export function Register() {
           <div>
             <Button
               type="submit"
-              className="w-full bg-[#9b87f5] hover:bg-[#8b77e5] text-white"
+              className="w-full bg-[#03BC89] hover:bg-[#02a87a] text-white"
               disabled={loading}
               onClick={() => console.log("Botão de criar conta clicado")}
             >
@@ -200,7 +200,7 @@ export function Register() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
             Já tem uma conta?{" "}
-            <Link to="/login" className="font-medium text-[#9b87f5] hover:text-[#8b77e5]">
+            <Link to="/login" className="font-medium text-[#03BC89] hover:text-[#02a87a]">
               Faça login
             </Link>
           </p>

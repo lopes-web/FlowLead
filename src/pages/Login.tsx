@@ -15,23 +15,23 @@ export function Login() {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   console.log("Login - Renderizando com user:", user);
-  
+
   useEffect(() => {
     console.log("Login - useEffect com user:", user);
-    
+
     // Se o usuário já estiver autenticado, redireciona para a página principal
     if (user) {
       console.log("Login - Usuário já autenticado, redirecionando para /");
       navigate("/");
     }
-    
+
     // Verificar se há uma mensagem de sucesso no estado da navegação
     if (location.state && location.state.message) {
       console.log("Login - Mensagem recebida:", location.state.message);
       setSuccess(location.state.message);
-      
+
       // Limpar o estado para não mostrar a mensagem novamente após refresh
       window.history.replaceState({}, document.title);
     }
@@ -40,28 +40,28 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login - Iniciando submit com:", { email, password: "***" });
-    
+
     if (!email || !password) {
       setError("Por favor, preencha todos os campos");
       return;
     }
-    
+
     try {
       setError(null);
       setSuccess(null);
       setLoading(true);
-      
+
       console.log("Login - Chamando signIn");
       const { error } = await signIn(email, password);
-      
+
       console.log("Login - Resultado do signIn:", { error });
-      
+
       if (error) {
         console.error("Login - Erro ao fazer login:", error);
         setError(error.message || "Erro ao fazer login");
         return;
       }
-      
+
       console.log("Login - Login bem-sucedido, redirecionando para /");
       // Redireciona para a página principal após o login
       navigate("/");
@@ -74,13 +74,13 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0f1117] px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#010907] px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] p-2 rounded-lg">
+          <div className="bg-gradient-to-r from-[#03BC89] to-[#02a87a] p-2 rounded-lg">
             <Zap className="h-6 w-6 text-white" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
+          <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-[#03BC89] to-[#02a87a] bg-clip-text text-transparent tracking-tight">
             FlowLead
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-white">
@@ -89,7 +89,7 @@ export function Login() {
         </div>
 
         {success && (
-          <div className="rounded-md bg-[#1c2132] border border-green-500/30 p-4">
+          <div className="rounded-md bg-[#0a1210] border border-green-500/30 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <CheckCircle className="h-5 w-5 text-green-500" />
@@ -115,7 +115,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="seu@email.com"
               />
             </div>
@@ -133,14 +133,14 @@ export function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full bg-[#1c2132] border-[#2e3446] text-white placeholder:text-gray-500"
+                className="mt-1 block w-full bg-[#0a1210] border-[#1a2a25] text-white placeholder:text-gray-500"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
           {error && (
-            <div className="rounded-md bg-[#1c2132] border border-red-500/30 p-4">
+            <div className="rounded-md bg-[#0a1210] border border-red-500/30 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <AlertCircle className="h-5 w-5 text-red-500" />
@@ -155,7 +155,7 @@ export function Login() {
           <div>
             <Button
               type="submit"
-              className="w-full bg-[#9b87f5] hover:bg-[#8b77e5] text-white"
+              className="w-full bg-[#03BC89] hover:bg-[#02a87a] text-white"
               disabled={loading}
             >
               {loading ? (
@@ -173,7 +173,7 @@ export function Login() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
             Não tem uma conta?{" "}
-            <Link to="/register" className="font-medium text-[#9b87f5] hover:text-[#8b77e5]">
+            <Link to="/register" className="font-medium text-[#03BC89] hover:text-[#02a87a]">
               Registre-se
             </Link>
           </p>

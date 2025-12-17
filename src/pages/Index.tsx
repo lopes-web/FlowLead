@@ -3,9 +3,9 @@ import { Dashboard } from "@/components/Dashboard";
 import { Kanban } from "@/components/Kanban";
 import { LeadModal } from "@/components/LeadModal";
 import { Button } from "@/components/ui/button";
-import { 
-  PlusCircle, 
-  LayoutDashboard, 
+import {
+  PlusCircle,
+  LayoutDashboard,
   KanbanSquare,
   Timer,
   Zap,
@@ -45,10 +45,10 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
       <div className="flex flex-col gap-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] p-2 rounded-lg">
+            <div className="bg-gradient-to-r from-[#03BC89] to-[#02a87a] p-2 rounded-lg">
               <Zap className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#03BC89] to-[#02a87a] bg-clip-text text-transparent tracking-tight">
               FlowLead
             </h1>
           </div>
@@ -118,11 +118,11 @@ const Index = ({ view = "dashboard" }: IndexProps) => {
                 size="sm"
               >
                 <Avatar className="h-8 w-8 transition-transform hover:scale-110">
-                  <AvatarImage 
-                    src={user?.user_metadata?.avatar_url || ""} 
-                    alt={user?.email || "Usuário"} 
+                  <AvatarImage
+                    src={user?.user_metadata?.avatar_url || ""}
+                    alt={user?.email || "Usuário"}
                   />
-                  <AvatarFallback className="bg-gradient-to-r from-[#9b87f5] to-[#D6BCFA] text-white text-xs">
+                  <AvatarFallback className="bg-gradient-to-r from-[#03BC89] to-[#02a87a] text-white text-xs">
                     {user ? getInitials(user.email) : "U"}
                   </AvatarFallback>
                 </Avatar>
